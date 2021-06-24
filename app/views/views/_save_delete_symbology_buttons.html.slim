@@ -1,0 +1,6 @@
+- if symbology.editable_by?(current_user)
+  div style='text-align: center;'
+    button.btn.btn-primary.text-center.save-as-symbology type="button" style="margin: 5px;"
+      'Save As ...
+    - if !symbology.is_default
+      = link_to "Delete", symbology_path(symbology), data: {confirm: ("Are you sure?")}, :method => :delete, :remote => true, :class => 'btn btn-primary .text-center .delete-symbology', :html => { style: "margin: 5px;"}

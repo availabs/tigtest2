@@ -1,0 +1,10 @@
+$('#filterContainer').append("<%=escape_javascript(render partial: 'filter_panel', locals: {view: @view})%>");
+<% if @include_year_slider %>
+  if($('#yearSliderContainer').length === 0) {
+    $('#sourceFilter').append("<%=escape_javascript(render partial: 'yearslider', locals: {min: @slider_min, max: @slider_max, value: @slider_value, values: @slider_values})%>");
+  }
+<% end %>
+
+<% if @view.data_model.try(:exportable_as_shp?) %>
+  $('#exportContainer').append("<p><%=escape_javascript(link_to @view.name, export_shp_view_path(@view), id: ('export-shp-' + @view.id.to_s), remote: true)%></p>");
+<% end %>

@@ -1,0 +1,22 @@
+- obj = locals[:obj]
+- watch = obj.class == Source ? current_user.watches.find_by(source: obj) : current_user.watches.find_by(view: obj)
+
+- if obj.updated_at >= watch.last_seen_at
+  .media
+    .media-body
+      small
+        strong
+          - if obj.rows_updated_by
+            - name = obj.rows_updated_by.display_name.blank? ? obj.rows_updated_by.email : obj.rows_updated_by.display_name
+          - else
+            - name = "Deleted User"
+          = " #{name} updated '#{obj.name}':"
+      br
+      small= " #{time_ago_in_words(obj.updated_at)} ago (on #{obj.updated_at.strftime("%e %b, %Y at %H:%M %Z")})"
+
+- if obj.class == Source
+  - Comment.where('created_at >= ? AND source_id = ? AND user_id != ?', watch.last_seen_at, obj, current_user.id).each do |comment|
+    = render partial: 'comments/preview', locals: {comment: comment}
+- else
+  - Comment.where('created_at >= ? AND source_id = ? AND view_id = ? AND user_id != ?', watch.last_seen_at, obj.source_id, obj.id, current_user.id).each do |comment|
+    = render partial: 'comments/preview', locals: {comment: comment}

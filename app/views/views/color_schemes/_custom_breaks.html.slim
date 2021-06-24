@@ -1,0 +1,105 @@
+/ handle array params
+- if @symbology_subject == symbology.subject && @color_scheme
+  - color_schemes = []
+  - @color_scheme.each do | k, v|
+    - color_schemes << v
+- else
+  - color_schemes = symbology.custom_breaks_color_schemes
+
+= simple_form_for :custom_breaks_color_scheme, html: {action: '#', class:'custom-breaks-symbology-form symbology-form form-horizontal'} do |f|
+  = f.hidden_field :symbology_id, name: 'symbology_id', value: symbology.id
+  = f.hidden_field :view_id, name: 'view_id', value: symbology.view.id
+  = f.hidden_field :subject, name: 'subject', value: symbology.subject
+  - class_count = color_schemes.count
+  b
+    = "#{class_count} classes in total, click each to expand:" 
+  - color_schemes.each_with_index do | item, index|        
+    - item_id = "view-#{symbology.view.id}-#{index}"
+    fieldset.custom-break
+      a data-toggle="collapse" href=("#" + "#{item_id}-collapse-fields")  aria-expanded="false" style="font-weight: bold;" title="Expand to set color"
+        = "#{item[:label]}"
+      .collapse id="#{item_id}-collapse-fields"
+        = f.input :min_value, input_html: {id: "#{item_id}_min", class: 'form-control validmin min-value validate-item', type: 'number', name: "#{item_id}_min_value", value: item[:min_value]}, required: (index == 0 ? false : true)
+        = f.input :max_value, input_html: {id: "#{item_id}_max",class: 'form-control validmax max-value validate-item', type: 'number', name: "#{item_id}_max_value", value: item[:max_value]}, required: (index == (class_count -1) ? false : true)
+        
+        label.string.required.control-label for="custom_breaks_color_scheme_color_#{item_id}"
+          abbr title="required"
+            '*
+          'color
+
+        .input-group.color-picker
+          = f.input :color, input_html: {class: 'form-control colorfield validate-item', id: "custom_breaks_color_scheme_color_#{item_id}", name: "color", value: item[:color]}, label: false
+          span.input-group-addon
+            i
+        div style='text-align: center;'
+          button.btn.btn-primary.text-center.custom-breaks-apply-button.apply-symbology type="button" style="margin: 5px;"
+            'Apply
+  div style='text-align: center;'
+    = render 'views/color_schemes/reset_symbology_button'
+  = render 'views/save_delete_symbology_buttons', symbology: symbology
+
+javascript:
+  $(document).ready(function() {
+    $('.custom-breaks-apply-button').off().on('click', function(e) {
+      var button = $(this);
+      var form = button.parents('form');
+      if(form.valid()) {
+        var viewId = form.find('input[name=view_id]').val();
+        var colorSchemes = [];
+        form.find('.custom-break').each(function(){
+          var minValue =  $(this).find('input.min-value').val();
+          var maxValue = $(this).find('input.max-value').val();
+          var label = minValue + ' - ' + maxValue;
+          
+          colorSchemes.push({
+            color: $(this).find('input[name=color]').val(),
+            min_value: parseFloat(minValue),
+            max_value: parseFloat(maxValue),
+            label: label
+          });
+
+          // update class label UI
+          if($(this).find('.collapse').prop('id') == button.parents('.custom-break .collapse').prop('id')) {
+            $(this).find('a').text(label);
+          }
+        });
+        var settings = {
+          subject: form.find('input[name=subject]').val(),
+          symbology_type: 'custom_breaks',
+          color_scheme: colorSchemes
+        };
+
+        gatewayMapApp.updateViewSymbology(viewId, settings);
+      }
+    });
+
+    $('.custom-breaks-symbology-form .save-as-symbology').off().on('click', function(e) {
+      var form = $(this).parents('form');
+      if(form.valid()) {
+        var colorSchemes = [];
+        form.find('.custom-break').each(function(){
+          var minValue =  $(this).find('input.min-value').val();
+          var maxValue = $(this).find('input.max-value').val();
+          var label = minValue + ' - ' + maxValue;
+          
+          colorSchemes.push({
+            color: $(this).find('input[name=color]').val(),
+            min_value: parseFloat(minValue),
+            max_value: parseFloat(maxValue),
+            label: label
+          });
+        });
+
+        var symData = {
+          base_symbology_id: form.find('input[name=symbology_id]').val(),
+          color_schemes: colorSchemes
+        }
+
+        showSymbologySaveAsDialog(symData);
+      }
+    });
+  });
+
+
+
+

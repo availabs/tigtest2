@@ -1,0 +1,57 @@
+- filter_form_id = "filter-form-#{@view.id}"
+= form_tag data_overlay_view_path, id: "#{filter_form_id}", method: :get, class: 'link-speed-fact-form', remote: true do
+  .form-group
+    = label_tag 'Year (*)'
+    = select_tag :year, options_for_select(@years, @current_year), required: true, class: 'form-control link-speed-fact-year'
+  .form-group
+    = label_tag 'Month (*)'
+    = select_tag :month, options_for_select(@months_table[@current_year] || [], @current_month), required: true, class: 'form-control link-speed-fact-month'
+  .form-group
+    = label_tag 'Day of Week (*)'
+    = select_tag :day_of_week, options_for_select(@days, @current_day), required: true, class: 'form-control'
+  .form-group
+    = label_tag 'Hour (*)'
+    = select_tag :hour, options_for_select(@hours, @current_hour), required: true, class: 'form-control'
+  .form-group
+    = label_tag 'Direction'
+    = select_tag :direction, options_for_select(Link::DIRECTIONS, @current_direction), required: false, class: 'form-control'
+
+  .form-group
+    = label_tag @view.statistic.caption
+    div style="padding-left:10px;"
+      input#lower.number_range_filter.input-sm.form-control.number-field name="lower" type="text" value="#{@lower}"
+      'to
+      input#upper.number_range_filter.input-sm.form-control.number-field name="upper" type="text" value="#{@upper}"
+
+  .form-group style='text-align:center;'
+    = submit_tag 'Filter', class: 'btn btn-primary'
+    
+= render partial: 'views/map_filters/form_callback', locals: {filter_container_id: filter_form_id, view_id: @view.id}
+
+= render partial: 'shared/numeric_only'
+
+javascript:
+  $(document).ready(function() {
+    $(".link-speed-fact-year").change(function () {
+      var year = $(this).val();
+      $(this).parents('form').find('.link-speed-fact-month').html(#{@month_options}[year]);
+    });
+
+    $("##{filter_form_id}").submit(function() {
+      if($("#hourSlider[data-view-id=#{@view.id}]").length > 0) {
+        var selectedHourOption = $(this).find('select[name=hour] option:selected');
+        if(selectedHourOption.length > 0) {
+          var hourLabel = selectedHourOption.text();
+          $('#currentHour').text(hourLabel);
+          
+          var hour = parseInt(selectedHourOption.val());
+          if(hour < 0) {
+            var midHoursPerPeriod = #{LinkSpeedFact::MID_HOURS_PER_PERIOD.to_json.html_safe};
+            hour = midHoursPerPeriod[hour];
+          }
+          $('#hourSlider').slider('setValue', hour);
+        }
+      }
+    });
+  });
+  

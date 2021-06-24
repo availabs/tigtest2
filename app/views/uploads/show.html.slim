@@ -1,0 +1,115 @@
+h2 = @upload.filename
+
+#show_upload.row
+  .col-md-12
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Data"
+    
+    .row
+      .col-md-2
+        .pull-right
+          b Size:
+      .col-md-10 
+        = number_to_human_size(@upload.size_in_bytes)
+    - if @upload.view
+      .row
+        .col-md-2
+          .pull-right
+            b View:
+        .col-md-10
+          = link_to @upload.view.name, view_path(@upload.view)
+      .row
+        .col-md-2
+          .pull-right
+            b Notes:
+        .col-md-10
+          = @upload.notes
+      - unless @upload.view.data_model.nil? || @upload.view.data_model.blank?
+        .row
+          .col-md-2
+            .pull-right
+              b Data Model:
+          .col-md-10
+            = @upload.view.data_model.name
+    - else
+      .row
+        .col-md-2
+          .pull-right
+            b Source:
+        .col-md-10
+          = link_to @upload.source.name, source_path(@upload.source)
+      .row
+        .col-md-2
+          .pull-right
+            b Notes:
+        .col-md-10
+          = @upload.notes
+      - if @upload.source.data_model.present?
+        .row
+          .col-md-2
+            .pull-right
+              b Data Model:
+          .col-md-10
+            = @upload.source.data_model.name
+    .row
+      .col-md-2
+        .pull-right
+          b Month/Year:
+      .col-md-10
+        = "#{@upload.month}#{@upload.month ? '/' : ''}#{@upload.year}#{@upload.to_year ? '-' : ''}#{@upload.to_year}"
+    .row
+      .col-md-2
+        .pull-right
+          b Upload by:
+      .col-md-10
+        = @upload.user.display_name.blank? ? @upload.user.bail : @upload.user.display_name
+    .row
+      .col-md-2
+        .pull-right
+          b Uploaded at:
+      .col-md-10
+        = @upload.created_at.strftime("%b %e, %Y %l:%M%P")
+    br
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Processing"
+      
+    .row
+      .col-md-2
+        .pull-right
+          b Status:
+      .col-md-10#status
+        = @upload.status
+    .row
+      .col-md-2
+        .pull-right
+          b Last updated:
+      .col-md-10#updated_at
+        = @upload.updated_at.strftime("%a %b %d %Y, %l:%M:%S %p")
+    - if @data_count
+      .row
+        .col-md-2
+          .pull-right
+            b Row Count:
+        .col-md-10
+          = number_with_delimiter(@data_count)
+    - if @has_action
+      #action
+        = render partial: 'uploads/action', 
+            locals: {name: @action_name, link: @action_link, remote: @remote}
+      br
+      .well#progress style="display:none"
+        .row
+          .col-xs-12
+            .progress-status.text-primary
+        .row
+          .col-xs-12
+            .progress.progress-striped.active
+              .progress-bar
+                .text-primary
+
+    - if @job
+      javascript:
+        #{ raw render partial: 'uploads/progress.js' }
+        

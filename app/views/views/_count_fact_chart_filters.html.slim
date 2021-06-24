@@ -1,0 +1,29 @@
+.col-md-12.count_fact_chart_filters
+  = form_tag view_path, method: :get, class: 'form-inline' do
+    .form-group.form-inline
+      = label_tag 'Year:'
+      '
+      = select_tag :year, options_for_select(@years, @current_year), required: true, class: 'form-control'
+    ' 
+    .form-group.form-inline
+      = label_tag 'Variable:'
+      '
+      = select_tag :chart_count_var, options_for_select(CountVariable.order(:name).pluck(:name, :id), @count_var), required: true, class: 'form-control'
+    ' 
+    .form-group.form-inline
+      = label_tag 'Mode:'
+      ' 
+      = select_tag :transit_mode, options_for_select(@transit_modes.unshift(['All', -1]), @current_mode), required: true, class: 'form-control'
+    ' 
+    .form-group.form-inline
+      = label_tag 'Direction:'
+      ' 
+      = select_tag :transit_direction, options_for_select(@transit_directions.unshift(['Both', '']), @current_direction), class: 'form-control'
+    ' 
+    .form-group.form-inline
+      = label_tag 'Sector:'
+      '
+      = select_tag :sector, options_for_select(Sector.order(:name).pluck(:name, :id).unshift(['All', '']), @sector), class: 'form-control'
+    ' 
+    .form-group.form-inline style='text-align:center;'
+      = submit_tag 'Filter', class: 'btn'

@@ -1,0 +1,44 @@
+- skip_counties = false if local_assigns[:skip_counties].nil?
+label
+  ' Area: 
+  span.dropdown
+    button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#" title="Select to filter records by area"
+      ' #{area_name}
+      b.caret
+      '
+    ul.dropdown-menu id="areaDropdown" role="menu" aria-labelledby="dLabel"
+      li
+        a href="?area_id=-1#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}"
+          ' All
+      li.divider
+      - regions.each do |region|
+        li class=('dropdown-submenu' unless skip_counties)
+          a href="?area_id=#{region.id}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+            = " #{region.name}"
+          - unless skip_counties
+            ul.dropdown-menu.inner-menu
+              - region.enclosed_areas.order(:name).each do |county|  
+                li
+                  a href="?area_id=#{county.id}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}"
+                    ' #{county.name} county
+      - if study_areas && study_areas.count > 0
+        li id='study-area-submenu' class='dropdown-submenu'
+          a href="#" onclick="return false;"
+            ' Study Area 
+          ul.dropdown-menu.inner-menu
+            - study_areas.each do |study_area|
+              li 
+                a href="?area_id=#{study_area.id}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                  = " #{study_area.name}"
+      li.divider
+      - subregions.each do |subregion|
+        li class=('dropdown-submenu'unless skip_counties)
+          a href="?area_id=#{subregion.id}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+            = " #{subregion.name}"
+          - unless skip_counties
+            ul.dropdown-menu.inner-menu
+              - subregion.enclosed_areas.order(:name).each do |county|  
+                li
+                  a href="?area_id=#{county.id}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}"
+                    ' #{county.name} county
+    '&nbsp;#{current_data_name}&nbsp;Data 

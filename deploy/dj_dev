@@ -1,0 +1,3 @@
+#!/bin/sh
+bin/delayed_job -i main restart
+bin/delayed_job -i uploads --queue=uploads restart

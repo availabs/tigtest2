@@ -1,0 +1,12 @@
+mkdir /etc/systemd/system/nginx.service.d
+printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > /etc/systemd/system/nginx.service.d/override.conf
+systemctl daemon-reload
+systemctl restart nginx 
+
+ps aux | grep puma
+kill 24207
+kill 24216
+mkdir -p tmp/pids tmp/sockets
+rake assets:precompile
+bundle exec puma -C config/puma.rb
+sh deploy/restart

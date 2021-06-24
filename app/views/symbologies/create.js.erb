@@ -1,0 +1,13 @@
+$('#symbologySaveAsDialog').modal('hide');
+<% if @new_sym.errors.any? %>
+  show_alert("<%= @new_sym.errors.full_messages.join(';') %>");  
+<% else %>
+  show_alert('New symbology has been created.', 'info');
+  var viewLayer = gatewayMapApp.getViewLayer(<%= @new_sym.view.id %>);
+  if(viewLayer) {
+    var newSym = <%= @new_sym.to_json.html_safe %>;
+    viewLayer.addSymbology(newSym);
+    viewLayer.updateViewSymbology(newSym);
+    viewLayer.renderSymbologyPanel();
+  }
+<% end %>

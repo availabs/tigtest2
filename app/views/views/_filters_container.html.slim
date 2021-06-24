@@ -1,0 +1,9 @@
+h4
+  = "Filters"
+#filterContainer.panel-group role="tablist" aria-multiselectable="true"
+  - first_view_id = views[0].id if views.size > 0
+  - (views || []).each do |view|
+    = render partial: 'filter_panel', locals: {view: view}
+javascript:
+  if("#{first_view_id}")
+    $("#filter-collapse-#{first_view_id}").collapse('show');

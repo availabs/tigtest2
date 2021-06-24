@@ -1,0 +1,83 @@
+/ handle array params
+- if @symbology_subject == symbology.subject && @color_scheme
+  - color_schemes = []
+  - @color_scheme.each do | k, v|
+    - color_schemes << v
+- else
+  - color_schemes = symbology.unique_value_color_schemes.order(:label).select(:color, :value, :label)
+= simple_form_for :unique_value_color_scheme, html: {action: '#', class:'unique-values-symbology-form symbology-form form-horizontal'} do |f|
+  = f.hidden_field :symbology_id, name: 'symbology_id', value: symbology.id
+  = f.hidden_field :view_id, name: 'view_id', value: symbology.view.id
+  = f.hidden_field :subject, name: 'subject', value: symbology.subject
+  - class_count = color_schemes.size
+
+  - color_schemes.each_with_index do | item, index|        
+    - item_id = "view-#{symbology.view.id}-#{index}"
+    fieldset.unique-value
+      label.string.required.control-label for="unique_value_color_scheme_color_#{item_id}"
+        abbr title="required"
+          '*
+        '#{item[:value]}
+
+      .input-group.color-picker
+        = f.input :color, input_html: { data: { "unique-value": "#{item[:value]}", "unique-label": "#{item[:label]}"}, class: 'form-control colorfield validate-item', id: "unique_value_color_scheme_color_#{item_id}", name: "color", value: item[:color] }, label: false
+        span.input-group-addon
+          i
+  div style='text-align: center;'
+    button.btn.btn-primary.text-center.unique-values-apply-button.apply-symbology  type="button" style="margin: 5px;"
+      'Apply
+    = render 'views/color_schemes/reset_symbology_button'
+
+  = render 'views/save_delete_symbology_buttons', symbology: symbology
+javascript:
+  $(document).ready(function() {
+    $('.unique-values-apply-button').off().on('click', function(e) {
+      var button = $(this);
+      var form = button.parents('form');
+      if(form.valid()) {
+        var viewId = form.find('input[name=view_id]').val();
+        var colorSchemes = [];
+        form.find('.unique-value').each(function(){
+          var colorField = $(this).find('input[name=color]');
+          colorSchemes.push({
+            color: colorField.val(),
+            value: colorField.attr('data-unique-value'),
+            label: colorField.attr('data-unique-label')
+          });
+        });
+        var settings = {
+          subject: form.find('input[name=subject]').val(),
+          symbology_type: 'unique_values',
+          color_scheme: colorSchemes
+        };
+
+        gatewayMapApp.updateViewSymbology(viewId, settings);
+      }
+    });
+
+    $('.unique-values-symbology-form .save-as-symbology').off().on('click', function(e) {
+      var form = $(this).parents('form');
+      if(form.valid()) {
+        var colorSchemes = [];
+        form.find('.unique-value').each(function(){
+          var colorField = $(this).find('input[name=color]');
+          colorSchemes.push({
+            color: colorField.val(),
+            value: colorField.attr('data-unique-value'),
+            label: colorField.attr('data-unique-label')
+          });
+        });
+
+        var symData = {
+          base_symbology_id: form.find('input[name=symbology_id]').val(),
+          color_schemes: colorSchemes
+        }
+
+        showSymbologySaveAsDialog(symData);
+      }
+    });
+  });
+
+
+
+

@@ -1,0 +1,323 @@
+/* See http://stackoverflow.com/questions/25227622/error-with-javascript-enabled-tests-bootstrap-3-rails-4-travis-ci
+* second answer */
+$icon-font-path: "bootstrap/";
+@import "bootstrap-sprockets";
+@import "bootstrap";
+@import 'jquery.dataTables.yadcf';
+@import "jquery-ui/autocomplete";
+@import "jquery-ui/datepicker";
+@import "font-awesome";
+@import "dataTables/bootstrap/3/jquery.dataTables.bootstrap";
+@import "leaflet";
+@import "leaflet.draw";
+@import "mapping/leaflet.label";
+@import "mapping/leaflet.fullscreen";
+@import "mapping/leaflet.sidebar";
+@import "mapping/leaflet.navbar";
+@import "mapping/map";
+@import "L.Control.Zoomslider";
+@import "bootstrap-slider";
+@import "dataTables.colVis";
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700);
+@import 'bootstrap-datetimepicker';
+@import 'bootstrap-multiselect';
+@import 'selectize';
+@import 'selectize.bootstrap3';
+@import "*";
+
+.content {
+  background-color: #eee;
+  padding: 20px;
+  margin: 0 -20px; /* negative indent the amount of the padding to maintain the grid system */
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
+.unstyled {
+  list-style: none;
+}
+
+.no-padding { padding: 0; }
+.no-top-margin { margin-top: 0; }
+.no-bottom-margin { margin-bottom: 0; }
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu>.dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+    margin-left: -1px;
+    -webkit-border-radius: 0 6px 6px 6px;
+    -moz-border-radius: 0 6px 6px;
+    border-radius: 0 6px 6px 6px;
+}
+
+.dropdown-submenu:hover>.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu>a:after {
+    display: block;
+    content: " ";
+    float: right;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px 0 5px 5px;
+    border-left-color: #ccc;
+    margin-top: 5px;
+    margin-right: -10px;
+}
+
+.dropdown-submenu:hover>a:after {
+    border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+    float: none;
+}
+
+.dropdown-submenu.pull-left>.dropdown-menu {
+    left: -100%;
+    margin-left: 10px;
+    -webkit-border-radius: 6px 0 6px 6px;
+    -moz-border-radius: 6px 0 6px 6px;
+    border-radius: 6px 0 6px 6px;
+}
+
+.footer {
+  height: 20px;
+}
+
+/* override bootstrap tooltip default styles*/
+body .tooltip-inner {
+  width: auto;
+  max-width: 40em;
+  text-align: left;
+  padding: 15px 8px 8px 8px;
+
+  .media .media-body {
+    width: auto;
+  }
+}
+body .tooltip.in {
+  opacity: 1;
+  filter: alpha(opacity=100);
+}
+
+.nav > li > a.comment-bubble {
+  display: inline;
+  padding: 0;
+}
+
+.comment-bubble {
+  color: black !important;
+}
+
+.nav-list.tree .btn-link {
+  font-size: 1em;
+  padding-bottom: 0;
+  padding-top: 0;
+  padding-left: 0;
+  display: inline;
+  line-height: 1;
+  &:hover, &:focus {
+    background-color: white;
+  }
+}
+
+.hide-me {
+  display: none;
+}
+
+.fa.fa-expand,
+.fa.fa-compress,
+.fa.fa-comments,
+.fa.fa-asterisk {
+  font-size: 1.25em;
+}
+
+.treeview {
+  border-bottom: 2px solid #679D89;
+  margin-bottom: 1em;
+}
+
+.expand-all-sources a {
+  padding-right: 1em;
+}
+
+.display-toggle.text-right {
+  margin-bottom: 1em;
+  & a {
+    font-size: 1em;
+  }
+}
+
+a {
+ cursor: pointer;
+}
+
+.recent_activity,
+.snapshot,
+ul .source-wrapper {
+  min-height: 3em;
+  border-top: 1px solid grey;
+  padding: 1em 0 !important;
+}
+
+ul#bonsai-me2 .source-wrapper {
+  min-height: 3em;
+  border-top: 1px solid grey;
+  padding: 1em 0 !important;
+}
+
+.comment_icon {
+  background-image: image-url("comment_icon.svg");
+  background-repeat: no-repeat;
+  height: 30px;
+  width: 30px;
+  display: inline-block;
+  text-align: center;
+  p { margin-top: 0.45em; }
+}
+
+.view_comment {
+  @extend .comment_icon;
+  height: 20px;
+  width: 20px;
+  p { 
+    margin-top: 0.05em;
+    font-size: 11px;
+  }
+}
+
+p.close_set_paragraph {
+  margin-top: -10px;
+}
+
+#tableControls button:not(:first-of-type) {
+  margin-right: 5px;
+}
+
+ul#contributors,
+ul#source_views {
+  margin-bottom: 0;
+}
+
+.source-name {
+  display: inline-block;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.well-special {
+  background-color: #EEEEEE !important;
+  border-top: 4px solid #679D89;
+}
+
+#viewToggle {
+  margin-bottom: 1em;
+}
+
+@media screen and (max-height: 740px) {
+  ul.ColVis_collection {
+    height: 25em;
+    overflow-y: scroll;
+  }
+}
+
+.printable, .printable * {
+  display: none;
+}
+
+.break-before {
+  page-break-before: always;
+}
+
+@media print {
+  .printable, .printable * {
+    display: block;
+  }
+
+  .dont-print, .dont-print * {
+    display: none !important;
+  }
+
+  a:link:after, a:visited:after {
+    content: ''
+  }
+
+  .card { margin-top: 1em; }
+
+  .transformed-label { 
+    padding-bottom: 2em;
+    -webkit-transform: none;
+    -ms-transform: none;
+    transform: none;
+  }
+}
+
+// HACK: Overrides for column filters
+#yadcf-filter--rtp_project-0,
+#yadcf-filter--rtp_project-1,
+#yadcf-filter--rtp_project-7 {
+    max-width: 100px !important;
+}
+#yadcf-filter--rtp_project-6 {
+    max-width: 120px !important;
+}
+
+#yadcf-filter--upwp_related_contract-0,
+#yadcf-filter--upwp_related_contract-1,
+#yadcf-filter--upwp_related_contract-2,
+#yadcf-filter--upwp_related_contract-3 {
+  max-width: 100px;
+}
+
+#yadcf-filter--upwp_project-0,
+#yadcf-filter--upwp_project-1,
+#yadcf-filter--upwp_project-5,
+#yadcf-filter--upwp_project-10 {
+  max-width: 100px;
+}
+
+#yadcf-filter--upwp_project-3,
+#yadcf-filter--upwp_project-4 {
+  max-width: 120px;
+}
+
+
+#layer_count {
+  font-weight: bold;
+}
+
+.loaded-source-title {
+  font-weight: bold;
+}
+
+.breadcrumb_link .breadcrumb-menu {
+  z-index: 10000;
+}
+
+.slider.slider-horizontal {
+  @media (min-width: 992px) { width: 540px !important; }
+  @media(min-width:768px) and (max-width:991px) { width: 360px !important; }
+  @media(max-width:767px) { width: 250px !important;}
+}
+
+.count_fact_chart_filters select {
+  max-width: 250px;
+}
+
+.show-link a {
+  color:#0000EE;
+  text-decoration: underline;
+}

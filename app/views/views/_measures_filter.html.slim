@@ -1,0 +1,24 @@
+div class="#{has_range_filter ? 'col-md-10' : 'col-md-6'}"
+  = form_tag view_path, method: :get, class: 'form-inline' do
+    .form-group.form-inline
+      = label_tag 'Time Period:'
+      ' 
+      = select_tag :period, options_for_select(@periods, @current_period), required: true, class: 'form-control'
+    ' 
+    .form-group.form-inline
+      = label_tag 'Functional Class:'
+      ' 
+      = select_tag :functional_class, options_for_select(@classes, @current_class), required: true, class: 'form-control'
+    '
+    - if has_range_filter
+      - columns = (@view.value_columns || []).collect {|col| [@view.column_label(col), col]}
+      '
+      = label_tag 'Column:'
+      = select_tag :value_column, options_for_select(columns, @current_value_column), required: true, class: 'form-control value-column-filter'
+      'from
+      input#lower.number_range_filter.input-sm.number-field name="lower" type="text" value="#{@lower}"
+      'to
+      input#upper.number_range_filter.input-sm.number-field name="upper" type="text" value="#{@upper}" 
+    '
+    .form-group.form-inline style='text-align:center;'
+      = submit_tag 'Filter', class: 'btn', title: "Click to apply updated filters"

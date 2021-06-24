@@ -1,0 +1,59 @@
+- view = nil if !view
+- app = nil if !app
+- viewable = []
+- existing = Snapshot.where(user: current_user, view: view, app: app)
+- Snapshot.includes(:viewers).all.each{ |s| viewable << s if (s.viewers.include?(current_user) || s.published == true) && (s.view == view) && (Snapshot.apps[s.app] == app) }
+- existing += viewable
+- existing = existing.uniq
+- if current_user && existing
+  - @count = existing.count
+  - if @count > 0
+
+    a.snapshots-test href="#existingSnapshotsModal" data-toggle="modal" style="margin-right:15px;"
+      i class="fa fa-asterisk" style="padding:2px;"
+      sup= @count
+
+    #existingSnapshotsModal.modal.fade tabindex="-1" role="dialog" aria-labelledby="testlabel" aria-hidden="true"
+      .modal-dialog
+        .modal-content.well.well-sm.well-special
+          .modal-body
+            .row
+              h3.modal-title.col-xs-6
+                strong Existing Snapshots
+              .pull-right.col-xs-6
+                button.close type="button" data-dismiss="modal" style="opacity:1;"
+                  span
+                    i.fa.fa-close style="color:#679D89;"
+            ul
+              - existing.each do |snapshot|
+                li style="#{'margin:1em 0; border-right:2px solid black;' if params[:snapshot] && params[:snapshot].to_i == snapshot.id}"
+                  - if snapshot.user == current_user
+                    = link_to snapshot_path(snapshot), :title => "#{snapshot.description}" do
+                      em= "#{snapshot.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                      strong= "You "
+                      - if snapshot.published?
+                        = "published '#{snapshot.name}' "
+                      - elsif !snapshot.viewers.empty?
+                        = "shared '#{snapshot.name}' with #{pluralize(snapshot.viewers.count, 'user')} "
+                      - else
+                        = "updated '#{snapshot.name}' "
+                    = link_to edit_snapshot_path(snapshot), :class => "#{snapshot.id.to_s + '-shared-with' if !snapshot.viewers.nil?}" do
+                      em= "(#{snapshot.published? ? 'Published' : (snapshot.viewers.empty? ? 'Unshared' : 'Shared')})"
+                    - if params[:snapshot] && params[:snapshot].to_i == snapshot.id
+                      = " | "
+                      = link_to "#", class: "update_snapshot" do
+                        em= "Update with Current App"
+
+                  - elsif snapshot.viewers.include?(current_user)
+                    = link_to snapshot_path(snapshot), :title => "#{snapshot.description}" do
+                      em= "#{snapshot.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                      strong= "#{snapshot.user.display_name.nil? ? snapshot.user.email : snapshot.user.display_name} "
+                      = "shared '#{snapshot.name}'"
+
+                  - else
+                    = link_to snapshot_path(snapshot), :title => "#{snapshot.description}" do
+                      em= "#{snapshot.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                      strong= "#{snapshot.user.display_name.nil? ? snapshot.user.email : snapshot.user.display_name} "
+                      = "published '#{snapshot.name}'"
+                  javascript:
+                    $("a.#{snapshot.id}-shared-with").tooltip({title: "#{snapshot.viewers.map{|u| u.display_name.nil? ? u.email : u.display_name}.join(", ")}"});

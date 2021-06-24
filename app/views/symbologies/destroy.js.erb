@@ -1,0 +1,11 @@
+<% if @sym.errors.any? %>
+  show_alert("<%= @sym.errors.full_messages.join(';') %>");  
+<% else %>
+  show_alert('Symbology has been deleted.', 'info');
+  var viewLayer = gatewayMapApp.getViewLayer(<%= @sym.view.id %>);
+  if(viewLayer) {
+    var symSubject = "<%= @sym.subject %>";
+    viewLayer.deleteSymbology(symSubject);
+    viewLayer.renderSymbologyPanel();
+  }
+<% end %>

@@ -1,0 +1,4 @@
+= render partial: 'source_info_row', locals: {source: source}
+
+- (current_user.nil? ? AccessControl.viewable_views(current_user, source) : (current_user.has_role?(:admin) ? source.views.order(:name) : AccessControl.viewable_views(current_user, source))).each do |view|
+  = render partial: 'view_info_row', locals: {view: view}

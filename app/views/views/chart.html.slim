@@ -1,0 +1,304 @@
+ruby:  
+  title = if @view.data_model == ComparativeFact || @view.data_model == PerformanceMeasuresFact 
+    "#{@view.name} : #{@measures[@aggregate_by]}"
+  else
+    "#{@view.name} : #{@caption}"
+  end
+- is_count_fact_model = @view.data_model == CountFact
+- @export_title = title 
+- @export_title += " (#{@filter_string})" unless @filter_string.blank?
+
+.row
+  .col-md-12
+    h4 
+      = "#{title}"
+    .row
+      - if @has_area_dropdown
+        .col-md-3
+          = render partial: 'layouts/area_dropdown', locals: {area_name: @area_name, regions: @regions, subregions: @subregions, current_data_name: @current_data_name, skip_counties: true, study_areas: @study_areas}
+      - if @area_aggregation_enabled
+        .col-md-3
+          label
+            ' Summarize to: 
+            span.dropdown
+              button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#"
+                ' #{@aggregate_to[0]}
+                b.caret
+                '
+              ul.dropdown-menu id="aggregateDropdown" role="menu" aria-labelledby="dLabel"
+                - @aggregates.each do |aggregate|
+                  li
+                    a href="?aggregate_to=#{aggregate[1]}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                      = " #{aggregate[0]}"
+      .col-md-2
+        label
+          ' Chart type: 
+          span.dropdown
+            button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#"
+              ' #{@chart_type}
+              b.caret
+              '
+            ul.dropdown-menu id="chartTypeDropdown" role="menu" aria-labelledby="dLabel"
+              - @chart_types.each do |chart_type|
+                - next if chart_type == 'PieChart' && @show_percentage
+                li
+                  a href="?chart_type=#{chart_type}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                    = " #{chart_type}"
+      - unless @hide_aggregation
+        .col-md-2
+          label
+           ' Aggregation: 
+           span.dropdown
+             button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#" class="#{@agg_function ? '' : 'disabled'}"
+               ' #{@agg_function || 'None'}
+               b.caret
+               '
+             ul.dropdown-menu id="aggFunctionDropdown" role="menu" aria-labelledby="dLabel"
+               - @agg_functions.each do |agg_function|
+                 li
+                   a href="?agg_function=#{agg_function}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                     = " #{agg_function}"
+      - if is_count_fact_model
+        .col-md-3
+          label
+            ' Series:
+            span.dropdown
+              button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#"
+                ' #{@chart_series[@current_series]}
+                b.caret
+                '
+              ul.dropdown-menu id="seriesDropdown" role="menu" aria-labelledby="dLabel"
+                - @chart_series.each do |k, v|
+                  li
+                    a href="?series=#{k}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                      = " #{v}"  
+      - if @chart_type == 'BarChart'
+        .col-md-2
+          label title='The data will be displayed starting from zero'
+            ' Zero baseline?
+            input#baseline type="checkbox"
+
+.row.col-md-12#sourceFilter
+  - if @speed_fact_filters.size > 0
+      = render partial: 'speed_filter', locals: {view_path: chart_view_path}
+  - if @include_time_slider
+    - slider_val = params[:snapshot] ? Snapshot.find(params[:snapshot]).filters[:slider_value] : @slider_value
+    = render partial: 'timeslider_nojs', locals: {min: @slider_min, max: @slider_max, value: slider_val, values: @slider_values, units_label: @units_label, format_string: @format, offset: @offset}  
+  - if @perf_measure_filters.size > 0
+    .row
+      = render partial: 'measures_filter', locals: {view_path: chart_view_path, has_range_filter: false}
+      .col-md-3
+        label
+          ' Performance Measure:
+          span.dropdown
+            button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#"
+              ' #{@measures[@aggregate_by]}
+              b.caret
+              '
+            ul.dropdown-menu id="aggregateByDropdown" role="menu" aria-labelledby="dLabel"
+              - @measures.each do |k, v|
+                li
+                  a href="?aggregate_by=#{k}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                    = " #{v}"
+  - if @view.data_model == ComparativeFact
+    .row
+      .col-md-3
+        label
+          ' Column: 
+          span.dropdown
+           button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#"
+             ' #{@measures[@aggregate_by]}
+             b.caret
+             '
+           ul.dropdown-menu id="columnDropdown" role="menu" aria-labelledby="dLabel"
+            - @measures.each do |k, v|
+              - next if (k == :percent && @chart_type == 'PieChart')
+              - agg_function = k == :percent ? 'Average' : 'Sum'
+              li
+                a href="?aggregate_by=#{k}&agg_function=#{agg_function}#{('&snapshot=' + params[:snapshot]) if params[:snapshot]}" 
+                  = " #{v}"
+  - if is_count_fact_model
+    .row
+      = render partial: 'count_fact_chart_filters', locals: {view_path: chart_view_path}      
+
+.row
+  #chart.col-md-12
+
+javascript:
+  var spinner = new Spinner().spin(document.getElementById('chart'));;
+
+= javascript_include_tag "https://www.google.com/jsapi"
+
+javascript:
+  var pageDataTable;
+  var formatter;
+  var chart;
+  var options = #{@options};
+  google.load('visualization','1', {packages: ['corechart'], callback: setup_chart});
+  function setup_chart() {
+    spinner.spin(document.getElementById('chart'));
+    $.ajax({
+          url: "chart.json?time=" + "#{slider_val}",
+          dataType:"json",
+          success: function(data, status, jqXhr) {
+            draw_chart(data);
+          }
+          });
+    if(#{@show_percentage || false}) {
+      formatter = new google.visualization.NumberFormat({pattern:'#,###.##%'});
+    } else {
+      formatter = new google.visualization.NumberFormat({fractionDigits: #{@fraction_digits}});
+    }
+    chart = new google.visualization.#{@chart_type}(document.getElementById('chart'));
+  };
+
+  function draw_chart(response) {
+    pageDataTable = new google.visualization.DataTable(response);
+    for (i = 0; i < pageDataTable.getNumberOfColumns(); i++) {
+      formatter.format(pageDataTable, i);
+    }
+    chart.draw(pageDataTable, options);
+    spinner.stop();
+  };
+
+  if($('#timeSlider').length > 0) {
+    $('#timeSlider').slider(#{@slider_formatter})
+    .on('slideStop', function(ev){
+      $('#timeSlider').attr('data-slider-value', ev.value);
+      checkForChartSliderChange(ev.value);
+      spinner.spin(document.getElementById('chart'));
+      $.ajax({
+        url: "chart.json?time=" + ev.value 
+      })
+      .done(function(data){
+        // chart.draw(pageDataTable, options);
+        draw_chart(data);
+        if ('#{@units_label}' == 'Hour') {
+          $('#current').text($.formatNumber(ev.value + #{@offset}, {format:'00', locale:'us'}) + ':00');
+        } else {
+          $('#current').text(ev.value);
+        }
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ){
+        alert(textStatus);
+      });
+    });
+  }
+
+  $('input[type="checkbox"]').on('change', function(){
+    if($(this).prop("checked")) {
+      options['hAxis']['baseline'] = 0;
+    } else {
+      options['hAxis']['baseline'] = null;
+    }
+    chart.draw(pageDataTable, options);
+  });
+
+javascript:
+  $(function() {
+    $(window).resize(function(){
+      chart.draw(pageDataTable, options);
+     });   
+
+    $('#exportChart').on('click', function() {
+      options["title"] = "#{@export_title}";
+      chart.draw(pageDataTable, options);
+      var imageStr = chart.getImageURI();
+      options["title"] = null;
+      chart.draw(pageDataTable, options);
+      download(imageStr, "#{title.parameterize}.png", "image/png");
+    });
+
+    // convert google visulization datatable to csv string
+    function dataTableToCSV(dataTable_arg) {
+      var dt_cols = dataTable_arg.getNumberOfColumns();
+      var dt_rows = dataTable_arg.getNumberOfRows();
+      
+      var csv_cols = [];
+      var csv_out = '"' + "#{@export_title}" + '"' + "\r\n";
+      
+      // Iterate columns
+      for (var i=0; i<dt_cols; i++) {
+          // Replace any commas in column labels
+          csv_cols.push(dataTable_arg.getColumnLabel(i).replace(/,/g,""));
+      }
+      
+      // Create column row of CSV
+      csv_out += csv_cols.join(",")+"\r\n";
+      
+      // Iterate rows
+      for (i=0; i<dt_rows; i++) {
+          var raw_col = [];
+          for (var j=0; j<dt_cols; j++) {
+              // Replace any commas in row values
+              raw_col.push(dataTable_arg.getFormattedValue(i, j, 'label').replace(/,/g,""));
+          }
+          // Add row to CSV text
+          csv_out += raw_col.join(",")+"\r\n";
+      }
+
+      return csv_out;
+    }
+
+    $('#exportChartToCSV').on('click', function() {
+      var csvFormattedDataTable = dataTableToCSV(pageDataTable);
+      var encodedUri = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csvFormattedDataTable);
+      console.log(navigator.msSaveBlob, 'is it real?')
+      if (navigator.msSaveBlob) { // IE 10+
+        var blob = new Blob( [csvFormattedDataTable], { type: "text/csv" } );
+        navigator.msSaveBlob(blob, "#{title.parameterize}.csv")
+        
+      } else {
+        this.href = encodedUri;
+        this.download = "#{title.parameterize}.csv";
+        this.target = '_blank';
+      }
+    });
+  });
+
+- if user_signed_in?
+  javascript:
+    $('#snapshotModal').delegate('#save_snap', 'click', function(){
+      $.ajax({
+        type: "POST",
+        url: '/snapshots',
+        data: {snapshot: 
+                { 'user_id': #{current_user.id},
+                  'view_id': $('#snapshot_view_id').val(),
+                  'area_id': $('#snapshot_area_id').val(),
+                  'app': window.location.pathname.split("/").splice(-1)[0],
+                  'name': $('#snapshot_name').val(),
+                  'description': $('#snapshot_description').val(),
+                  'range_high': $('#snapshot_range_high').val(),
+                  'range_low': $('#snapshot_range_low').val(),
+                  'filters': $('#snapshot_filters').val(),
+                  'published': $('#snapshot_published').prop('checked'),
+                  'viewer_ids': $('#snapshot_viewers').val()
+                }
+              },
+        success: function () {
+          fadeModal('snapshotModal', 'Snapshot', false);
+        },
+        dataType: 'json'
+      });
+    });
+
+    $('.update_snapshot').click(function(){
+      $.ajax({
+        type: "PUT",
+        url: '/snapshots/#{params[:snapshot]}',
+        data: {snapshot:
+                { 'view_id': $('#snapshot_view_id').val(),
+                  'area_id': $('#snapshot_area_id').val(),
+                  'app': window.location.pathname.split("/").splice(-1)[0],
+                  'range_high': $('#snapshot_range_high').val(),
+                  'range_low': $('#snapshot_range_low').val(),
+                  'filters': $('#snapshot_filters').val()
+                }
+              },
+        success: function () {
+          fadeModal('existingSnapshotsModal', 'Snapshot', true);
+        },
+        dataType: 'json'
+      });
+    });

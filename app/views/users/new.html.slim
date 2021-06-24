@@ -1,0 +1,35 @@
+.col-xs-12.no-padding
+  = simple_form_for(@user, :url => users_path, :html => { :method => :post, :class => 'form-vertical' }) do |f|
+    = f.error_notification
+    = display_base_errors @user
+
+    .col-md-8.col-md-offset-2.well.well-special
+      h1.text-center style="margin-top:0;"
+        strong= @agency.name
+      h2.text-center style="margin-top:0;"
+        strong New User
+
+      .col-md-8.col-md-offset-2
+        = f.hidden_field :agency_id, value: @agency.id
+        = f.input :display_name, :autofocus => true, :label => "Name", input_html: {class: 'form-control'}
+        = f.input :email, :required => true, input_html: {class: 'form-control'}
+        = f.input :phone, input_html: {class: 'form-control'}
+        = f.input :role_ids, :collection => (params[:agency] ? ( current_user.has_role?(:admin) ? Role.order(:name) : Role.order(:name).reject{|r| r.name == "admin" }) : Role.order(:name)), :as => :check_boxes, :label_method => lambda {|t| t.name == "admin" ? "System Admin" : t.name.titleize}, :label => "Roles", :item_wrapper_class => 'radio-inline col-md-4', checked: Role.find_by(name: "agency_user").id
+        = f.input :password, :autocomplete => "off", :required => true, input_html: {class: 'form-control'}
+        = f.input :password_confirmation, :required => true, input_html: {class: 'form-control'}
+      
+    .col-md-8.col-md-offset-2.actions style="padding:0;"
+      = f.button :submit, 'Save', :class => 'btn btn-primary'
+      = link_to 'Cancel', :back
+
+css:
+  .control-label { margin-top: 5px; }
+  .btn[type=submit] { margin-right: 5px; }
+  .user_role_ids .controls .checkbox.radio-inline {
+    padding-left: 0;
+    margin-bottom: 5px;
+    vertical-align: baseline;
+  }
+javascript:
+  $('.user_role_ids .controls').addClass('col-xs-12').css('padding', 0);
+  $("#user_role_ids_#{Role.find_by(name: "agency_user").id}").attr('disabled', true);

@@ -1,0 +1,61 @@
+- @action_icons = {map: 'fa-map-marker', table: 'fa-th', chart: 'fa-signal', download: 'fa-download', watch: 'fa-eye', edit_metadata: 'fa-wrench', view_metadata: 'fa-info-circle', update: 'fa-upload', add_comment: 'fa-comment', delete: 'fa-trash-o', upload: 'fa-upload', copy: 'fa-copy'}
+
+- @action_titles = {map: "Visualize this data on a map", table: "Visualize this data in a table", chart: "Visualize this data in a chart", watch: "Alert me when activity happens on this View", edit_metadata: "Edit a selection of fields that describe a View's contents and origin", view_metadata: "View a selection of fields that describe a View's contents and origin", add_comment: "Post a comment", delete: "Delete data from the Gateway", upload: "Upload data to the Gateway", copy: "Duplicate this data", access_controls: "Control who can view, download, or comment on a Source or View"}
+
+p
+  = @view ? @view.name : ''
+
+- filter_actions(current_user, @view).each do |name|
+  - @class = ''
+  - if @view && @view.has_action?(name)
+    
+    - if name == "edit_metadata"
+      - if user_signed_in?
+        li class="#{@class}" style="margin-bottom:10px;"
+          - if @contributor
+            = action_item @action_icons[name.to_sym], name, @view, nil, 'contributor', @action_titles[:edit_metadata]
+          - elsif @librarian
+            = action_item @action_icons[name.to_sym], name, @view, nil, 'librarian', @action_titles[:edit_metadata]
+          - elsif current_user.has_role?(:agency_admin) && !current_user.has_role?(:admin) && !(@librarian || @contributor)
+            = action_item @action_icons[name.to_sym], name, @view, nil, 'agency_admin', @action_titles[:edit_metadata]
+          - elsif current_user.has_role?(:admin) && !(@librarian || @contributor)
+            = action_item @action_icons[name.to_sym], name, @view, nil, 'admin', @action_titles[:edit_metadata]
+    
+    - elsif name == "upload"
+      li class="#{@class}" style="margin-bottom:10px;"
+        = action_item @action_icons[name.to_sym], name, @view, 'upload', nil, @action_titles[:upload] 
+    
+    - elsif name == "copy"
+      li class="#{@class}" style="margin-bottom:10px;"
+        - if @contributor
+          = action_item @action_icons[name.to_sym], name, @view, 'copy', 'contributor', @action_titles[:copy]
+        - elsif @librarian
+          = action_item @action_icons[name.to_sym], name, @view, 'copy', 'librarian', @action_titles[:copy]
+        - elsif current_user.has_role?(:admin) && !(@librarian || @contributor)
+          = action_item @action_icons[name.to_sym], name, @view, 'copy', 'admin', @action_titles[:copy]
+
+    - else 
+      li class="#{@class}" style="margin-bottom:10px;"
+          = action_item @action_icons[name.to_sym], name, @view, nil, @action_titles[name.to_sym]
+
+- if @user_can_use_access_controls
+  li style="margin-bottom:10px;"
+    = action_item @action_icons[:edit_metadata], 'access controls', @view, 'access', nil, @action_titles[:access_controls]
+
+- if @user_can_comment
+  li style="margin-bottom:10px;"
+    = action_item @action_icons[:add_comment], 'Add comment', @view, 'add_comment', nil, @action_titles[:add_comment]
+
+- if @user_can_delete
+  - @class = '' # @view ? '' : 'disabled'
+  li class="#{@class}" style="margin-bottom:10px;"
+    = action_item @action_icons[:delete], 'Delete', @view, 'delete', nil, @action_titles[:delete]
+
+- if @view && current_user
+  javascript:
+    if ( #{!current_user.watches.find_by(view_id: @view.id).nil?} && $('#actionsMenu a[href*=watch]').length > 0 ) {
+      newUrl = $('#actionsMenu a[href*=watch]').attr('href').replace(/(watch)/, 'unwatch');
+      $('#actionsMenu a[href*=watch]')
+        .html("<i class='fa fa-eye-slash'></i> Unwatch")
+        .attr('href', newUrl)
+    }

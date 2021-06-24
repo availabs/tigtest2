@@ -1,0 +1,58 @@
+table.table.table-condensed.table-hover.table-bordered.table-striped.uploads-table#datatable
+  thead
+    tr
+      th Download File
+      th Size
+      th Status
+      th View
+      th Source
+      th Notes
+      th Month/Year
+      th Uploaded by
+      th Updated at
+  tbody
+    - uploads.reorder(updated_at: :desc).each do |upload|
+      - upload_status = upload.status
+      - if current_user.has_role?(:admin) || (upload.view && AccessControl.viewable_views(current_user, upload.view.source).include?(upload.view)) || (upload.source && AccessControl.viewable_sources(current_user).include?(upload.source))
+        tr
+          td.col-md-2
+            = link_to "#{upload.filename}", upload_file_public_url(upload)
+          td.col-md-1
+            = "#{number_to_human_size(upload.size_in_bytes)}"
+          td.col-md-1
+            - if ( upload.view && can_process_uploads(current_user, upload.view) ) || ( upload.source && can_process_uploads(current_user, upload.source) )
+              = upload.status == "unavailable" ? upload.status : link_to(upload.status, upload_path(upload), title: 'show upload')
+            - else
+              = upload_status == "help_doc" ? "Process" : upload_status.capitalize
+
+            - unless ["unavailable", "help_doc"].include?(upload_status)
+              br
+              = link_to upload_button_text(upload).first, upload_button_text(upload).last, class: 'btn btn-primary', remote: upload_button_text(upload).second, data: {confirm: "Are you sure?"}
+          
+          - if upload.view
+            td.col-md-2= link_to(upload.view.name, view_path(upload.view)) 
+            td.col-md-2= link_to(upload.view.source.name, source_path(upload.view.source)) 
+          - elsif upload.source
+            td.col-md-2= "N/A"
+            td.col-md-2= link_to(upload.source.name, source_path(upload.source))
+          - else
+            td.col-md-2= "N/A"
+            td.col-md-2= "N/A"
+          td.col-md-2= upload.notes.truncate(100)
+          td.col-md-1= "#{upload.month}#{upload.month ? '/' : ''}#{upload.year}#{upload.to_year ? '-' : ''}#{upload.to_year}"
+          td.col-md-1= user_name_or_email(upload.user)
+          td.col-md-1
+            span style='display: none;'
+              = upload.updated_at
+            = upload.updated_at.strftime("%b %e, %Y %l:%M%P")
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "order": [[ 8, "desc" ]],
+      "searching": true,
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+  });

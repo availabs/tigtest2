@@ -1,0 +1,24 @@
+#symbologySaveAsDialog.modal.fade tabindex="-1" role="dialog" aria-hidden="true"
+  = simple_form_for :symbology, :url => symbologies_path, :html => {:class => 'form-horizontal', remote: true } do |f|
+    = f.hidden_field :base_symbology_id, name: 'base_symbology_id'
+    = f.hidden_field :color_schemes, name: 'color_schemes'
+    .modal-dialog
+      .modal-content.well.well-sm.well-special
+        .modal-header style="padding:5px 0px;"
+          h4 Save Symbology As ...
+        .modal-body style="padding:10px 0px;"
+          = f.input :subject, label: 'Name', input_html: {class: 'form-control', placeholder: 'Enter a descriptive name for the new symbology'}
+        .modal-footer style="padding:5px 0px;"
+          = f.submit "Save", :class => "btn btn-primary pull-left"
+          a.btn.pull-left data-dismiss="modal" href="#"  Cancel
+
+javascript:
+  $(document).ready(function() {
+    // Reset form when hide the modal
+    $('#symbologySaveAsDialog').on('hide.bs.modal', function (e) {
+      var form = $(this).find('form');
+      form[0].reset();
+      form.find('input[name=base_symbology_id]').val('');
+      form.find('input[name=color_schemes]').val('');
+    });
+  });

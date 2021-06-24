@@ -1,0 +1,41 @@
+= filepicker_js_include_tag if @remote_storage
+= simple_form_for @upload do |f|
+  = f.hidden_field :user_id, value: current_user.id
+  = f.error_notification message: f.object.errors.full_messages.join('<br>')
+
+  .col-xs-12
+    .col-md-10.col-md-offset-1.well.well-special
+      h1.text-center style="margin-top:0;"
+        strong= "Upload Updated Help File"
+
+      .col-md-8.col-md-offset-2
+        p= "List of Existing Uploads: "
+        ul
+          - Upload.where(status: [Upload.statuses[:help_doc], Upload.statuses[:help_html]]).order(created_at: :asc).each do |upload|
+            li= link_to "#{upload.filename} (#{number_to_human_size(upload.size_in_bytes)}) updated: #{upload.updated_at.ctime}", upload_file_public_url(upload)
+        .well.controls.well-sm
+          - if @remote_storage
+            = f.filepicker_field :s3_location, button_text: "Select file", 
+            id: 'filepicker', button_class: 'btn btn-primary',
+            extensions: @extensions, store_path: '/dev_uploads/',
+            services: 'COMPUTER', store_location: 'S3', open_to: 'COMPUTER'
+            ' 
+            = f.text_field :filename, readonly: true
+            '
+            = f.text_field :size_in_bytes, readonly: true, style: "text-align: right"
+            '  bytes
+          - else
+            = f.input :s3_location, as: :file, label: false, required: true
+
+        = f.input :notes, input_html: {class: 'form-control', value: ''}
+
+    .col-md-10.col-md-offset-1.actions style="padding:0;"
+      = f.submit 'Save', class: 'btn btn-primary', style: "margin-right:5px;"
+      = link_to 'Cancel', :back
+
+- if @remote_storage
+  javascript:
+    $('#filepicker').change(function(evt) {
+      $('#upload_filename').val(evt.originalEvent.fpfile.filename);
+      $('#upload_size_in_bytes').val(evt.originalEvent.fpfile.size);
+    });

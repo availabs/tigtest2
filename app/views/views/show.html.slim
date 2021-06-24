@@ -1,0 +1,285 @@
+h2 style="margin-top:0;"
+  strong
+    | Metadata for 
+    = @view.name
+
+#view_metadata.row
+  .col-md-7
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Topic"
+
+    - unless @view.source.agency.nil?
+      p style="margin-top:1em;"
+        em Agency:
+        br
+        - source_agency = @view.source.agency
+        - if source_agency.present?
+          - if can?(:read, source_agency)
+            = link_to source_agency.name, agency_path(source_agency)
+          - else
+            = source_agency.name
+        - else
+          'N/A'
+        
+    - unless @view.description.nil? || @view.description.blank?
+      .show-link
+        ' Description:
+        = format_as_text @view.description
+      hr
+    p
+      em Data Starts On:
+      br
+      = @view.data_starts_at.nil? ? (compute_data_end_points(@view, "start").nil? ? 'Unknown' : "#{compute_data_end_points(@view, "start")}*") : @view.data_starts_at.strftime("%b %e, %Y at %H:%M %Z")
+    p
+      em Data Ends On:
+      br
+      = @view.data_ends_at.nil? ? (compute_data_end_points(@view, "end").nil? ? 'Unknown' : "#{compute_data_end_points(@view, "end")}*") : @view.data_ends_at.strftime("%b %e, %Y at %H:%M %Z")
+    br
+
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Visibility"
+
+    div
+      h3
+        strong= pluralize(@view.contributors.size, "Contributor")
+      p.close_set_paragraph
+        = "#{pluralize(@view.contributors.size, 'contributor')} to this view:"
+        ul#contributors.in
+          - @view.contributors.each do |contributor|
+            - if current_user
+              - if current_user.has_role?(:public)
+                li= user_name_or_email(contributor)
+              - else
+                li= link_to user_name_or_email(contributor), contributor
+            - else
+              li= user_name_or_email(contributor)
+        a.pull-right data-toggle="collapse" data-target="#contributors" show less
+        br
+    hr
+
+    div style="margin-top:1em;"
+      h3
+        strong= pluralize(@view.librarians.size, "Librarian")
+      p.close_set_paragraph
+        = "#{pluralize(@view.librarians.size, 'librarian')} to this view:"
+        ul#librarians.in
+          - @view.librarians.each do |librarian|
+            - if current_user
+              - if current_user.has_role?(:public)
+                li= user_name_or_email(librarian)
+              - else
+                li= link_to user_name_or_email(librarian), librarian
+            - else
+              li= user_name_or_email(librarian)
+        a.pull-right data-toggle="collapse" data-target="#librarians" show less
+        br
+
+  .col-md-5
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Origin"
+
+    div
+      h3
+        strong= "#{time_ago_in_words(@view.created_at).titleize} Ago" 
+      p.close_set_paragraph
+        = "This info was originally uploaded on #{@view.created_at.strftime('%b %e, %Y at %H:%M %Z')}"
+        br
+        - if @view.user
+          - if can? :read, @view.user
+            = "By "
+            - if @view.user.persisted?
+              = link_to(user_name_or_email(@view.user), user_path(@view.user))
+            - else
+              = user_name_or_email(@view.user)
+          - else
+            = "By #{user_name_or_email(@view.user)}"
+    hr
+
+    - unless @view.origin_url.nil? || @view.origin_url.blank?
+      p
+        em Origin URL:
+        br
+        = link_to "#{@view.origin_url}", url_with_protocol(@view.origin_url)
+      hr
+    p
+      em Source:
+      br
+      = link_to @view.source.name, @view.source
+
+    br
+
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Updates"
+
+    - unless @view.updated_at.nil?
+      div
+        h3
+          strong= "#{time_ago_in_words(@view.updated_at).titleize} Ago"
+        p.close_set_paragraph
+          = "This view was last updated on #{@view.updated_at.strftime('%b %e, %Y at %H:%M %Z')}"
+    - unless @view.rows_updated_at.nil?
+      div
+        h3
+          strong= "#{time_ago_in_words(@view.rows_updated_at).titleize} Ago"
+        p.close_set_paragraph
+          = "The rows of this view were last updated on #{@view.rows_updated_at.strftime('%b %e, %Y at %H:%M %Z')}"
+          - if @view.rows_updated_by
+            br
+            - if can? :read, @view.rows_updated_by
+              = "By "
+              - if @view.rows_updated_by.persisted?
+                = link_to(@view.rows_updated_by.display_name, user_path(@view.rows_updated_by))
+              - else
+                = @view.rows_updated_by.display_name
+            - else
+              = "By #{@view.rows_updated_by.display_name}"
+    div
+      h3
+        strong= pluralize(@view.current_version, "Update")
+      p.close_set_paragraph
+        = "This info has been updated #{pluralize(@view.current_version, 'time')}"
+    div
+      h3
+        strong
+          - link_text = pluralize(@upload_count, "Upload")
+          - if can_view_uploads(current_user, @view) 
+            em
+              = link_to(link_text, uploads_path(view: @view.id), title: "View or process data uploaded to the Gateway")
+          - else
+            = link_text
+      p.close_set_paragraph
+        = "#{pluralize(@upload_count, 'upload')} made to this set of data."
+    div
+      h3
+        strong= pluralize(@view.download_count, "Download")
+      p.close_set_paragraph
+        ="This info has been downloaded #{pluralize(@view.download_count, 'time')}"
+    div
+      h3
+        strong= pluralize(@view.view_count, "View")
+      p.close_set_paragraph
+        ="This info has been viewed #{pluralize(@view.view_count, 'time')}"
+    - if @view.last_displayed_at
+      div
+        h3
+          strong= "#{time_ago_in_words(@view.last_displayed_at).titleize} Ago"
+        p.close_set_paragraph
+          = "This view was last displayed on #{@view.last_displayed_at.strftime("%b %e, %Y at %H:%M %Z")}"
+    br
+
+  - unless (@view.columns.empty? || @view.columns.nil?)
+    .col-md-12
+      .navbar
+        nav.navbar-inner
+          .navbar-brand= "Functionality"
+
+      .col-md-7 style="padding:0;"
+        - unless @view.statistic.nil?
+          p
+            em Statistics Involved:
+            br
+            = @view.statistic.name
+        - unless @view.data_model.nil?
+          p
+            em Data Model:
+            br
+            = @view.data_model
+        - unless @view.data_levels.nil? || @view.data_levels.reject{|c| c.empty?}.empty?
+          p
+            em Data Levels:
+            br
+            = @view.data_levels.map{ |action| action.titleize }.join(", ")
+        - unless @view.row_name.nil?
+          p
+            em Row Name:
+            br
+            = @view.row_name
+      .col-md-5 style="padding-right:0;"
+        - unless @view.column_name.nil?
+          p
+            em Column Name:
+            br
+            = @view.column_name
+        - unless @view.data_hierarchy.nil?
+          p
+            em Data Hierarchy:
+            br
+            = @view.data_hierarchy
+        - unless @view.spatial_level.nil?
+          p
+            em Spatial Level:
+            br
+            = @view.spatial_level
+        - unless @view.value_name.nil?
+          p
+            em Value Name:
+            br
+            = @view.value_name
+
+      p
+        em Available Actions: 
+        = @view.actions.map{ |action| action.titleize }.join(", ")
+      p
+        em Data columns included in this view:
+
+      table#metadata_table.table.table-striped.table-bordered.table-condensed
+        thead
+        tbody
+          tr
+            th scope="row"
+              = "Columns"
+            - @view.columns.each do |col|
+              td
+                = col
+          tr
+            th scope="row"
+              = "Labels"
+            - if @view.column_labels.empty?
+              - @view.columns.each do |col|
+                td
+                  = "n/a"
+            - else
+              - @view.column_labels.each do |label|          
+                td
+                  = label.blank? ? "n/a" : label
+          tr
+            th scope="row"
+              = "Column Types"
+            - @view.column_types.each do |type|          
+              td
+                = type.blank? ? "n/a" : type
+          tr
+            th scope="row"
+              = "Value Columns"  
+            - @view.columns.each do |val_col|
+              td
+                = @view.value_columns.include?(val_col) ? val_col : "n/a"
+
+  .col-md-12
+    br
+    - if user_signed_in?
+      - if @view.contributors.include?(current_user) || @view.librarians.include?(current_user) || current_user.has_role?(:admin)
+        - if current_user.has_role?(:admin)
+          = link_to 'Edit', edit_view_path(@view, admin: true), class: 'btn btn-primary', style: "margin-right:5px;"
+        - elsif @view.contributors.include?(current_user) && !@view.librarians.include?(current_user)
+          = link_to 'Edit', edit_view_path(@view, contributor: true), class: 'btn btn-primary', style: "margin-right:5px;"
+        - elsif @view.librarians.include?(current_user) && !@view.contributors.include?(current_user)
+          = link_to 'Edit', edit_view_path(@view, librarian: true), class: 'btn btn-primary', style: "margin-right:5px;"
+        - elsif @view.librarians.include?(current_user) && @view.contributors.include?(current_user)
+          = link_to 'Edit', edit_view_path(@view, librarian: true, contributor: true), class: 'btn btn-primary', style: "margin-right:5px;"
+        - else
+          = link_to 'Edit', edit_view_path(@view), class: 'btn btn-primary', style: "margin-right:5px;"
+
+        - if @view.access_controls.empty?
+          = link_to 'Access Control', new_access_control_path(view: @view.id), class: 'btn btn-primary', style: "margin-right:5px;"
+        - else
+          = link_to 'Access Control', edit_access_control_path(@access_control, view: @view.id), class: 'btn btn-primary', style: "margin-right:5px;"
+
+    = link_to 'Back', sources_path
+
+javascript:
+  toggleShowMoreLink();

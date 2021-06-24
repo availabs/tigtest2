@@ -1,0 +1,15 @@
+- obj_class = @obj.class.to_s
+- is_upload = obj_class == 'Upload'
+- upload_file_name = is_upload ? "(#{@obj.try(:filename).to_s}) " : ""
+h2
+  = "New #{obj_class}"
+hr
+p
+  em= @obj.user.display_name.blank? ? @obj.user.email : @obj.user.display_name
+  = " has added data #{upload_file_name}to the Gateway. The #{obj_class}"
+  strong= " '#{@obj.name unless is_upload}' "
+  = "was created on #{@obj.created_at.strftime("%b %e, %Y %l:%M%P")}."
+p
+  = "First, log into the Gateway and then "
+  = link_to "Click here", root_url(expand: 'contributions')
+  = " to view the changes."

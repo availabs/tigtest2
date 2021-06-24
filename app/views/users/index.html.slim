@@ -1,0 +1,60 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog Users
+  
+table.table.table-condensed.table-hover.table-bordered.table-striped.users-table#datatable
+  thead
+    tr
+      th Display Name
+      th Email
+      th Agency
+      th Roles
+      th Registered
+      th Logins
+      th Last Login
+      th
+      th
+  tbody
+    - @users.each do |user|
+      tr
+        td= link_to user.display_name, user
+        td= user.email
+        td= user.agency.nil? ? 'N/A' : user.agency.name
+        td= user.roles.order(:name).map {|r| r.name == "admin" ? "System Admin" : r.name.titleize}.join(', ')
+        td= user.created_at.to_date
+        td= user.sign_in_count
+        td= user.last_sign_in_at.nil? ? 'N/A' : user.last_sign_in_at.to_date
+        td.text-center
+          a.btn.btn-primary.btn-xs data-toggle="modal" href="#role-options-#{user.id}" type="button"  Change Role
+          = render user
+          javascript:
+            var roles = [];
+            var checkedInputs#{user.id} = $("#edit_user_#{user.id} input:checked");
+
+            $("#role-options-#{user.id}").on("shown.bs.modal", function(){
+              roles = checkedInputs#{user.id}.map(function() {
+                return $(this).attr('id');
+              }).get();
+            })
+            .on("hidden.bs.modal", function(){
+              $("#edit_user_#{user.id} input:checked").prop('checked', false);
+              roles.forEach(function(elem, index){
+                $("#edit_user_#{user.id} #" + elem).prop('checked', true);
+              });
+            });
+        td.text-center= link_to("Delete User", user_path(user), data: {confirm: ("Are you sure?")}, :method => :delete, :class => 'btn btn-primary btn-xs') unless user == current_user
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "order": [ ("#{params[:filter]}" == "login" ? [5, "desc"] : [0, "asc"]) ],
+      "searching": true,
+      "columnDefs": [
+        {"orderable": false, "targets": [7,8]},
+        {"searchable": false, "targets": [7,8]}
+      ],
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+  });

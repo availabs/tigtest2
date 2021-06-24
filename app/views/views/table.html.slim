@@ -1,0 +1,584 @@
+.row
+  .col-md-12
+    h4
+      - if @view.data_model == ComparativeFact
+        = @view.name
+      - else
+        = "#{@view.name} : #{@caption}"
+    .row
+      .col-md-3
+        - if @has_area_dropdown
+          = render partial: 'layouts/area_dropdown', locals: {area_name: @area_name, regions: @regions, subregions: @subregions, current_data_name: @current_data_name, study_areas: @study_areas}
+      #range.text-center
+        - if @has_range_filter
+          - if @view.data_model == ComparativeFact
+            = form_tag table_view_path, method: :get, class: 'form-inline' do
+              - columns = (@view.value_columns || []).collect {|col| [@view.column_label(col), col]}
+              '
+              = label_tag 'Column:'
+              = select_tag :value_column, options_for_select(columns, @current_value_column), required: true, class: 'form-control value-column-filter input-sm'
+              'from
+              input#lower.number_range_filter.input-sm.number-field name="lower" type="text" value="#{@lower}"
+              'to
+              input#upper.number_range_filter.input-sm.number-field name="upper" type="text" value="#{@upper}" 
+              '
+              .form-group.form-inline style='text-align:center;'
+                = submit_tag 'Filter', class: 'btn btn-sm', title: "Click to apply updated filters"
+              - if @view.has_action? :map
+                =link_to 'Show on map...', map_view_url(@view), class: "btn btn-sm btn-default", style: "margin-left: 5px;", title: "Show filtered records on map"  
+          - else
+            form.form-inline action="#{view_path(@view)}/map" method="GET" class="realtime-range-filter"
+              = (@view.value_name == :density) ? "Density" : @view.statistic.name if @view.statistic
+              '
+              - if unswitched?
+                span#rangeFilter
+                  ' from
+                  input.number_range_filter.input-sm.number-field#lower type="text" value="#{@lower}" 
+                  '&nbsp; to
+                  input.number_range_filter.input-sm.number-field#upper type="text" value="#{@upper}"
+              - else
+                span#densityFilter
+              ' &nbsp;
+              - if @view.has_action? :map
+                button#mapBtn.btn.btn-sm.btn-default type="submit" title="Show filtered records on map" Show on map...  
+    - if [SpeedFact, LinkSpeedFact].include? @view.data_model
+      = render partial: 'speed_filter', locals: {view_path: table_view_path}
+    - if [PerformanceMeasuresFact].include? @view.data_model
+      = render partial: 'measures_filter', locals: {view_path: table_view_path, has_range_filter: true}
+      
+      css:
+        ul.ColVis_collection li {
+          width: 48%;
+          display: -webkit-inline-box;
+          display: -moz-inline-box;
+        }
+
+    #tableControls.pull-right style="margin-left:1em;"
+      - if @has_column_filter
+        button#clearFilters.btn.btn-primary.pull-right type="button"
+          ' Clear filters
+      button.btn.btn-primary type="button" data-toggle="modal" data-target="#settings_modal" title="Click for more options"
+        i.fa.fa-wrench
+        '  More...
+      #settings_modal.modal.fade tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel3" aria-hidden="true"
+        .modal-dialog.modal-sm
+          .modal-content
+            .modal-header
+              h3 style="margin-top:0;" Additional Actions
+            .modal-body
+              .text-center
+                - if AccessControl.allow_for_download?(current_user, @view)
+                  button.btn.btn-sm.btn-default#export_visible style="margin-right:1em;" href="#{view_path(@view)}/table.csv?filtered=true" title="Export CSV with current table state" data-loading-text="<i class='icon-spinner icon-spin icon-large'></i> Downloading..."
+                    ' Export Filtered
+                    '
+                  - if @view.data_model.respond_to? :to_csv
+                    button.btn.btn-sm.btn-default#export_all href="#{view_path(@view)}/table.csv" title="Export CSV with all rows and columns" data-loading-text="<i class='icon-spinner icon-spin icon-large'></i> Downloading..."
+                      ' Export All
+            .modal-footer
+              a.btn.btn-primary data-dismiss="modal" Close
+
+    table.table.table-striped.table-bordered.table-condensed id="#{@view.data_model.to_s.underscore}" data-source="#{table_view_path(format: :json)}"
+      thead
+        tr
+          - use_labels = ! @view.column_labels.empty?
+          - headers = use_labels ?  @view.column_labels : @view.columns
+          - headers.each_with_index do |column, index|
+            th class="#{@view.column_types[index] if @view.column_types}"
+              - if use_labels
+                = column
+              - else
+                // titleize automatically strips '_id' but it's needed e.g. Rtp Id
+                = column.to_s.titleize + (column.to_s.include?('_id') ? ' Id' : '')
+          - if @view.data_model == RtpProject || @view.data_model == TipProject
+            th
+              ' Actions
+      tbody
+        - if @rows
+          - @rows.each do |row| 
+            tr
+              - @view.columns.each_with_index do |column, index|
+
+                td class="#{@view.column_types[index] if @view.column_types}"
+                  - if @view.data_model == UpwpProject && column.to_s == 'project_id' 
+                    - num_contracts_val = (row[:num_contracts] || row['num_contracts']).to_i
+                    - upwp_link_enabled = true if num_contracts_val > 0
+
+                  - row_val = row.is_a?(Hash) ? row[column] : row.send(column)
+                  - if upwp_link_enabled 
+                    = link_to row_val, table_view_url(@upwp_contracts_view, upwp_pin: row_val)
+                  - else
+                    - if column == 'county' && row_val.blank? &&(@view.data_model == RtpProject || @view.data_model == TipProject)
+                      = 'MULTI'
+                    - else
+                      = row_val
+
+              - if @view.data_model == TipProject 
+                td
+                  = link_to('Map', map_view_url(@view, tip_id: row.tip_id), title: "View project on map") if row.tip_id
+              - elsif @view.data_model == RtpProject 
+                td
+                  = link_to('Map', map_view_url(@view, rtp_id: row.rtp_id), title: "View project on map") if row.rtp_id
+        - elsif @view.columns.count < 1
+          tr
+            td 
+              i No data
+        tfoot style="display:table-header-group"
+      - if false
+          tr
+            - @view.columns.each do |column|
+              th 
+                // titleize automatically strips '_id' but it's needed e.g. Rtp Id
+                = column.titleize + (column.include?('_id') ? ' Id' : '')
+
+= render partial: 'shared/numeric_only'
+
+- map_action_column_index = []
+- map_action_column_index = [8] if @rtp_project_column_filter
+- map_action_column_index = [7] if @tip_project_column_filter
+javascript:
+  var snapshot = getUrlParam('snapshot');
+  if (snapshot) { var savedTable = JSON.parse("#{@snapshot_filters}".replace(/(&quot;)/g, "\"").replace(/(=&gt;)/g, ":").replace(/(nil)/g, "null")); }
+  var tableData;
+  var oTable = $('##{@view.data_model.to_s.underscore}').dataTable( {
+  #{@use_ajax ? "\"bProcessing\": true,".html_safe : nil }
+  #{@use_ajax ? "\"bServerSide\": true,".html_safe : nil }
+  #{@use_ajax ? "\"ajax\": { \"url\": $('##{@view.data_model.to_s.underscore}').data('source'), \"data\": function (d) { d.lower = $('#lower').val(); d.upper = $('#upper').val(); } },".html_safe : nil }
+  "stateSave": true,
+  "stateSaveParams": function (settings, data) { 
+    tableData = data; 
+    },
+  "stateLoadParams": function (settings, data) {
+    if (snapshot) {
+      data.columns = savedTable.columns;
+      data.length = savedTable.length;
+      data.order = savedTable.order;
+      data.search = savedTable.search;
+      data.start = savedTable.start;
+    } else if("#{@search}") {
+      data.search.search = "#{@search}";
+    }
+  },
+  "oSearch": {"sSearch": "#{@search}"},
+  "initComplete": function (oSettings) {
+    var totalRecords = this.fnSettings()._iRecordsTotal;
+    var displayLength = this.fnSettings()._iDisplayLength;
+    var displayStart = this.fnSettings()._iDisplayStart;
+    var someMath = Math.ceil(displayStart / displayLength);
+
+    if (displayStart > totalRecords) {
+      lastPageTotal = totalRecords % displayLength;
+      newPage = (totalRecords - lastPageTotal) / displayLength;
+      setTimeout(function(){
+        oTable.fnPageChange(newPage);
+      }, 1);
+    }
+  },
+  "order": #{@default_order.html_safe},
+  "sDom": "C<'row'<'col-md-12'<'pull-left'f><'pull-right'l>><'col-md-1 col-md-offset-5'r>>t<'pull-left'i><'pull-right'p>",
+  "sPaginationType": "full_numbers",
+  "lengthMenu": #{@lengthMenu.html_safe},
+  "iDisplayLength": 50,
+  "aoColumnDefs": [
+      {
+        "aTargets": ["text-right"],
+        "sClass": "text-right"
+      },
+      {
+        "aTargets": ["text-center"],
+        "sClass": "text-center"
+      },
+      {
+          "mRender": function ( data, type, row ) {
+              if (type == "display" && data)
+                 return $.formatNumber(data, {format:"#,##0", locale:"us"});
+              else
+                 return data;
+          },
+         "aTargets": ["numeric"],
+         "sClass": "text-right",
+         "orderable": #{@numeric_orderable}
+      },
+      {
+          "mRender": function ( data, type, row ) {
+              if (type == "display" && data)
+                 return $.formatNumber(data, {format:"#,##0.00", locale:"us"});
+              else
+                 return data;
+          },
+         "aTargets": ["float"],
+         "sClass": "text-right",
+         "orderable": #{@numeric_orderable}
+      },
+      {
+          "mRender": function ( data, type, row ) {
+              if (type == "display" && data)
+                 return $.formatNumber(data, {format:"#,##0", locale:"us"});
+              else
+                 return data;
+          },
+         "aTargets": ["thousands"],
+         "sClass": "text-right"
+      },
+      {
+          "mRender": function ( data, type, row ) {
+              if (type == "display" && data)
+                 return $.formatNumber(data, {format:"$#,##0.00&nbsp;M", locale:"us"});
+              else
+                 return data;
+          },
+         "aTargets": ["millions"],
+         "sClass": "text-right"
+      },
+      {
+          "mRender": function ( data, type, row ) {
+              if (type == "display" && data)
+                 return $.formatNumber(data, {format:"$#,##0", locale:"us"});
+              else
+                 return data;
+          },
+         "aTargets": ["currency"],
+         "sClass": "text-right"
+      },
+      {
+          "mRender": function ( data, type, row ) {
+              if (type == "display" && data)
+                 return $.formatNumber(data, {format:"#0%", locale:"us"});
+              else
+                 return data;
+          },
+         "aTargets": ["percent"],
+         "sClass": "text-right"
+      },
+    {
+      "mRender": function (data, type, row) {
+          return '<a href=' + data + '>Map</a>';
+      },
+      "aTargets": #{map_action_column_index}
+    },
+    {"bSortable": false, "aTargets": (#{@rtp_project_column_filter}) ? [8] : []}
+   ]
+  });
+
+  if (#{@use_ajax ? false : false }) {
+    oTable.columnFilter({
+    sPlaceHolder: "head:before",
+    aoColumns: #{{@filterCols}}
+  })};
+
+  var timeout;
+  $('.realtime-range-filter #lower, .realtime-range-filter #upper').keyup(function(){
+  clearTimeout(timeout);
+  timeout = setTimeout(function () { oTable.fnDraw(false); }, #{@searchDelay});
+  });
+
+- if @count_fact_column_filter
+  javascript:
+    oTable.yadcf([
+      {column_number: #{@count_fact_count_variable_idx}, filter_reset_button_text: false, filter_default_label: "All", filter_match_mode: "exact"},
+      {column_number: #{@count_fact_transit_route_idx}, filter_match_mode: "exact", sort_as: "none"},
+      {column_number: #{@count_fact_transit_mode_idx}},
+      {column_number: #{@count_fact_in_station_idx}},
+      {column_number: #{@count_fact_direction_idx}, filter_reset_button_text: false, filter_default_label: "Both"},
+      {column_number: #{@count_fact_location_idx}},
+      {column_number: #{@count_fact_sector_idx}, filter_reset_button_text: false, filter_default_label: "All"},
+      {column_number: #{@count_fact_hour_idx}, filter_reset_button_text: false, filter_type: "range_number", ignore_char: ":00"},
+      {column_number: #{@count_fact_transit_agency_idx}, filter_reset_button_text: false, filter_default_label: "All"},
+      {column_number: #{@count_fact_year_idx}, filter_reset_button_text: false, filter_default_label: "All"},
+      ]);
+
+    yadcf.exResetAllFilters(oTable, true);
+    yadcf.exFilterColumn(oTable,
+            [
+              [#{@count_fact_count_variable_idx}, '#{@count_var}'],
+              [#{@count_fact_transit_mode_idx}, '#{@current_mode_string}'],
+              [#{@count_fact_in_station_idx}, '#{@station}'],
+              [#{@count_fact_direction_idx}, '#{@current_direction}'],
+              [#{@count_fact_location_idx}, '#{@hub_location}'],
+              [#{@count_fact_sector_idx}, '#{@current_sector_string}'],
+              [#{@count_fact_hour_idx}, {from: '#{@current_hour}', to: '#{@upper_hour}'}],
+              [#{@count_fact_transit_agency_idx}, '#{@agency}'],
+              [#{@count_fact_year_idx}, '#{@current_year}']
+            ]
+    );
+    if ('#{@route}' != '') {
+      yadcf.exFilterColumn(oTable, [[#{@count_fact_transit_route_idx}, '#{@route}']]);
+    }
+
+- if @rtp_project_column_filter
+  javascript:
+    oTable.yadcf([
+      {column_number: #{@rtp_project_rtp_id_idx}, filter_type: "text", filter_reset_button_text: false},
+      {column_number: #{@rtp_project_description_idx},  filter_type: "text", filter_reset_button_text: false},
+      {column_number: #{@rtp_project_year_idx},  filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: #{@rtp_project_estimated_cost_idx},  filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: #{@rtp_project_ptype_idx},  filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: #{@rtp_project_plan_portion_idx},  filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: #{@rtp_project_sponsor_idx},  filter_reset_button_text: false, filter_default_label: "Select", filter_match_mode: "exact"},
+      {column_number: #{@rtp_project_county_idx},   filter_reset_button_text: false, filter_default_label: "Select"},
+    ]);
+    yadcf.exResetAllFilters(oTable, true);
+
+    if (snapshot) {
+      estimatedCost = savedTable.columns[#{@rtp_project_estimated_cost_idx}].search.search.match(/\d+/g);
+      estimatedCostFrom = estimatedCost ? estimatedCost[0] : '';
+      estimatedCostTo = estimatedCost ? estimatedCost[1] : '';
+
+      yadcf.exFilterColumn(oTable,
+              [
+                [#{@rtp_project_rtp_id_idx}, savedTable.columns[#{@rtp_project_rtp_id_idx}].search.search],
+                [#{@rtp_project_description_idx}, savedTable.columns[#{@rtp_project_description_idx}].search.search],
+                [#{@rtp_project_year_idx}, savedTable.columns[#{@rtp_project_year_idx}].search.search],
+                [#{@rtp_project_estimated_cost_idx}, {from: estimatedCostFrom, to: estimatedCostTo}],
+                [#{@rtp_project_ptype_idx}, savedTable.columns[#{@rtp_project_ptype_idx}].search.search],
+                [#{@rtp_project_plan_portion_idx}, savedTable.columns[#{@rtp_project_plan_portion_idx}].search.search],
+                [#{@rtp_project_sponsor_idx}, savedTable.columns[#{@rtp_project_sponsor_idx}].search.search.replace(/[\^\$]/g, '')],
+                [#{@rtp_project_county_idx}, savedTable.columns[#{@rtp_project_county_idx}].search.search],
+              ]
+      );
+    } else {
+      yadcf.exFilterColumn(oTable,
+              [
+                [#{@rtp_project_rtp_id_idx}, '#{@rtp_id}'],
+                [#{@rtp_project_description_idx}, '#{@description}'],
+                [#{@rtp_project_year_idx}, '#{@current_year}'],
+                [#{@rtp_project_estimated_cost_idx}, {from: '#{@cost_lower}', to: '#{@cost_upper}'}],
+                [#{@rtp_project_ptype_idx}, '#{@ptype}'],
+                [#{@rtp_project_plan_portion_idx}, '#{@plan_portion}'],
+                [#{@rtp_project_sponsor_idx}, '#{@sponsor}'],
+                [#{@rtp_project_county_idx}, '#{@county}'],
+              ]
+      );
+    }
+
+- if @tip_project_column_filter
+  javascript:
+    oTable.yadcf([
+      {column_number: #{@tip_project_tip_id_idx}, filter_type: "text", filter_reset_button_text: false},
+      {column_number: #{@tip_project_ptype_idx}, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: #{@tip_project_cost_idx}, filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: #{@tip_project_mpo_idx}, filter_reset_button_text: false, filter_default_label: "Select", filter_match_mode: "exact"},
+      {column_number: #{@tip_project_county_idx}, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: #{@tip_project_sponsor_idx}, filter_reset_button_text: false, filter_default_label: "Select", filter_match_mode: "exact"},
+      {column_number: #{@tip_project_description_idx}, filter_type: "text", filter_reset_button_text: false}
+      ]);
+    yadcf.exResetAllFilters(oTable, true);
+
+    if (snapshot) {
+      projectCost = savedTable.columns[#{@tip_project_cost_idx}].search.search.match(/\d+/g);
+      projectCostFrom = projectCost ? projectCost[0] : '';
+      projectCostTo = projectCost ? projectCost[1] : '';
+
+      yadcf.exFilterColumn(oTable,
+              [
+                [#{@tip_project_tip_id_idx}, savedTable.columns[#{@tip_project_tip_id_idx}].search.search],
+                [#{@tip_project_ptype_idx}, savedTable.columns[#{@tip_project_ptype_idx}].search.search],
+                [#{@tip_project_cost_idx}, {from: projectCostFrom, to: projectCostTo}],
+                [#{@tip_project_mpo_idx}, savedTable.columns[#{@tip_project_mpo_idx}].search.search.replace(/[\^\$]/g, '')],
+                [#{@tip_project_county_idx}, savedTable.columns[#{@tip_project_county_idx}].search.search],
+                [#{@tip_project_sponsor_idx}, savedTable.columns[#{@tip_project_sponsor_idx}].search.search.replace(/[\^\$]/g, '')],
+                [#{@tip_project_description_idx}, savedTable.columns[#{@tip_project_description_idx}].search.search],
+              ]
+      );
+    } else {
+      yadcf.exFilterColumn(oTable,
+              [
+                [#{@tip_project_tip_id_idx}, '#{@tip_id}'],
+                [#{@tip_project_ptype_idx}, '#{@ptype}'],
+                [#{@tip_project_cost_idx}, {from: '#{@cost_lower}', to: '#{@cost_upper}'}],
+                [#{@tip_project_mpo_idx}, '#{@mpo}'],
+                [#{@tip_project_county_idx}, '#{@county}'],
+                [#{@tip_project_sponsor_idx}, '#{@sponsor}'],
+                [#{@tip_project_description_idx}, '#{@description}'],
+              ]
+      );
+    }      
+
+- if @upwp_project_column_filter
+  javascript:
+    oTable.yadcf([
+      {column_number: 0, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 1, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 2, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 3, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 4, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 5, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 7, filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: 8, filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: 9, filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: 10, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 11, filter_type: "range_number", filter_reset_button_text: false}
+    ]);
+
+- if @upwp_contract_column_filter
+  javascript:
+    oTable.yadcf([
+      {column_number: 0, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 1, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 2, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 3, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 4, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 5, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 6, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 7, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 8, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 9, filter_reset_button_text: false, filter_default_label: "Select"},
+      {column_number: 10, filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: 11, filter_type: "range_number", filter_reset_button_text: false},
+      {column_number: 12, filter_type: "range_number", filter_reset_button_text: false}
+    ]);
+    yadcf.exFilterColumn(oTable, [
+      [0, "#{@upwp_pin}"]
+    ]);
+
+css:
+  #yadcf-filter--count_fact-#{@count_fact_count_variable_idx},
+  #yadcf-filter--count_fact-#{@count_fact_transit_route_idx},
+  #yadcf-filter--count_fact-#{@count_fact_transit_mode_idx},
+  #yadcf-filter--count_fact-#{@count_fact_in_station_idx},
+  #yadcf-filter--count_fact-#{@count_fact_out_station_idx},
+  #yadcf-filter--count_fact-#{@count_fact_location_idx},
+  #yadcf-filter--count_fact-#{@count_fact_sector_idx},
+  #yadcf-filter--count_fact-#{@count_fact_transit_agency_idx} {
+      max-width: 120px !important;
+  }
+  #yadcf-filter--tip_project-#{@tip_project_tip_id_idx} {
+      max-width: 100px !important;
+  }
+  #yadcf-filter--tip_project-#{@tip_project_mpo_idx} {
+      max-width: 120px !important;
+  }
+  #yadcf-filter--tip_project-#{@tip_project_sponsor_idx} {
+      max-width: 150px !important;
+  }
+  #yadcf-filter--rtp_project-#{@rtp_project_rtp_id_idx},
+  #yadcf-filter--rtp_project-#{@rtp_project_description_idx} {
+      max-width: 100px;
+  }
+  #yadcf-filter--rtp_project-#{@rtp_project_sponsor_idx} {
+      max-width: 120px !important;
+  }
+  table.table a { color: #679D89; }
+
+- if user_signed_in?
+  javascript:
+    $('#snapshotModal').delegate('#save_snap', 'click', function(){
+      $.ajax({
+        type: "POST",
+        url: '/snapshots',
+        data: {snapshot: 
+                { 'user_id': #{current_user.id},
+                  'view_id': $('#snapshot_view_id').val(),
+                  'area_id': $('#snapshot_area_id').val(),
+                  'app': window.location.pathname.split("/").splice(-1)[0],
+                  'name': $('#snapshot_name').val(),
+                  'description': $('#snapshot_description').val(),
+                  'range_high': $('#snapshot_range_high').val(),
+                  'range_low': $('#snapshot_range_low').val(),
+                  'filters': $('#snapshot_filters').val(),
+                  'table_settings': JSON.stringify(tableData),
+                  'published': $('#snapshot_published').prop('checked'),
+                  'viewer_ids': $('#snapshot_viewers').val()
+                }
+              },
+        success: function () {
+          fadeModal('snapshotModal', 'Snapshot', false);
+        },
+        dataType: 'json'
+      });
+    });
+
+    $('.update_snapshot').click(function(){
+      $.ajax({
+        type: "PUT",
+        url: '/snapshots/#{params[:snapshot]}',
+        data: {snapshot:
+                { 'view_id': $('#snapshot_view_id').val(),
+                  'area_id': $('#snapshot_area_id').val(),
+                  'app': window.location.pathname.split("/").splice(-1)[0],
+                  'range_high': $('#snapshot_range_high').val(),
+                  'range_low': $('#snapshot_range_low').val(),
+                  'filters': $('#snapshot_filters').val(),
+                  'table_settings': JSON.stringify(tableData)
+                }
+              },
+        success: function () {
+          fadeModal('existingSnapshotsModal', 'Snapshot', true);
+        },
+        dataType: 'json'
+      });
+    });
+
+javascript:
+  function exportCsv(mode) {
+     var filter = (mode == "filtered") ? "applied" : "none";
+     var data = oTable._('tr', {"filter": filter});
+     var a = document.createElement('a');
+     a.href = 'data:attachment/csv,' + "#{@view.column_labels.empty? ? @view.columns.join(',').titleize : @view.column_labels.join(',').titleize}%0D%0A"
+       + _.unescape(data.join('%0D%0A'));
+     a.target = '_blank';
+     a.download = mode + '_data.csv';
+     document.body.appendChild(a);
+     a.click();
+  };
+ 
+  $('#export_visible').click(function(e) {
+    var $btn = $(this).button('loading')
+    tableInfo = oTable.dataTable().fnSettings();
+    colVisibility = $.map(tableInfo.aoColumns, function(val, i){ return val.bVisible });
+    var simplified = oTable.oApi._fnAjaxParameters(tableInfo);
+    simplified.length = -1;
+    if ("#{@view.data_model.pivot?}" == "true") { 
+      simplified.lower = $('input#lower').val();
+      simplified.upper = $('input#upper').val();
+    }
+    $.each(colVisibility, function(i, val){ simplified.columns[i].visible = val });
+
+    // remove redundant params
+    if(simplified.search && simplified.search.value == "") {
+      delete simplified.search;
+    }
+
+    simplified.columns.forEach(function(col) {
+      if(col.visible) {
+        delete col.visible;
+      }
+
+      if(!col.searchable || col.search.value == "") {
+        delete col.search;
+      }
+
+      if(col.searchable) {
+        delete col.searchable;
+      }
+    });
+
+    var params = jQuery.param(simplified);
+    window.location.href = "#{view_path(@view)}/table.csv?filtered=true&" + params;
+    setTimeout(function () { $btn.button('reset'); }, 10000);
+  } );
+ 
+  $('#export_all').on('click', function () {
+    var $btn = $(this).button('loading')
+    window.location.href = "#{view_path(@view)}/table.csv"
+    setTimeout(function () { $btn.button('reset'); }, 10000);
+  });
+
+  $('#clearFilters').click(function(e) {
+    $('#lower').val('');
+    $('#upper').val('');
+    $('[id$=_filter] input[type=search]').val('');
+    yadcf.exResetAllFilters(oTable);
+  });
+
+  $('#datatable_range_from_9,#datatable_range_to_9').keyup(function(){
+    $('#lower')[0].value = $('#datatable_range_from_9')[0].value;
+    $('#upper')[0].value = $('#datatable_range_to_9')[0].value;
+  });
+  $('.number_range_filter').addClass('form-control');
+
+  $('#settings_modal .modal-body').append("<div class='row'></div>");
+  $('#settings_modal .modal-body .row').append($('.ColVis'));
+  $('#settings_modal .modal-body .row').css({"margin-top": "1em", "margin-right": "5em"});
+  $('##{@view.data_model.to_s.underscore}_wrapper').css("margin-top", "1em");
+
+  $('##{@view.data_model.to_s.underscore}_wrapper .row .col-md-12').append($('#range')).prepend($('#tableControls'));

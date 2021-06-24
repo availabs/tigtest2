@@ -1,0 +1,13 @@
+- role_collection = current_user.has_role?(:admin) ? (user.agency ? Role.order(:name) : Role.order(:name).reject{|r| r.name == "agency_admin"}) : Role.order(:name).reject{|r| r.name == "admin" }
+.modal id="role-options-#{user.id}" style=("display: none;") 
+  = simple_form_for user, :url => user_path(user), :html => {:method => :put, :class => 'form-horizontal' } do |f|
+    .modal-dialog
+      .modal-content.well.well-special
+        .modal-header
+          a.close data-dismiss="modal"  ×
+          h3 Change Role
+        .modal-body
+          = f.input :role_ids, :collection => role_collection, :as => :check_boxes, :label_method => lambda {|t| t.name == "admin" ? "System Admin" : t.name.titleize}, :label => false, :item_wrapper_class => 'radio-inline', checked: user.role_ids
+        .modal-footer style="padding-left:0; padding-bottom:0;"
+          = f.submit "Change Role", :class => "btn btn-primary pull-left"
+          a.btn.pull-left data-dismiss="modal" href="#"  Cancel

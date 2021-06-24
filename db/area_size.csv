@@ -1,0 +1,43 @@
+area,size
+NEW YORK CITY,302.65
+Bronx,42.1
+Kings,70.82
+New York,22.83
+Queens,108.53
+Richmond,58.37
+,
+LONG ISLAND,1196.77
+Nassau,284.72
+Suffolk,912.05
+,
+MID HUDSON,4534.06
+Dutchess,795.63
+Orange,811.69
+Putnam,230.31
+Rockland,173.55
+Sullivan,968.13
+Ulster,1124.25
+Westchester,430.5
+,
+NEW JERSEY,4389.64
+Bergen,233.01
+Essex,126.21
+Hudson,46.19
+Hunterdon,427.82
+Mercer,224.56
+Middlesex,308.91
+Monmouth,468.79
+Morris,460.18
+Ocean,628.78
+Passaic,184.59
+Somerset,301.81
+Sussex,519.01
+Union,102.86
+Warren,356.92
+,
+CONNECTICUT,2149.96
+Fairfield,624.89
+Litchfield,920.56
+New Haven,604.51
+,
+REGION,12573.08

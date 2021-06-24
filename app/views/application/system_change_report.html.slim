@@ -1,0 +1,101 @@
+.col-xs-12.no-padding
+  .navbar
+    nav.navbar-inner
+      .navbar-brand.catalog System Change Report
+
+  .row
+    .col-xs-12.dont-print
+      h3
+        strong Date Range
+      select#time-based.form-control onChange="changeTimeBasedData();"
+        - last_week_str = (Date.today - 1.week).to_s
+        - last_month_str = (Date.today - 1.month).to_s
+        - last_year_str = (Date.today - 1.year).to_s
+
+        option value=""
+        option value="#{system_change_report_path(date: last_week_str)}" Last Week
+        option value="#{system_change_report_path(date: last_month_str)}" Last Month
+        option value="#{system_change_report_path(date: last_year_str)}" Last Year
+        option value="Custom" Custom
+
+      input#datepicker.form-control type="text" onChange="window.location.href='/system_change_report?date=' + this.value;"
+
+  - if params[:date]
+    - date_string = params[:date]
+    - new_users = new_records_since(User, date_string)
+    - new_agencies = new_records_since(Agency, date_string)
+    - new_sources = new_records_since(Source, date_string)
+    - new_views = new_records_since(View, date_string)
+    - new_uploads = new_records_since(Upload, date_string)
+    - new_comments = new_records_since(Comment, date_string)
+    - new_snapshots = new_records_since(Snapshot, date_string)
+    - new_study_areas = new_records_since(StudyArea, date_string)
+
+    .row.text-left
+      .col-xs-12
+        h1
+          strong.dont-print= "New Records Since #{date_string.to_date.strftime("%b %e, %Y")}"
+          strong.printable= "New Records Since #{date_string.to_date.strftime("%b %e, %Y")} (as of #{Date.today.strftime("%b %e, %Y")})"
+    .row.text-center
+      .col-xs-3
+        h2
+          strong= new_users
+        h3.no-top-margin= "New #{'User'.pluralize(new_users)}"
+      .col-xs-3
+        h2
+          strong= new_agencies
+        h3.no-top-margin= "New #{'Agency'.pluralize(new_agencies)}"
+      .col-xs-3
+        h2
+          strong= new_sources
+        h3.no-top-margin= "New #{'Source'.pluralize(new_sources)}"
+      .col-xs-3
+        h2
+          strong= new_views
+        h3.no-top-margin= "New #{'View'.pluralize(new_views)}"
+
+    hr
+
+    .row.text-center
+      .col-xs-3
+        h2
+          strong= new_uploads
+        h3.no-top-margin= "New #{'Upload'.pluralize(new_uploads)}"
+      .col-xs-3
+        h2
+          strong= new_comments
+        h3.no-top-margin= "New #{'Comment'.pluralize(new_comments)}"
+      .col-xs-3
+        h2
+          strong= new_snapshots
+        h3.no-top-margin= "New #{'Snapshot'.pluralize(new_snapshots)}"
+      .col-xs-3
+        h2
+          strong= new_study_areas
+        h3.no-top-margin= "New Study #{'Area'.pluralize(new_study_areas)}"
+
+css:
+  #ui-datepicker-div {
+    background-color: lightgrey;
+    padding: 1em;
+  }
+
+javascript:
+  $(document).ready(function(){
+    $('#datepicker').datepicker({
+      dateFormat: 'yy-mm-dd',
+      maxDate: "+0D"
+    }).hide();
+    $("option[value$='date=#{date_string}']").prop('selected', 'true');    
+  });
+
+  function changeTimeBasedData() {
+    ($('#time-based').val() == "Custom") ? ($('#datepicker').show()) : (window.location.href = $('#time-based').val())
+  }
+
+- if ![last_week_str, last_month_str, last_year_str].include?(date_string)
+  javascript:
+    $(document).ready(function(){
+      $('option[value=Custom]').prop('selected', 'true');
+      $('#datepicker').show().val("#{date_string}");
+    });

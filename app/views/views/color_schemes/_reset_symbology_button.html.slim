@@ -1,0 +1,16 @@
+button.btn.btn-primary.text-center.reset-symbology-button type="button" style="margin: 5px;"
+  'Reset
+
+javascript:
+  $(document).ready(function() {
+    $('.reset-symbology-button').off().on('click', function(e) {
+      var button = $(this);
+      var form = button.parents('form');
+      if(form) {
+        var viewId = form.find('input[name=view_id]').val();
+        var subject = form.find('input[name=subject]').val();
+
+        gatewayMapApp.resetViewSymbology(viewId, subject);
+      }
+    });
+  });

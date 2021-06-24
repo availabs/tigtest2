@@ -1,0 +1,220 @@
+= javascript_include_tag "https://www.google.com/jsapi"
+
+.col-xs-12.no-padding style="float:none;"
+  .navbar
+    nav.navbar-inner
+      .navbar-brand.catalog User Activity Report
+
+  .row
+    .col-xs-12.dont-print
+      h3
+        strong Users
+      select#time-based.form-control onChange="window.location.href=this.value;"
+        option value=""
+        - @users.each do |user|
+          option value="#{ user_activity_report_path(user: user.id) }"
+            = user.display_name.empty? ? user.email : user.display_name
+
+  - if @user
+
+    hr
+
+    .row
+      .col-md-4
+        h1.no-bottom-margin.no-top-margin
+          strong.dont-print= @user.display_name.empty? ? "(no name)" : @user.display_name
+          strong.printable= "#{@user.display_name.empty? ? "(no name)" : @user.display_name} (as of #{Date.today.strftime("%b %e, %Y")})"
+        h3.no-top-margin style="margin-bottom:0.25em"
+          = @user.email
+        h5.no-top-margin style="margin-bottom:0.5em"
+          = "#{@user.roles.map(&:name).map{|role| role == "admin" ? "System Admin" : role.titleize}.join(" / ")} for #{@user.agency ? @user.agency.name : "(no agency)"}"
+        - if @user.last_sign_in_at
+          h5.no-top-margin
+            em= "Last logged in on #{@user.last_sign_in_at.strftime("%b %e, %Y at %l:%M%P")}"
+      .col-md-8.text-center
+        .col-xs-3
+          h2
+            strong= @comment_count
+          h3.no-top-margin= "#{'Comment'.pluralize(@comment_count)}"
+        .col-xs-3
+          h2
+            strong= @watches_count
+          h3.no-top-margin= "#{'Watch'.pluralize(@watches_count)}"
+        .col-xs-3
+          h2
+            strong= @snapshot_count
+          h3.no-top-margin= "#{'Snapshot'.pluralize(@snapshot_count)}"
+        .col-xs-3
+          h2
+            strong= @study_area_count
+          h3.no-top-margin= "Study #{'Area'.pluralize(@study_area_count)}"
+
+    - if @user.has_role?(:contributor)
+      hr
+
+      .row
+        .col-xs-6
+          .col-sm-6.no-padding
+            h3
+              strong Sources Contributed To
+          .col-sm-6.no-padding
+            ul
+              - sources_contributed_to(@user.id).each do |source|
+                li
+                  h5.no-top-margin.no-bottom-margin= link_to source.name, source_path(source)
+        .col-xs-6
+          .col-sm-6.no-padding
+            h3
+              strong Views Contributed To
+          .col-sm-6.no-padding
+            ul
+              - views_contributed_to(@user.id).each do |view|
+                li
+                  h5.no-top-margin.no-bottom-margin= link_to view.name, view_path(view)
+
+    - if @user.has_role?(:librarian)
+      hr
+
+      .row
+        .col-xs-6
+          .col-sm-6.no-padding
+            h3
+              strong Sources in Library*
+          .col-sm-6.no-padding
+            ul
+              - librarian_sources(@user.id).each do |source|
+                li
+                  h5.no-top-margin.no-bottom-margin= link_to source.name, source_path(source)
+        .col-xs-6
+          .col-sm-6.no-padding
+            h3
+              strong Views in Library*
+          .col-sm-6.no-padding
+            ul
+              - librarian_views(@user.id).each do |view|
+                li
+                  h5.no-top-margin.no-bottom-margin= link_to view.name, view_path(view)
+
+    - if @user.has_any_role?(:contributor, :librarian) && !@user.uploads.empty?
+      hr
+
+      .row
+        .col-xs-3
+          h3
+            strong Uploads
+        .col-xs-9.printable style="max-height:25em;"
+            - @user.uploads.each do |upload|
+              .card
+                .row
+                  .col-xs-8
+                    h5.no-top-margin
+                      strong= upload.filename
+                      em= " (#{upload.size_in_bytes / (1024*1024)} MB)"
+                    p= upload.notes
+                  .col-xs-4
+                    h5.no-top-margin
+                      em= "Month: #{upload.month}"
+                    h5.no-top-margin
+                      em= "Year: #{upload.year}"
+                    h5.no-top-margin
+                      em= "Status: #{upload.status.capitalize}"
+                    h5.no-top-margin
+                      em= "Created: #{upload.created_at.strftime("%b %e, %Y")}"
+
+        .col-sm-9.dont-print style="max-height:25em;overflow:scroll;"
+          = render partial: 'uploads/uploads_table', locals: {uploads: @user.uploads}
+    br
+    br
+
+    - unless @user.uploads.empty?
+      hr
+        .row.break-before
+          .col-xs-6
+            h3
+              strong Uploads by View
+            #uploads-by-view style="min-height:25em;"
+          .col-xs-6
+            h3
+              strong Uploads by Status
+            #uploads-by-status style="min-height:25em;"
+      javascript:
+        drawGoogleChart(#{ raw @uploads_by_view.as_json }, 'uploads-by-view', 'pie');
+        drawGoogleChart(#{ raw @uploads_by_status.as_json }, 'uploads-by-status', 'pie');
+
+      hr
+        .row
+          .col-xs-6
+            h3
+              strong Uploads by Year Uploaded
+            #uploads-by-year style="min-height:25em;"
+          .col-xs-6
+            h3
+              strong Uploads by Month Uploaded
+            #uploads-by-month style="min-height:25em;"
+      javascript:
+        drawGoogleChart(#{ raw @uploads_by_year.as_json }, 'uploads-by-year', 'pie');
+        drawGoogleChart(#{ raw @uploads_by_month.as_json }, 'uploads-by-month', 'pie');
+
+    - unless @comment_count == 0
+      hr
+        .row.break-before
+          .col-xs-6
+            h3
+              strong Comments by Source
+            #comments-by-source style="min-height:25em;"
+          .col-xs-6
+            h3
+              strong Comments by View
+            #comments-by-view style="min-height:25em;"
+      javascript:
+        drawGoogleChart(#{ raw @comments_by_source.as_json }, 'comments-by-source', 'pie');
+        drawGoogleChart(#{ raw @comments_by_view.as_json }, 'comments-by-view', 'pie');
+
+    - unless @snapshot_count == 0
+      hr
+        .row
+          .col-xs-6
+            h3
+              strong Snapshots by Source
+            #snapshots-by-source style="min-height:25em;"
+          .col-xs-6
+            h3
+              strong Snapshots by View
+            #snapshots-by-view style="min-height:25em;"
+      javascript:
+        drawGoogleChart(#{ raw @snapshots_by_source.as_json }, 'snapshots-by-source', 'pie');
+        drawGoogleChart(#{ raw @snapshots_by_view.as_json }, 'snapshots-by-view', 'pie');
+
+    - unless @watches_count == 0
+      hr
+        .row.break-before
+          .col-xs-6
+            h3
+              strong Watches by Source
+            #watches-by-source style="min-height:25em;"
+          .col-xs-6
+            h3
+              strong Watches by View
+            #watches-by-view style="min-height:25em;"
+      javascript:
+        drawGoogleChart(#{ raw @watches_by_source.as_json }, 'watches-by-source', 'pie');
+        drawGoogleChart(#{ raw @watches_by_view.as_json }, 'watches-by-view', 'pie');
+
+
+css:
+  .card {
+    background-color: lightgrey;
+    border:1px solid grey;
+    border-radius: 0.25em;
+    margin-bottom: 1em;
+    padding: 1em;
+    -webkit-transform: translateY(10%);
+        -ms-transform: translateY(10%);
+            transform: translateY(10%);
+  }
+
+- if @user
+  javascript:
+    $(document).ready(function(){
+      $("option[value$='user=#{@user.id}']").prop('selected', 'true');
+    });

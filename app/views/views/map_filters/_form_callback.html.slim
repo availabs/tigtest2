@@ -1,0 +1,28 @@
+javascript:
+  $("#" + "#{filter_container_id}").on('ajax:before',function(){
+    gatewayMapApp.getMap().LMmap.spin(true);
+    var yearInput = $(this).find('input[name=year]');
+    if(yearInput.length > 0) {
+      $(yearInput).val($('#yearSlider').data('slider-value'));
+    }
+  });
+  $("#" + "#{filter_container_id}").on('ajax:success',function(e, data){
+    hide_alert();
+    var viewId = #{view_id};
+    data = data || {};
+    var mapFilterString = data.filter_string ? (": " + data.filter_string) : '';
+    $('.map-filter-string[data-view-id=' + viewId + ']').text(mapFilterString);
+    $('.info.info-window').hide();
+    gatewayMapApp.updateViewLayer(viewId, data);
+    gatewayMapApp.getMap().LMmap.spin(false);
+    
+    if(data && data.value_column_changed) {
+      if($(".value-columns-dropdown[data-view-id='" + viewId + "']").length > 0) {
+        $('#currentValueColumn').html($("#valueColumnDropdown a[data-value-column='" + data.current_value_column + "']").text() + '<b class="caret"></b>');
+      }
+    };
+  }).on('ajax:error',function(xhr, status, error){
+    show_alert('The attempt to load map data has failed. Please try again.');
+    console.log(error);
+    gatewayMapApp.getMap().LMmap.spin(false);
+  });

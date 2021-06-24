@@ -1,0 +1,44 @@
+- if user_signed_in?
+  = render partial: "comments/#{@table_type}_table"
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "columnDefs": [
+        { "orderData": [7, 6], "targets": 6 },
+        { "visible": false, "targets": #{@invisibles} },
+        { "sortable": false, "targets": #{@unsortables} }
+      ],
+      "order": [[ 7, "desc" ]],
+      "searching": true,
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+
+    $(document).on("change", "input[name=block]", function(ev){
+      commentId = parseInt($(this).data('id'));
+      action = this.checked ? 'block' : 'unblock'
+      $.ajax({
+        type: "POST",
+        url: "/comments/" + commentId + "/" + action,
+        error: function(data){
+          $(ev.target).prop('checked', (action == 'block' ? false : true));
+          $('#messages').html("<div class='alert alert-danger' style='margin-bottom:10px;'><a class='close' data-dismiss='alert'>x</a>An error has occurred. Please notify a system administrator.</div>");
+        }
+      });
+    });
+  });
+
+- if user_signed_in? && (@source || @view)
+  javascript:
+    $.ajax({
+      type: "POST",
+      url: "#{update_last_seen_at_watches_path}",
+      data: {
+        current_user: #{current_user.id},
+        source: #{@source.nil? ? false : @source.id},
+        view: #{@view.nil? ? false : @view.id}
+      }
+    });
+

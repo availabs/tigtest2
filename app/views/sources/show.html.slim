@@ -1,0 +1,201 @@
+h2 style="margin-top:0;"
+  strong
+    | Metadata for 
+    = @source.name
+
+#source_metadata.row
+  .col-md-7
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Topic"
+
+    - unless @source.agency.nil?
+      p style="margin-top:1em;"
+        em Agency:
+        br
+        - source_agency = @source.agency
+        - if source_agency.present?
+          - if can?(:read, source_agency)
+            = link_to source_agency.name, agency_path(source_agency)
+          - else
+            = source_agency.name
+        - else
+          'N/A'
+    - unless @source.description.nil? || @source.description.blank?
+      .show-link
+        ' Description:
+        = format_as_text @source.description
+    hr
+    - unless @source.source_type.nil? || @source.source_type.blank?
+      p
+        em Source Type:
+        br
+        = @source.source_type
+    - unless @source.default_data_model.nil? || @source.default_data_model.blank?
+      p
+        em Default Data Model:
+        br
+        = @source.default_data_model
+      hr  
+    - unless @source.views.nil?
+      p
+        em Views for this source:
+        br
+        ul#source_views.in
+          - @source.views.each do |view|
+            li= link_to view.name, "#{view_path(view)}/metadata"
+        a.pull-right data-toggle="collapse" data-target="#source_views" show less
+        br
+      - unless @source.data_starts_at.nil? && @source.data_ends_at.nil?
+        hr
+    p
+      em Data Starts On:
+      br
+      = @source.data_starts_at.nil? ? 'Unknown' : @source.data_starts_at.strftime("%b %e, %Y at %H:%M %Z")
+    p
+      em Data Ends On:
+      br
+      = @source.data_ends_at.nil? ? 'Unknown' : @source.data_ends_at.strftime("%b %e, %Y at %H:%M %Z")
+
+    - unless @source.disclaimer.blank?
+      hr
+        .show-link
+          em Disclaimer:
+          br
+          = source_formatted_disclaimer @source
+    br
+
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Visibility"
+
+    div
+      h3
+        strong= pluralize(@source.contributors.size, "Contributor")
+      p.close_set_paragraph
+        = "#{pluralize(@source.contributors.size, 'contributor')} to this view:"
+        ul#contributors.in
+          - @source.contributors.each do |contributor|
+            - if current_user
+              - if current_user.has_role?(:public)
+                li= user_name_or_email(contributor)
+              - else
+                li= link_to user_name_or_email(contributor), contributor
+            - else
+              li= user_name_or_email(contributor)
+        a.pull-right data-toggle="collapse" data-target="#contributors" show less
+        br
+    hr
+
+    div style="margin-top:1em;"
+      h3
+        strong= pluralize(@source.librarians.size, "Librarian")
+      p.close_set_paragraph
+        = "#{pluralize(@source.librarians.size, 'librarian')} for this view:"
+        ul#librarians.in
+          - @source.librarians.each do |librarian|
+            - if current_user
+              - if current_user.has_role?(:public)
+                li= user_name_or_email(librarian)
+              - else
+                li= link_to user_name_or_email(librarian), librarian
+            - else
+              li= user_name_or_email(librarian)
+        a.pull-right data-toggle="collapse" data-target="#librarians" show less
+        br
+    hr
+
+  .col-md-5
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Origin"
+
+    div
+      h3
+        strong= "#{time_ago_in_words(@source.created_at).titleize} Ago" 
+      p.close_set_paragraph
+        = "This info was originally uploaded on #{@source.created_at.strftime('%b %e, %Y at %H:%M %Z')}"
+        br
+        - if @source.user
+          - if can? :read, @source.user
+            = "By "
+            = link_to user_name_or_email(@source.user), user_path(@source.user)
+          - else
+            = "By #{user_name_or_email(@source.user)}"
+    - unless @source.origin_url.nil? || @source.origin_url.blank?
+      hr
+
+    - unless @source.origin_url.nil? || @source.origin_url.blank?
+      p
+        em Origin URL:
+        br
+        = link_to "#{@source.origin_url}", url_with_protocol(@source.origin_url)
+      hr
+
+    br
+
+    .navbar
+      nav.navbar-inner
+        .navbar-brand= "Updates"
+
+    - unless @source.updated_at.nil?
+      div
+        h3
+          strong= "#{time_ago_in_words(@source.updated_at).titleize} Ago"
+        p.close_set_paragraph
+          = "This source was last updated on #{@source.updated_at.strftime('%b %e, %Y at %H:%M %Z')}"
+    - unless @source.rows_updated_at.nil?
+      div
+        h3
+          strong= "#{time_ago_in_words(@source.rows_updated_at).titleize} Ago"
+        p.close_set_paragraph
+          = "The rows of this source were last updated on #{@source.rows_updated_at.strftime('%b %e, %Y at %H:%M %Z')}"
+          - if @source.rows_updated_by
+            br
+            - if can? :read, @source.rows_updated_by
+              = "By "
+              = link_to(@source.rows_updated_by.display_name, user_path(@source.rows_updated_by))
+            - else
+              = "By #{@source.rows_updated_by.display_name}"
+    div
+      h3
+        strong= pluralize(@source.current_version, "Update")
+      p.close_set_paragraph
+        = "This info has been updated #{pluralize(@source.current_version, 'time')}"
+    - if @source.uploadable?
+      div
+        h3
+          strong
+            - link_text = pluralize(@upload_count, "Upload")
+            - if can_view_uploads(current_user, @source) 
+              em
+                = link_to(link_text, uploads_path(source: @source.id), title: "View or process data uploaded to the Gateway")
+            - else
+              = link_text
+        p.close_set_paragraph
+          = "#{pluralize(@upload_count, 'upload')} made to this source."
+    br
+
+br
+- if user_signed_in?
+  - if @source.contributors.include?(current_user) || @source.librarians.include?(current_user) || current_user.has_role?(:admin)
+    - if current_user.has_role?(:admin)
+      = link_to 'Edit', edit_source_path(@source, admin: true), class: 'btn btn-primary', style: "margin-right:5px;"
+    - elsif @source.contributors.include?(current_user) && !@source.librarians.include?(current_user)
+      = link_to 'Edit', edit_source_path(@source, contributor: true), class: 'btn btn-primary', style: "margin-right:5px;"
+    - elsif @source.librarians.include?(current_user) && !@source.contributors.include?(current_user)
+      = link_to 'Edit', edit_source_path(@source, librarian: true), class: 'btn btn-primary', style: "margin-right:5px;"
+    - elsif @source.librarians.include?(current_user) && @source.contributors.include?(current_user)
+      = link_to 'Edit', edit_source_path(@source, librarian: true, contributor: true), class: 'btn btn-primary', style: "margin-right:5px;"
+    - else
+      = link_to 'Edit', edit_source_path(@source), class: 'btn btn-primary', style: "margin-right:5px;"
+
+    - if @source.access_controls.empty?
+      = link_to 'Access Control', new_access_control_path(source: @source.id), class: 'btn btn-primary', style: "margin-right:5px;"
+    - else
+      = link_to 'Access Control', edit_access_control_path(@access_control, source: @source.id), class: 'btn btn-primary', style: "margin-right:5px;"
+
+= link_to 'Back', sources_path
+
+javascript:
+  toggleShowMoreLink();

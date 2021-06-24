@@ -1,0 +1,43 @@
+.row
+  .col-md-12
+    = form_tag view_path, method: :get, class: 'form-inline' do
+      .form-group.form-inline
+        = label_tag 'Year:'
+        ' 
+        = select_tag :year, options_for_select(@years, @current_year), required: true, class: 'form-control'
+      ' 
+      .form-group.form-inline
+        = label_tag 'Month:'
+        ' 
+        = select_tag :month, options_for_select(@months_table[@current_year] || [], @current_month), required: true, class: 'form-control'
+      ' 
+      .form-group.form-inline
+        = label_tag 'Day of Week:'
+        ' 
+        = select_tag :day_of_week, options_for_select(@days, @current_day), required: true, class: 'form-control'
+      ' 
+      - if @view.data_model == SpeedFact
+        .form-group.form-inline
+          = label_tag 'Vehicle Class:'
+          ' 
+          = select_tag :vehicle_class, options_for_select(@vehicle_classes, @current_vehicle_class), required: true, class: 'form-control'
+
+        .form-group.form-inline
+          = label_tag 'Direction:'
+          ' 
+          = select_tag :direction, options_for_select(SpeedFact::DIRECTIONS, @current_direction), required: false, class: 'form-control'
+      - elsif @view.data_model == LinkSpeedFact
+        .form-group.form-inline
+          = label_tag 'Direction:'
+          ' 
+          = select_tag :direction, options_for_select(Link::DIRECTIONS, @current_direction), required: false, class: 'form-control'
+      '
+      .form-group.form-inline style='text-align:center;'
+        = submit_tag 'Filter', class: 'btn', title: "Click to apply updated filters"
+br
+
+javascript:
+  $("#year").change(function () {
+    var year = $('#year').val();
+    $('#month').html(#{@month_options}[year]);
+  });

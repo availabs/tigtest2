@@ -1,0 +1,240 @@
+.col-xs-12.no-padding style="margin-bottom:5em;float:none;"
+  .navbar
+    nav.navbar-inner
+      .navbar-brand.catalog System Usage Report
+
+  .row.text-left
+    .col-xs-12
+      h1
+        strong.dont-print User Statistics
+        strong.printable= "User Statistics (as of #{Date.today.strftime("%b %e, %Y")})"
+  .row.text-center
+    .col-xs-3
+      h2
+        strong= @user_count
+      h3.no-top-margin= link_to "User".pluralize(@user_count), users_path
+    .col-xs-3
+      h2
+        strong= @active_user_count
+      h3.no-top-margin title="'Active' users are those that have logged in within the past month."
+        = link_to "Active #{'User'.pluralize(@active_user_count)}*", users_path(filter: 'login')
+    .col-xs-3
+      h2
+        strong= @active_user_login_count
+      h3.no-top-margin
+        = link_to users_path(filter: 'login') do
+          = "#{'Login'.pluralize(@active_user_login_count)} by"
+          br
+          = "Active Users"
+    .col-xs-3
+      h2
+        strong= @agency_count
+      h3.no-top-margin= link_to "Agency".pluralize(@agency_count), agencies_path
+
+  .row.text-center
+    .col-xs-3
+      h2
+        strong= @sysadmin_count
+      h3.no-top-margin= "Sys #{'Admin'.pluralize(@sysadmin_count)}"
+    .col-xs-3
+      h2
+        strong= @agency_admin_count
+      h3.no-top-margin= "Agency #{'Admin'.pluralize(@agency_admin_count)}"
+    .col-xs-3
+      h2
+        strong= @contributor_count
+      h3.no-top-margin= "Contributor".pluralize(@contributor_count)
+    .col-xs-3
+      h2
+        strong= @librarian_count
+      h3.no-top-margin= "Librarian".pluralize(@librarian_count)
+
+  hr
+
+  .row
+    .col-xs-6
+      h3
+        strong Top Contributors by No. of Sources & Views
+      - contributors = top_contributors
+      #top-contributors style="min-height:25em;"
+    .col-xs-6
+      h3
+        strong Top Librarians by No. of Sources & Views
+      - librarians = top_librarians
+      #top-librarians style="min-height:25em;"
+
+  hr
+  br
+
+  .row.text-left.break-before
+    .col-xs-12
+      h1
+        strong.dont-print Data Statistics
+        strong.printable= "Data Statistics (as of #{Date.today.strftime("%b %e, %Y")})"
+  .row.text-center
+    .col-xs-3
+      h2
+        strong= @source_count
+      h3.no-top-margin= "Source".pluralize(@source_count)
+    .col-xs-3
+      h2
+        strong= @view_count
+      h3.no-top-margin= "View".pluralize(@view_count)
+    .col-xs-3
+      h2
+        strong= @upload_count
+      h3.no-top-margin= "Upload".pluralize(@upload_count)
+    .col-xs-3
+      h2
+        strong= @download_count
+      h3.no-top-margin= "Download".pluralize(@download_count)
+
+  hr
+
+  .row
+    .col-md-8
+      h3.no-top-margin.no-bottom-margin
+        strong Most-Visited Views
+      #donut style="min-height:25em;"
+    .col-md-4.card
+      h3.no-top-margin
+        strong Most-Visited Sources
+      - @top_sources_by_view.each_with_index do |source, idx|
+        h4.no-bottom-margin= link_to "#{idx + 1}. #{source.name}", source_path(source)
+
+  hr
+
+  .row.break-before
+    .col-xs-6
+      h3
+        strong Top Views by No. of Downloads
+      #bar style="min-height:25em;"
+    .col-xs-6
+      h3
+        strong Top Views by No. of Uploads
+      #bar2 style="min-height:25em;"
+
+  hr
+
+  .row.text-center
+    .col-xs-3
+      h2
+        strong= @comment_count
+      h3.no-top-margin= "Comment".pluralize(@comment_count)
+    .col-xs-3
+      h2
+        strong= @snapshot_count
+      h3.no-top-margin= "Snapshot".pluralize(@snapshot_count)
+    .col-xs-3
+      h2
+        strong= @watch_count
+      h3.no-top-margin= "Watch".pluralize(@watch_count)
+    .col-xs-3
+      h2
+        strong= @study_area_count
+      h3.no-top-margin= "Study #{'Area'.pluralize(@study_area_count)}"
+    
+
+  hr
+
+  .row
+    .col-sm-6
+      .col-sm-6.transformed-label
+        h3
+          strong Top Sources by Comment Count
+      .col-sm-6.padded-bottom
+        table.table-condensed
+          tbody
+            - @top_sources_by_comment.each do |source|  
+              tr
+                td
+                  h5.no-top-margin.no-bottom-margin= link_to source.name, source_path(source)
+                td
+                  h5.no-top-margin.no-bottom-margin= source.comments.size
+    .col-sm-6
+      .col-sm-6.transformed-label
+        h3
+          strong Top Views by Comment Count
+      .col-sm-6.padded-bottom
+        table.table-condensed
+          tbody
+            - @top_views_by_comment.each do |view|
+              tr
+                td
+                  h5.no-top-margin.no-bottom-margin= link_to view.name, view_path(view)
+                td
+                  h5.no-top-margin.no-bottom-margin= view.comments.size
+
+  hr
+
+  .row
+    .col-sm-8.transformed-label
+      h3
+        strong Top Views by No. of Snapshots
+    .col-sm-4.padded-bottom
+      table.table-condensed
+        tbody
+          - @top_views_by_snapshot.each do |view|
+            tr
+              td
+                h5.no-top-margin.no-bottom-margin= link_to view.name, view_path(view)
+              td
+                h5.no-top-margin.no-bottom-margin= view.snapshots.size
+
+  hr
+
+  .row
+    .col-sm-6
+      .col-sm-6.transformed-label
+        h3
+          strong Top Sources by Watch Count
+      .col-sm-6.padded-bottom
+        table.table-condensed
+          tbody
+            - @top_sources_by_watch.each do |source|
+              tr
+                td
+                  h5.no-top-margin.no-bottom-margin= link_to source.name, source_path(source)
+                td
+                  h5.no-top-margin.no-bottom-margin= source.watches.size
+    br
+    .col-sm-6
+      .col-sm-6.transformed-label
+        h3
+          strong Top Views by Watch Count
+      .col-sm-6.padded-bottom
+        table.table-condensed
+          tbody
+            - @top_views_by_watch.each do |view|
+              tr
+                td
+                  h5.no-top-margin.no-bottom-margin= link_to view.name, view_path(view)
+                td
+                  h5.no-top-margin.no-bottom-margin= view.watches.size
+
+
+css:
+  .padded-bottom { padding-bottom: 1.5em; }
+  .transformed-label {  
+    -webkit-transform: translateY(60%);
+        -ms-transform: translateY(60%);
+            transform: translateY(60%);
+  }
+  .card {
+    background-color: lightgrey;
+    border-radius: 0.25em;
+    padding: 1em;
+    -webkit-transform: translateY(10%);
+        -ms-transform: translateY(10%);
+            transform: translateY(10%);
+  }
+
+= javascript_include_tag "https://www.google.com/jsapi"
+
+javascript:
+  drawGoogleChart(#{ raw @donut_data.as_json }, 'donut', 'pie');
+  drawGoogleChart(#{ raw contributors.as_json }, 'top-contributors', 'bar');
+  drawGoogleChart(#{ raw librarians.as_json }, 'top-librarians', 'bar');
+  drawGoogleChart(#{ raw @bar_data.as_json }, 'bar', 'bar');
+  drawGoogleChart(#{ raw @bar_2_data.as_json }, 'bar2', 'bar');
+

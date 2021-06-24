@@ -1,0 +1,15 @@
+.row
+  .col-sm-12.form-group
+    label.mobile-checkbox style="font-weight:normal;"
+      - if params[:show_area_boundary] == true || params[:show_area_boundary] == 'true'
+        input.mobile-input-checkbox type='checkbox' id="show-boundary-#{view.id}" checked='true'
+      -else
+        input.mobile-input-checkbox type='checkbox' id="show-boundary-#{view.id}"
+
+      .mobile-checkbox__checkmark
+      = " Show boundary"
+
+javascript:
+  $("#show-boundary-#{view.id}").on('click', function(e){
+    gatewayMapApp.showAreaBoundary(parseInt(#{view.id}), this.checked);
+  });

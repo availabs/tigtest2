@@ -1,0 +1,24 @@
+
+1 - SSH into production
+
+ssh deploy@192.168.1.125
+
+2 - Change to gateway directory
+
+cd gateway
+
+3 - get updated code
+
+git pull
+
+4 - run datatabase updates
+
+./tasks/update_tmc_year/update_db.sh
+
+5 - restart the server (this script )
+
+./deploy/after_push
+
+6 - (dependent) I often get back gateway after this and run the restart script againt
+
+./deploy/restart

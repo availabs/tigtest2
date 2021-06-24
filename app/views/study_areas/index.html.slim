@@ -1,0 +1,65 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog Study Areas
+
+table.table.table-condensed.table-hover.table-bordered.table-striped#study_areas_table
+  thead
+    tr
+      th Name
+      th Description
+      - if @admin
+        th Owner
+      th Status
+      th.text-center Edit
+      th.text-center Delete
+      th
+  tbody
+    - @study_areas.sort_by{|study_area| study_area.updated_at}.reverse!.each do |study_area|
+      tr
+        td.col-md-3= study_area.name
+        td.col-md-4= study_area.description
+        - if @admin
+          td.col-md-1
+            = link_to user_name_or_email(study_area.user), user_path(study_area.user)
+        td.col-md-2
+          - if study_area.user == current_user
+            - if study_area.published?
+              = 'Published'
+            - elsif study_area.viewers.empty?
+              = 'Unshared'
+            - else
+              .shared-with= "Shared with #{pluralize(study_area.viewers.count, 'user')}"
+              javascript:
+                $('.shared-with').tooltip({title: "#{study_area.viewers.map{|u| user_name_or_email(u)}.join(", ")}"});
+          - elsif study_area.viewers.include?(current_user)
+            = "Shared by "
+            = link_to "#{user_name_or_email(study_area.user)}", user_path(study_area.user)
+          - else
+            = "Published by "
+            = link_to "#{user_name_or_email(study_area.user)}", user_path(study_area.user)
+        td.col-md-1.text-center
+          - if study_area.user == current_user || @admin
+            = link_to edit_study_area_path(study_area) do
+              i.fa.fa-edit
+        td.col-md-1.text-center
+          - if study_area.user == current_user || @admin
+            = link_to study_area_path(study_area), :method => :delete, :data => {:confirm => "Are you sure?"} do
+              i.fa.fa-close
+        td
+          = study_area.updated_at
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#study_areas_table').dataTable({
+        "order": [[ #{@admin ? 6 : 5}, "desc" ]],
+        "searching": true,
+        "columnDefs": [
+          {"orderable": false, "targets": #{@admin ? [4,5] : [3,4]}},
+          {"searchable": false, "targets": #{@admin ? [4,5] : [3,4]}},
+          {"visible": false, "targets": #{@admin ? 6 : 5}}
+        ],
+        "lengthChange": true,
+        "pagingType": "full_numbers",
+        "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+      });
+  });

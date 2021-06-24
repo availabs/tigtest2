@@ -1,0 +1,11 @@
+- if source.librarians.include?(current_user)
+  = render partial: 'source_info_row', locals: {source: source}
+
+  - source.views.each do |view|
+    - if view.librarians.include?(current_user)
+      = render partial: 'view_info_row', locals: {view: view}
+
+- else
+  - source.views.each do |view|
+    - if view.librarians.include?(current_user)
+      = render partial: 'view_info_row', locals: {view: view}

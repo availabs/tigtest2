@@ -1,0 +1,28 @@
+= simple_form_for(resource, :as => resource_name, :url => edit_user_registration_path(resource).sub(/\.[\w]*\z/, ''), :html => { :method => :put, :class => 'form-vertical' }) do |f|
+  = f.error_notification
+  = display_base_errors resource
+
+  .col-md-8.col-md-offset-2.well.well-special
+    h1.text-center style="margin-top:0;"
+      strong= "Edit #{@user.display_name}"
+
+    .col-md-8.col-md-offset-2
+      = f.hidden_field :edited_user, value: @user.id
+
+      = f.input :display_name, :autofocus => true, :label => "Name", input_html: {class: 'form-control'}
+      = f.input :email, :required => true, input_html: {class: 'form-control'}
+      = f.input :phone, input_html: {class: 'form-control'}
+      = f.input :recent_activity_dashboard_limit, :label => 'Max Nº of recent activities on dashboard', :required => false, input_html: {class: 'form-control'}
+      = f.input :recent_activity_expanded_limit, :label => 'Max Nº of recent activities when expanded', :required => false, input_html: {class: 'form-control'}
+      = f.input :snapshot_limit, :label => 'Max Nº of snapshots on dashboard', :required => false, input_html: {class: 'form-control'}
+      = f.input :password, :autocomplete => "off", :hint => "leave it blank if you don't want to change it", :required => false, input_html: {class: 'form-control'}
+      = f.input :password_confirmation, :required => false, input_html: {class: 'form-control'}
+      - unless current_user.has_any_role?(:agency_admin, :admin) && current_user != @user
+        = f.input :current_password, :hint => "we need your current password to confirm your changes", :required => true, input_html: {class: 'form-control'}
+
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    = f.button :submit, 'Save', :class => 'btn-primary', :style => "margin-right:5px;"
+    = link_to "Back", :back
+
+javascript:
+  $('.control-label').css('margin-top', '5px');

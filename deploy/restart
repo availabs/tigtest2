@@ -1,0 +1,16 @@
+#!/bin/sh
+touch tmp/restart.txt
+echo "restarting puma app"
+bundle exec pumactl -P /home/deploy/gateway/tmp/pids/puma.pid restart
+echo "running puma:"
+ps aux | grep puma
+echo "worker"
+bin/delayed_job -i main restart
+echo "upload worker"
+bin/delayed_job -i uploads --queue=uploads restart
+echo "running delayed_jobs:"
+ps aux | grep delayed_job
+echo "restart nginx"
+sudo service nginx restart
+echo "nginx status:"
+sudo service nginx status

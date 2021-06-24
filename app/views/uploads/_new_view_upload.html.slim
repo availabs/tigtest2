@@ -1,0 +1,83 @@
+= simple_form_for @upload do |f|
+  = f.hidden_field :user_id, value: current_user.id
+  = f.error_notification message: f.object.errors.full_messages.join('<br>')
+
+  .col-xs-12
+    .col-md-10.col-md-offset-1.well.well-special
+      h1.text-center style="margin-top:0;"
+        strong= "New Upload for '#{@view.name}'"
+
+      .col-md-8.col-md-offset-2
+        p
+          ' Origin URL: 
+          = link_to(@view.origin_url, @view.origin_url, title: "Find updated data sources here")
+        p= "List of Existing Uploads: "
+        ul
+          - Upload.where(view: @view).each do |upload|
+            li= link_to "#{upload.filename} (#{number_to_human_size(upload.size_in_bytes)})", upload_file_public_url(upload), title: "Download a copy of this data"
+        .show-link
+          ' Download Instructions: 
+          div style="padding-left: 10px;"
+            = format_as_text @view.download_instructions
+
+        = f.hidden_field :view_id, value: @view.id
+        .well.controls.well-sm
+          - if @remote_storage
+            = f.filepicker_field :s3_location, button_text: "Select file", 
+              id: 'filepicker', button_class: 'btn btn-primary',
+              extensions: @extensions, store_path: '/dev_uploads/',
+              services: 'COMPUTER', store_location: 'S3', open_to: 'COMPUTER'
+            ' 
+            = f.text_field :filename, readonly: true
+            '
+            = f.text_field :size_in_bytes, readonly: true, style: "text-align: right"
+            '  bytes
+          - else
+            = f.input :s3_location, as: :file, label: false, required: true
+            
+        .row
+          - unless @hide_year
+            .col-md-6
+              = f.input :year, input_html: {class: 'form-control'}
+          - if @show_months
+            .col-md-6
+              = f.input :month, input_html: {class: 'form-control'}
+
+        = f.input :notes, input_html: {class: 'form-control', value: ''}
+
+    .col-md-10.col-md-offset-1.actions style="padding:0;"
+      = f.submit 'Save', class: 'btn btn-primary', style: "margin-right:5px;"
+      = link_to 'Cancel', :back
+
+-  if @remote_storage
+  javascript:
+    $('#filepicker').change(function(evt) {
+      $('#upload_filename').val(evt.originalEvent.fpfile.filename);
+      $('#upload_size_in_bytes').val(evt.originalEvent.fpfile.size);
+
+    });
+
+javascript:
+  $('#upload_year').datetimepicker({
+    viewMode: "years",
+    format: "YYYY",
+    minDate: moment(new Date("1965/01/01")),
+    maxDate: moment(new Date("2100/01/01")),
+    icons: {
+      previous: 'fa fa-chevron-left',
+      next: 'fa fa-chevron-right'
+    }
+  });
+
+  $('#upload_month').datetimepicker({
+    viewMode: "months",
+    format: "MM",
+    minDate: moment(new Date("1965/01/01")),
+    maxDate: moment(new Date("2100/01/01")),
+    icons: {
+      previous: 'fa fa-chevron-left',
+      next: 'fa fa-chevron-right'
+    }
+  });
+
+

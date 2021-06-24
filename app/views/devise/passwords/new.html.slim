@@ -1,0 +1,16 @@
+= simple_form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post }) do |f|
+  = f.error_notification
+
+  .col-md-8.col-md-offset-2.well.well-special
+    h1.text-center
+      strong Reset Password
+
+    .field.col-md-8.col-md-offset-2
+      = f.label :email
+      = f.email_field :email, :placeholder => 'Email', :class => 'form-control'
+      = f.error :email
+
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    = content_tag(:button, :type=>:submit, :class => "btn btn-primary", :style => "margin-right:5px;") do
+      |  Send reset instructions
+    = link_to "Back", :back

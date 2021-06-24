@@ -1,0 +1,48 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog
+      = "#{current_user.has_role?(:admin) ? @admin_header : @agency_admin_header}"
+  
+table.table.table-condensed.table-hover.table-bordered.table-striped.users-table#datatable
+  thead
+    tr
+      th Subject
+      th Description
+      th User
+      th Source
+      th View
+      th App
+      th Updated At
+      th
+      th Admin Only?
+      th Blocked?
+  tbody
+    - @comments.each do |comment|
+      - view = comment.view.nil? ? nil : comment.view
+      - app = comment.app.nil? ? nil : comment.app
+
+      tr
+        td.col-md-1= link_to comment.subject, comment_path(comment), title: "Go to comment"
+        td.col-md-3= comment.text.truncate(100)
+        td.col-md-1
+          = (comment.user ? user_name_or_email(comment.user) : 'Deleted User') + " "
+          - if comment.user
+            = mail_to comment.user.email, title: "Mail to: #{comment.user.email}" do
+              .fa.fa-envelope-o
+        td.col-md-2= link_to comment.source.name, source_path(comment.source), title: "Go to Source"
+        td.col-md-1
+          - if view
+            = link_to view.name, view_path(view), title: "Go to View"
+        td.col-md-1
+          - if app && view
+            = link_to app.capitalize, (view_path(view) + "/" + app), title: "Go to App"
+        td.col-md-1= comment.updated_at.strftime("%b %e, %Y %l:%M%P")
+        td= comment.updated_at
+        td.col-md-1.text-center
+          - if comment.admin_only == true
+            i.fa.fa-check
+              .hide-me= "true"
+          - else
+            i.fa.fa-close
+              .hide-me= "false"
+        td.col-md-1.text-center= check_box_tag 'block', nil, (comment.blocked_by_id.nil? ? false : true), "data-id": "#{comment.id}", title: "Prevent non-administrators from seeing this comment"

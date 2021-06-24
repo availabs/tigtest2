@@ -1,0 +1,38 @@
+h4
+  = "Add/Remove Layers"
+#layerContainer.panel-group role="tablist" aria-multiselectable="true"
+  - AccessControl.viewable_sources(current_user).each do |source|
+    = render partial: 'view_layers', locals: {source: source}
+javascript:
+  $('.checkbox input').on('change', function(){
+    var layerCount = parseInt($('#layer_count').attr('data-layer-count') || 1);
+    $(this).prop("checked") ? (layerCount ++) : (layerCount --);
+    $('#layer_count').attr('data-layer-count', layerCount);
+    $('#layer_count').text(layerCount);
+
+    var checkbox = $(this).parents('.checkbox');
+    var viewId = parseInt($(checkbox).data('view-id'));
+
+    if($(this).prop("checked") && !gatewayMapApp.getViewLayer(viewId)) {
+      $(this).parents('.panel.panel-default').find('.panel-title').addClass('loaded-source-title');
+      var url = $(checkbox).data('url');
+
+      gatewayMapApp.requestDataOverlayConfigs(viewId, url, $(checkbox).data('has-year-slider'));
+      
+      if($("#filter-" + viewId).length === 0) { //add new layer UI (filters, exports)
+        $.ajax({ 
+          url: "/views/" + viewId + "/layer_ui"
+        });
+      }
+    } else {
+      $(this).parents('.panel.panel-default').find('.panel-title').removeClass('loaded-source-title');
+      gatewayMapApp.removeViewLayer(viewId);
+      $("#filter-" + viewId).remove(); //remove filters
+      $("#export-shp-" + viewId).remove(); //remove exporting link
+      $("#symbology-" + viewId).remove(); //remove symbology
+      if(!gatewayMapApp.checkYearSlider()) {
+        $('#yearSliderContainer').remove(); //remove year slider
+      }
+    }
+    
+  })

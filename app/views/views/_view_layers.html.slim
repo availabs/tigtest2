@@ -1,0 +1,22 @@
+- mappable_views = []
+- AccessControl.viewable_views(current_user, source).each do |view|
+  - mappable_views << view if view.has_role? :map
+- if mappable_views.size > 0
+  .panel.panel-default
+    .panel-heading role="tab" id="layer-heading-#{source.id}"
+      h5.panel-title
+        a.collapsed data-toggle="collapse" data-parent="#layerContainer" href="#layer-collapse-#{source.id}" aria-expanded="false" aria-controls="layer-collapse-#{source.id}" title="Click to see views"
+          = source.name
+    .panel-collapse.collapse role="tabpanel" aria-labelledby="layer-heading-#{source.id}" id="layer-collapse-#{source.id}"
+      .panel-body
+        - mappable_views.each do |view|
+          .checkbox data-url=data_overlay_view_path(view) data-view-id="#{view.id}" data-has-year-slider="#{has_year_slider(view) ? 1: 0}"
+            label
+              - if @view && @view.id == view.id
+                input type="checkbox" checked="true" disabled="true"
+                  = view.name
+                javascript:
+                  $("#layer-heading-#{source.id} .panel-title").addClass('loaded-source-title');
+              - else
+                input type="checkbox"
+                  = view.name

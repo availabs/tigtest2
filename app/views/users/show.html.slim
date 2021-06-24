@@ -1,0 +1,42 @@
+.col-xs-8.col-xs-offset-2.well.well-special
+  .col-xs-6.user-info-left style="border-right:1px solid grey; word-wrap:break-word;"
+    h1.text-center
+      strong #{@user.display_name}
+    - if user_signed_in?
+      p.text-center
+        em
+          - if user_signed_in?
+            = mail_to @user.email
+
+  .col-xs-6.user-info-right style="margin-top:1em;"
+    table style="width:100%;"
+      tbody
+        tr
+          td
+            strong Phone Number
+          td.text-right= user_signed_in? ? (@user.phone.blank? ? 'N/A' : @user.phone) : 'N/A'
+        tr
+          td
+            strong Roles
+          td.text-right= @user.roles.map{|role| role.name == "admin" ? "System Admin" : role.name.titleize }.join(", ")
+        tr
+          td
+            strong Active Since
+          td.text-right= @user.created_at.strftime("%b %e, %Y %l:%M%P")
+        tr
+          td
+            strong Last Updated
+          td.text-right= @user.updated_at.strftime("%b %e, %Y %l:%M%P")
+
+.col-xs-8.col-xs-offset-2.actions style="padding:0;"
+  - condition = (@user.id == current_user.id) || (current_user.has_role?(:admin)) || (current_user.has_role?(:agency_admin) && @user.agency == current_user.agency && !@user.has_any_role?(:agency_admin, :admin))
+  - if condition
+    = link_to "Edit", edit_user_registration_path(@user), :class => "btn btn-primary", :style => "margin-right:5px;"
+  = link_to "Back", (current_user.has_role?(:admin) ? users_path : :back), class: "#{condition ? '' : 'btn btn-primary'}"
+
+javascript:
+  if ( $('.user-info-left').height() < $('.user-info-right').height() ) {
+    $('.user-info-left').height($('.user-info-right').height());
+  } else {
+    $('.user-info-right').height($('.user-info-left').height());
+  }

@@ -1,0 +1,50 @@
+|
+  $('#status').html('#{@upload.status}');
+  $('#action').html('#{j(render partial: 'uploads/action', locals: {name: @action_name, link: @action_link, remote: @remote})}');
+  var is_processing = false;
+  var interval = setInterval(function(){
+    $.ajax({
+      url: '/uploads/' + #{@upload.id} + '/status',
+      success: function(job){
+      	var stage, progress;
+
+      	if (!is_processing) {
+      	  $('#progress').show();
+      	  $('#status').html('processing');
+      	  $('#action').html('#{j(render partial: 'uploads/action', locals: {name: 'Stop', link: reset_upload_path(@upload), remote: false})}');
+
+      	  is_processing = true;
+      	}
+      	// If there are errors
+      	if (job.last_error != null) {
+                $('.progress-status').addClass('text-danger').text(job.progress_stage);
+                $('.progress-bar').addClass('progress-bar-danger');
+                $('.progress').removeClass('active');
+                clearInterval(interval);
+      	  $('#action').html('#{j(render partial: 'uploads/action', locals: {name: 'Reset', link: reset_upload_path(@upload), remote: false})}');
+      	}
+
+      	// Download stage
+      	if (job.progress_stage != null){
+                stage = job.progress_stage;
+                progress = job.percentage.toFixed(2);
+      	} else {
+                progress = 0;
+                stage = 'Downloading file';
+      	}
+
+      	// In job stage
+      	if (progress !== 0){
+                $('.progress-bar').css('width', progress + '%').text(progress + '%');
+      	}
+
+      	$('.progress-status').text(stage);
+      },
+      error: function(){
+        // Job is no loger in database which means it either finished successfuly
+        // or was killed. Either way, reload page.
+        clearInterval(interval);
+        location.reload(true);
+      }
+    })
+  },5000);

@@ -1,0 +1,32 @@
+- @id = source.id
+- @checked = @expanded.nil? ? {} : ((@expanded.include?(@id)) ? {checked: 'checked'} : {})
+ul
+  li id="source#{@id}" 
+    input type="checkbox" id="source#{@id}checkbox" *@checked
+    label for="source#{@id}checkbox" = source.name
+    ' 
+    .btn-group
+      button.btn.dropdown-toggle.btn-xs data-toggle="dropdown" id="##{source.name}"
+        span.caret
+      ul.dropdown-menu role="menu" aria-labelledby="dropdownMenu" style="padding-bottom:10px;margin-left:5px;"
+        li
+          = link_to 'Metadata...', source
+        li.disabled
+          = link_to 'Watch all views', '#'
+        - if current_user && current_user.has_any_role?(:admin, :agency_user, :agency_admin, :public) && AccessControl.allow_for_comment?(current_user, source)
+          li
+            = link_to 'Add comment', new_comment_path + "?source_id=#{@id}"
+    = render partial: 'comments/count_bubble', locals: {source: source}
+    ul.sources
+      - source.views.order(:name).each do |view|
+        li
+          - if @dashboard
+            button.btn.btn-link disabled="disabled" title="#{view.description}"
+              = view.name + " (v#{view.current_version})"
+          - else
+            button.btn.btn-link type="button" data-remote="true" data-url="?id=#{view.id}&selected=#{view.id}" title="#{view.description}" id="view#{view.id}"
+              = view.name + " (v#{view.current_version})"
+          - if user_signed_in?
+            - if current_user.has_any_role?(:admin, :agency_admin, :agency_user, :contributor, :librarian)
+              = render partial: 'comments/count_bubble', locals: {source: source, view: view}
+

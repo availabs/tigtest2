@@ -1,0 +1,45 @@
+h1 Listing views
+
+table
+  tr
+    th Name
+    th Description
+    th Source
+    th Current version
+    th Date starts at
+    th Date ends at
+    th Origin url
+    th User
+    th Rows updated at
+    th Rows updated by
+    th Topic area
+    th Download count
+    th Last displayed at
+    th View count
+    th
+    th
+    th
+
+  - @views.each do |view|
+    tr
+      td = view.name
+      td = view.description
+      td = view.source_id
+      td = view.current_version
+      td = view.date_starts_at
+      td = view.date_ends_at
+      td = view.origin_url
+      td = view.user_id
+      td = view.rows_updated_at
+      td = view.rows_updated_by_id
+      td = view.topic_area
+      td = view.download_count
+      td = view.last_displayed_at
+      td = view.view_count
+      td = link_to 'Show', view
+      td = link_to 'Edit', edit_view_path(view)
+      td = link_to 'Destroy', view, :confirm => 'Are you sure?', :method => :delete
+
+br
+
+= link_to 'New View', new_view_path

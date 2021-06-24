@@ -1,0 +1,39 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog Data Recovery
+  
+table.table.table-condensed.table-hover.table-bordered.table-striped.data-recovery-table#datatable
+  thead
+    tr
+      th Name
+      th Source
+      th Description
+      th Deleted at
+      th
+      th
+  tbody
+    - @views.each do |view|
+      tr
+        td= view.name
+        td= view.source.name
+        td= view.description.truncate(100)
+        td= view.deleted_at.strftime("%b %e, %Y %l:%M%P")
+        td= view.deleted_at
+        td.text-center= link_to("Restore", restore_view_path(view), data: {confirm: ("Are you sure?")}, :method => :get, :class => 'btn btn-primary btn-xs')
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "columnDefs": [
+        { "orderData": [4,3], "targets": 3 },
+        { "visible": false, "targets": 4 },
+        { "orderable": false, "targets": 5 },
+        { "searchable": false, "targets": 5 }
+      ],
+      "order": [[ 3, "desc" ]],
+      "searching": true,
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+  });

@@ -1,0 +1,41 @@
+= simple_form_for @study_area, html: {method: :put, class: 'form-vertical'} do |f|
+  - if @study_area.errors.any?
+    #error_explanation
+      h2 = "#{pluralize(@study_area.errors.count, "error")} prohibited this study area from being saved:"
+      ul
+        - @study_area.errors.full_messages.each do |message|
+          li = message
+
+  = f.error_notification
+  = display_base_errors @study_area
+
+  .col-md-8.col-md-offset-2.well.well-special
+    h1.text-center style="margin-top:0;"
+      strong Edit Study Area
+
+    .col-md-10.col-md-offset-1
+      hr
+    .col-md-8.col-md-offset-2
+      = f.hidden_field :user_id, value: (current_user.has_role?(:admin) && current_user.id != @study_area.user_id ? @study_area.user_id : current_user.id)
+      - unless determine_most_powerful_role(current_user) == 'Public User'
+        = f.input :published, as: :boolean, boolean_style: :inline, label: "Share with all users?", wrapper: :checkbox, wrapper_html: {class: "pull-right"}, label_html: {style: "margin-left:1em;"}
+      = f.input :name, input_html: {class: 'form-control'}
+      = f.input :description, input_html: {class: 'form-control'}
+      - unless determine_most_powerful_role(current_user) == 'Public User'
+        = f.association :viewers, collection: (User.all.reject{|u| u == current_user }.map{ |c| [(c.display_name.nil? ? c.email : c.display_name), c.id] }), label: 'Share With:', wrapper_html: {style: "margin-top:1em;"}, input_html: {id: 'study_area_viewers', class: 'form-control multiselect', multiple: true}
+  
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    = f.button :submit, 'Save', :id => 'submit-btn', :class => 'btn-primary', style: "margin-right:5px;"
+    = link_to 'Back', study_areas_path
+
+
+javascript:
+  $(document).ready(function(){
+    $('#study_area_viewers').multiselect({ 
+      numberDisplayed: 1,
+      enableFiltering: true,
+      enableCaseInsensitiveFiltering: true,
+      buttonWidth: '20em'
+    });
+  });
+  $('#study_area_viewers').multiselect('select', #{@study_area.viewers.map(&:id)});

@@ -1,0 +1,212 @@
+- unless current_user
+  p
+    = "You are currently viewing #{AccessControl.viewable_sources(nil).size} of the #{Source.count-1} available data sources in the Gateway. Click on one of the following sources and associated views to see the data in Table, Map or Chart form. "
+    = link_to 'Create an account', new_user_registration_path, style: "font-weight: bold; text-decoration: underline !important;"
+    = " or "
+    = link_to 'log in', new_user_session_path, style: "font-weight: bold; text-decoration: underline !important;"
+    = " to see more."
+
+.row.col-xs-12.no-padding
+  - if @show_catalog
+    div class=(@expand_catalog ? 'col-md-12' : 'col-md-7')
+      .navbar
+        nav.navbar-inner
+          = link_to 'Catalog', root_path, class: 'navbar-brand catalog', title: ""
+      .treeview
+        = render('sources/bonsai_tree_home')
+
+      .expand-all-sources.text-left.col-xs-6
+      - if @new_source_link_condition
+        = link_to @new_source_link_text, @path_to_source
+        = link_to "Expand All", "javascript:expandAllSources();", id: "expandAll", style: "#{@list_items_css}"
+        = link_to "Collapse All", "javascript:collapseAllSources();", id: "collapseAll", style: "#{@list_items_css}"
+        = link_to "Show Less", root_path, class: "pull-right"
+      
+
+  - if @show_recent || @show_contributions || @show_snap
+    div class=(@expand_recent || @expand_snap || @expand_contributions ? 'col-md-12' : 'col-md-5')
+      - if @show_recent
+        .navbar
+          nav.navbar-inner
+            = link_to 'Recent Activity', '/?expand=recent', class: 'navbar-brand', title: "Expand Recent Activity"
+
+        - @recents.sort_by{|activity| activity.updated_at}.reverse!.first(@expand_recent ? @expanded_limit : @dashboard_limit).each do |activity|
+          .recent_activity
+            - if activity.class == View
+              - if activity.rows_updated_by
+                = link_to view_path(activity) do
+                  em= "#{activity.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "#{activity.rows_updated_by.display_name} "
+                  = "updated '#{activity.name}'"
+              - else
+                = link_to view_path(activity) do
+                  em= "#{activity.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  = "'#{activity.name}' updated"
+            - elsif activity.class == Comment
+              - user = activity.user.nil? ? "Deleted User" : activity.user.display_name
+              - view = activity.view.nil? ? activity.source.name : activity.view.name
+              = link_to comment_path(activity.id) do
+                em= "#{activity.created_at.strftime("%b %e, %Y %l:%M%P")}: "
+                strong= "#{user} "
+                = "commented on '#{view}'"
+            - elsif activity.class == Source
+              - if activity.rows_updated_by
+                = link_to source_path(activity) do
+                  em= "#{activity.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "#{activity.rows_updated_by.display_name} "
+                  = "updated '#{activity.name}'"
+              - else
+                = link_to source_path(activity) do
+                  em= "#{activity.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  = "'#{activity.name}' updated"
+
+        .display-toggle.text-right
+          - if @expand_recent
+            = link_to 'show less', root_path
+          - else
+             = link_to 'Show More', '/?expand=recent'
+
+      - if @show_contributions
+        .navbar
+          nav.navbar-inner
+            = link_to 'New Contributions', '/?expand=contributions', class: 'navbar-brand', title: "Expand New Contributions"
+
+        - @new_contributions.sort_by{ |contribution| contribution.created_at}.reverse!.first(@expand_contributions ? 10 : 5).each do |contribution|
+          .recent_activity
+            - if contribution.class == View
+              - if contribution.rows_updated_by
+                = link_to view_path(contribution) do
+                  em= "#{contribution.created_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "#{contribution.rows_updated_by.display_name} "
+                  = "created '#{contribution.name}'"
+              - else
+                = link_to view_path(contribution) do
+                  em= "#{contribution.created_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  = "'#{contribution.name}' updated"
+            - elsif contribution.class == Upload
+              - user = contribution.user.nil? ? "Deleted User" : contribution.user.display_name
+              = link_to upload_path(contribution.id) do
+                em= "#{contribution.created_at.strftime("%b %e, %Y %l:%M%P")}: "
+                strong= "#{user} "
+                = "uploaded data to '#{contribution.view.name}'"
+            - elsif contribution.class == Source
+              - if contribution.rows_updated_by
+                = link_to source_path(contribution) do
+                  em= "#{contribution.created_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "#{contribution.rows_updated_by.display_name} "
+                  = "created '#{contribution.name}'"
+              - else
+                = link_to source_path(contribution) do
+                  em= "#{contribution.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  = "'#{contribution.name}' updated"
+
+        .display-toggle.text-right
+          - if @expand_contributions
+            = link_to 'show less', root_path
+          - else
+             = link_to 'Show More', '/?expand=contributions'
+
+      - if @show_snap
+        .navbar
+          nav.navbar-inner
+            = link_to 'My Snapshots', '/?expand=snap', class: 'navbar-brand', title: "Expand Snapshots"
+
+        - if @expand_snap
+          table.table.table-condensed.table-hover.table-bordered.table-striped#snapshots_table
+            thead
+              tr
+                th Name
+                th Description
+                th Status
+                th.text-center Edit
+                th.text-center Delete
+                th
+            tbody
+              - @snapshots.sort_by{|snapshot| snapshot.updated_at}.reverse!.each do |snapshot|
+                tr
+                  td.col-md-3= link_to snapshot.name, snapshot_path(snapshot), title: "Go to Snapshot"
+                  td.col-md-5= snapshot.description
+                  td.col-md-2
+                    - if snapshot.user == current_user
+                      - if snapshot.published?
+                        = 'Published'
+                      - elsif snapshot.viewers.empty?
+                        = 'Unshared'
+                      - else
+                        .shared-with= "Shared with #{pluralize(snapshot.viewers.count, 'user')}"
+                        javascript:
+                          $('.shared-with').tooltip({title: "#{snapshot.viewers.map{|u| u.display_name.nil? ? u.email : u.display_name}.join(", ")}"});
+                    - elsif snapshot.viewers.include?(current_user)
+                      = "Shared by "
+                      - if current_user.has_role?(:public)
+                        = user_name_or_email(snapshot.user)
+                      - else
+                        = link_to user_name_or_email(snapshot.user), user_path(snapshot.user)
+                    - else
+                      = "Published by "
+                      - if current_user.has_role?(:public)
+                        = user_name_or_email(snapshot.user)
+                      - else
+                        = link_to user_name_or_email(snapshot.user), user_path(snapshot.user)
+                  td.col-md-1.text-center
+                    - if snapshot.user == current_user
+                      = link_to edit_snapshot_path(snapshot) do
+                        i.fa.fa-edit
+                  td.col-md-1.text-center
+                    - if snapshot.user == current_user
+                      = link_to snapshot_path(snapshot), :method => :delete, :data => {:confirm => "Are you sure?"} do
+                        i.fa.fa-close
+                  td
+                    = snapshot.updated_at
+            
+        - else
+          - @snapshots.sort_by{|snapshot| snapshot.updated_at}.reverse!.first(@snap_limit).each do |snapshot|
+            .snapshot
+              - if snapshot.user == current_user
+                = link_to snapshot_path(snapshot), :title => "#{snapshot.description}" do
+                  em= "#{snapshot.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "You "
+                  - if snapshot.published?
+                    = "published '#{snapshot.name}' "
+                  - elsif !snapshot.viewers.empty?
+                    = "shared '#{snapshot.name}' with #{pluralize(snapshot.viewers.count, 'user')} "
+                  - else
+                    = "updated '#{snapshot.name}' "
+                = link_to edit_snapshot_path(snapshot), :class => "#{'shared-with' if !snapshot.viewers.nil?}" do
+                  em= "(#{snapshot.published? ? 'Published' : (snapshot.viewers.empty? ? 'Unshared' : 'Shared')})"
+              - elsif snapshot.viewers.include?(current_user)
+                = link_to snapshot_path(snapshot), :title => "#{snapshot.description}" do
+                  em= "#{snapshot.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "#{snapshot.user.display_name.nil? ? snapshot.user.email : snapshot.user.display_name} "
+                  = "shared '#{snapshot.name}'"
+              - else
+                = link_to snapshot_path(snapshot), :title => "#{snapshot.description}" do
+                  em= "#{snapshot.updated_at.strftime("%b %e, %Y %l:%M%P")}: "
+                  strong= "#{snapshot.user.display_name.nil? ? snapshot.user.email : snapshot.user.display_name} "
+                  = "published '#{snapshot.name}'"
+              javascript:
+                $('a.shared-with').tooltip({title: "#{snapshot.viewers.map{|u| u.display_name.nil? ? u.email : u.display_name}.join(", ")}"});
+
+        .display-toggle.text-right
+          - if @expand_snap
+            = link_to 'show less', root_path
+          - else
+            = link_to 'Show More', '/?expand=snap'
+
+- if (@expand_recent || @expand_snap || @expand_contributions)
+  javascript:
+    $(document).ready(function(){
+      var oTable = $('#snapshots_table').dataTable({
+        "order": [[ 5, "desc" ]],
+        "searching": true,
+        "columnDefs": [
+          {"orderable": false, "targets": [3,4]},
+          {"searchable": false, "targets": [3,4]},
+          {"visible": false, "targets": [5]}
+        ],
+        "lengthChange": true,
+        "pagingType": "full_numbers",
+        "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+      });
+      $('.breadcrumb .breadcrumb_link:first').html("<a href='/' title='Return to Catalog'>Catalog</a>");
+    });

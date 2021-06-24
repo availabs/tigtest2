@@ -1,0 +1,6 @@
+<% if @disclaimer.present? %>
+  $(function(){
+    $('#disclaimerText').html('<%= j(simple_format(auto_link(@disclaimer, sanitize: false), {}, sanitize: false).html_safe) %>');
+    $('#disclaimerModal').modal('show');
+  });
+<% end %>

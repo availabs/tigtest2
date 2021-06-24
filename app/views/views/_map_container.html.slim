@@ -1,0 +1,57 @@
+- is_downloadable = AccessControl.allow_for_download?(current_user, @view)
+#mapContainer.gateway-map-container.col-md-12  style="padding:0px;"
+  #sidebar.sidebar.collapsed
+    ul.sidebar-tabs role="tablist"
+      li
+        a href="#legend" title="View legend" role="tab"
+          i.fa.fa-bars
+      li
+        a href="#symbology" title="Adjust styles and symbology" role="tab"
+          i.fa.fa-adjust
+      li
+        a href="#filters" title="Adjust filters" role="tab"
+          i.fa.fa-filter
+      li
+        a href="#layers" title="Add/remove layers" role="tab"
+          i.fa.fa-plus
+          span id="layer_count" data-layer-count=1
+            '1
+      - if is_downloadable
+        li
+          a href="#export" title="Export/download the current map" role="tab"
+            i.fa.fa-download
+      li
+        a#restoreMap title="Restore the default map" role="button"
+          i.fa.fa-refresh
+      li
+        a href="#attribution" title="Attribution" role="tab"
+          i.fa.fa-info-circle
+    .sidebar-content.active
+      #legend.sidebar-pane.active
+        h4
+          = "Legends"
+      #symbology.sidebar-pane
+        = render partial: 'symbology_container', locals: {views: [@view]}
+      #filters.sidebar-pane
+        = render partial: 'filters_container', locals: {views: [@view]}
+      #layers.sidebar-pane
+        = render partial: 'layers_container'
+      - if is_downloadable
+        #export.sidebar-pane
+          = render partial: 'export_container', locals: {views: [@view]}
+      #attribution.sidebar-pane
+        h4
+          = "Attribution"
+
+  = LeafletMap({:mapid => 'map', :map_base_config => @map_base_config, :view_configs => @view_config, :map_snapshot_configs => @map_snapshot_configs, :scroll_wheel_zoom => true, :min_zoom => @map_base_config[:min_zoom], :class => "sidebar-map gateway-map" })
+
+  = render partial: 'views/map_searchbox'
+  
+  javascript:
+    $('#restoreMap').on('click', function(e){
+      $('#layers .checkbox[data-view-id!=' + "#{@view.id}" + '] input').attr('checked', false); //for some reason, FireFox remembers check state even if page reloading
+      gatewayMapApp.getMap().sidebarControl.close();
+      localStorage.removeItem("map-snapshot-#{@view.id}");
+      gatewayMapApp.disableCache();
+      window.location.reload();
+    });

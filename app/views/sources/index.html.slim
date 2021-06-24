@@ -1,0 +1,182 @@
+- unless current_user
+  p
+    = "You are currently viewing #{@sources_viewable_as_guest} of the #{@source_count} available data sources in the Gateway. Click on one of the following sources and associated views to see the data in Table, Map or Chart form. "
+    = link_to 'Create an account', new_user_registration_path, style: "font-weight: bold; text-decoration: underline !important;"
+    = " or "
+    = link_to 'log in', new_user_session_path, style: "font-weight: bold; text-decoration: underline !important;"
+    = " to see more."
+    
+.row
+  .col-md-12
+    .navbar
+      nav.navbar-inner
+        = link_to "#{@catalog_header}", root_path, class: 'navbar-brand catalog'
+
+    .row
+      #spinnerBounds.col-md-12
+        #viewToggle
+          
+        #notIt.col-md-6.treeview style="#{@list_items_css}"
+          = format_as_text @description 
+          -if @contributor
+            = render('sources/contributor_bonsai_tree')
+          -elsif @librarian
+            = render('sources/librarian_bonsai_tree')
+          -else
+            = render('sources/bonsai_tree')
+
+
+        #treeviewActions.col-md-3.col-md-offset-2 style="#{@list_items_css}"
+          strong
+            | Actions for:
+          ul.list-group style="list-style:none;" id="actionsMenu"
+            = render('actions')
+
+    .expand-all-sources.text-left.col-xs-6
+      - if @new_source_link_condition
+        = link_to @new_source_link_text, @path_to_source
+      = link_to "Expand All", "javascript:expandAllSources();", id: "expandAll", style: "#{@list_items_css}"
+      = link_to "Collapse All", "javascript:collapseAllSources();", id: "collapseAll", style: "#{@list_items_css}"
+      = link_to "Show Less", root_path, class: "pull-right"
+
+#disclaimerModal.modal.fade tabindex="-1" role="dialog" aria-hidden="true"
+  .modal-dialog
+    .modal-content.well.well-sm.well-special
+      .modal-header
+        h4.modal-title
+          strong Disclaimer
+      .modal-body.show-link
+        p#disclaimerText
+      .modal-footer style="padding-left:0; padding-bottom:0;"
+          a.btn.pull-right data-dismiss="modal" href="#"  OK
+
+javascript:
+  $(document).ready(function(){
+    // configure disclaimer modal dialog
+    $('#disclaimerModal').modal({
+      backdrop: 'static',
+      keyboard: false,
+      show: false
+    });
+
+    $('#treeview').on('click', '.source-name', function() {
+      $('#actionsMenu').html("");
+    });
+
+    $('#showTable, #showList').on('click', function(){
+      $('#treeview, #treeviewActions, #showTable, #showList, #expandAll, #collapseAll').toggle();
+      catalogView = $(this).attr('id') == "showTable" ? "table" : "list";
+      $.ajax({
+        type: "PATCH",
+        url: "sources/switch_catalog_view",
+        data: { "catalog_view": catalogView }
+      });
+    });
+
+    $('#showTable').bind('click', function (e) {
+      $('#treeview').empty();
+
+      var target = document.getElementById('spinnerBounds');
+      var spinner = new Spinner().spin(target);
+
+      $.post("sources/render_catalog_table")
+        .done(function(){
+          spinner.stop();
+        });
+    });
+
+    $('#showList').bind('click', function (e) {
+      $('#tableView').empty();
+
+      var target = document.getElementById('spinnerBounds');
+      var spinner = new Spinner().spin(target);
+
+      var data = {};
+      if(#{@contributor.present?}) {
+        data.contributor_id = "#{@contributor}";
+      } else if(#{@librarian.present?}) {
+        data.librarian_id = "#{@librarian}";
+      }
+      $.post("sources/render_catalog_list", data)
+        .done(function(){
+          spinner.stop();
+          setupTreeview('#{@selected}');
+        });
+    });
+
+    // Stop sending ajax request twice when click at a view under tree_view mode in the catalog
+    $('#treeview').on('ajax:before', 'a[data-remote=true], button[data-remote=true]', function () {
+     if ($(this).attr('ajax-loading')) {
+      $(this).removeAttr('ajax-loading');
+      return false;
+     } else {
+      $(this).attr('ajax-loading', true);
+     }
+    }).on('ajax:complete', function () {
+      $(this).removeAttr('ajax-loading');
+    });
+
+    // Display source disclaimer if available (only popup once per session)
+    var session_id = "#{request.session_options[:id]}";
+    var show_disclaimer = function(sourceId, sourceDisclaimer) {
+      if(sourceId) {
+        var key = "disclaimer_" + sourceId;
+        if(localStorage.getItem(key) != session_id) {
+          $.ajax({
+            url: 'sources/' + sourceId + '/get_disclaimer'
+          }).done(function(data) {
+            localStorage.setItem(key, session_id);
+          });
+        }
+      }
+    };
+
+    $('#treeview').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
+      var source_el = $(this).parents('.source-wrapper').find('.source-name');
+      var sourceId = source_el.attr('id');
+      var sourceDisclaimer = source_el.attr('data-disclaimer');
+      show_disclaimer(sourceId);
+    });
+
+    // Reset disclaimer text whenever modal closes
+    $('#disclaimerModal').on('hidden.bs.modal', function() {
+      $('#disclaimerText').html('');
+    });
+  });
+
+- if @table
+  javascript:
+    $(function(){
+      var target = document.getElementById('spinnerBounds');
+      var spinner = new Spinner().spin(target);
+
+      $.post("sources/render_catalog_table")
+        .done(function(){
+          spinner.stop();
+        });
+    });
+
+- else
+  javascript:
+    $(function(){
+      var target = document.getElementById('spinnerBounds');
+      var spinner = new Spinner().spin(target);
+
+      var data = {};
+      if(#{@contributor.present?}) {
+        data.contributor_id = "#{@contributor}";
+      } else if(#{@librarian.present?}) {
+        data.librarian_id = "#{@librarian}";
+      }
+      
+      if(#{request.params[:source].present?}) {
+        data.source_id = '#{request.params[:source]}'
+      }
+
+      console.log('test 123', '#{@selected}', data, '')
+      $.post("sources/render_catalog_list", data)
+        .done(function(){
+          spinner.stop();
+          setupTreeview('#{@selected}');
+        });
+    });

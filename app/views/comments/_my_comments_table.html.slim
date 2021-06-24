@@ -1,0 +1,56 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog My Comments
+  
+table.table.table-condensed.table-hover.table-bordered.table-striped.users-table#datatable
+  thead
+    tr
+      th Subject
+      th Description
+      th
+      th Source
+      th View
+      th App
+      th Updated At
+      th
+      th Admin Only?
+      th Status
+      th Edit
+      th Delete
+  tbody
+    - @comments.each do |comment|
+      - view = comment.view.nil? ? nil : comment.view
+      - app = comment.app.nil? ? nil : comment.app
+
+      tr
+        td.col-md-1= link_to comment.subject, comment_path(comment), title: "Go to comment"
+        td.col-md-3= comment.text.truncate(100)
+        td
+        td.col-md-2= link_to comment.source.name, source_path(comment.source), title: "Go to Source"
+        td.col-md-1
+          - if view
+            = link_to view.name, view_path(view), title: "Go to View"
+        td.col-md-1
+          - if app
+            = link_to app.capitalize, (view_path(view) + "/" + app), title: "Go to App"
+        td.col-md-1= comment.updated_at.strftime("%b %e, %Y %l:%M%P")
+        td= comment.updated_at
+        td.col-md-1.text-center
+          - if comment.admin_only == true
+            i.fa.fa-check
+              .hide-me= "true"
+          - else
+            i.fa.fa-close
+              .hide-me= "false"
+        td.col-md-1
+          - if comment.blocked_by_id.nil?
+            ' Visible
+          - else
+           = "Blocked by "
+           = link_to (User.find(comment.blocked_by_id).display_name.blank? ? User.find(comment.blocked_by_id).email : User.find(comment.blocked_by_id).display_name), user_path(User.find(comment.blocked_by_id))
+        td.col-md-1.text-center
+          = link_to edit_comment_path(comment) do
+            i.fa.fa-edit
+        td.col-md-1.text-center
+          = link_to comment_path(comment), :method => :delete, :data => {:confirm => "Are you sure?"} do
+            i.fa.fa-close

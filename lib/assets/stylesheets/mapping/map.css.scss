@@ -1,0 +1,197 @@
+html, body, .container{
+  height: 100%;
+}
+
+#main {
+  height: 100%;
+}
+
+.gateway-map-container {
+  height: 100%;
+  padding: 0px;
+}
+
+.gateway-map {
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar {
+  opacity: 0.8;
+}
+
+.leaflet-button-pressed{
+  background-color: grey !important; 
+}
+
+.leaflet-street-view-icon {
+  background-image: url('/init-assets/map/street_view.png');
+  width: 16px;
+  height: 24px;
+}
+
+.info {
+	font: 14px/16px Arial, Helvetica, sans-serif;
+	background: white;
+	background: rgba(255,255,255,0.8);
+	//box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	border-radius: 5px;
+  h4 {
+	 margin: 0 0 5px;
+	 color: #777;
+  }
+}
+
+.legend {
+  padding: 6px 8px;
+	text-align: left;
+	line-height: 18px;
+	color: #555;
+  i {
+    width: 18px;
+    height: 18px;
+  	float: left;
+  	margin-right: 8px;
+  }
+}
+
+.legend.point i {
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  margin-top: 2px;
+}
+
+.legend.polyline i {
+  width: 18px;
+  height: 4px;
+  margin-top: 5px;
+}
+		
+.leaflet-label-county {
+	background: transparent !important;
+	border: none;
+	color: #111;
+	display: block;
+	font: 14px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	position: absolute;
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+	        user-select: none;
+	white-space: nowrap;
+	z-index: 6;
+}
+
+.leaflet-label-region {
+	background: transparent !important;
+	border: none;
+	color: #002;
+	display: block;
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	position: absolute;
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+	        user-select: none;
+	white-space: nowrap;
+	z-index: 6;
+}
+
+/* overwrite default leaflet label styles */
+.leaflet-label:before,
+.leaflet-label:after {
+	border: none;
+}
+
+.leaflet-label-right:before,
+.leaflet-label-left:after {
+}
+
+.project-div-icon {
+    height: 9px;
+    width: 9px;
+    margin-top: -6px;
+    margin-left: -6px;
+    background: #eee;
+    opacity: 0.6;
+}
+
+.Transit-div-icon {
+    color: #03f;
+    border: 2px solid #03f;
+}
+
+.Roadways-div-icon {
+    color: #0c0;
+    border: 2px solid #0c0;
+}    
+
+.Other-div-icon {
+    color: #cc0;
+    border: 2px solid #cc0;
+}
+
+.Not-Specified-div-icon {
+    color: #000;
+    border: 2px solid #000;
+}    
+
+.label-icon-text {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    text-align: center;
+    vertical-align: middle;
+    //text-shadow: 0px 1px 1px #232323;
+    color: #232323;
+}
+
+.leaflet-container {
+  cursor: pointer;
+}
+
+.count-div-icon {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 10px;
+  border: 5px solid #000;
+}
+
+.sector-60th-street {
+  border-color: rgb(255, 255, 0);
+}
+
+.sector-brooklyn {
+  border-color: rgb(0, 255, 0);
+}
+
+.sector-staten-island {
+  border-color: rgb(255, 0, 255);
+}
+
+.sector-queens {
+  border-color: rgb(0, 0, 255);
+}
+
+.sector-new-jersey {
+  border-color: rgb(255, 0, 0);
+}
+
+.custom-break {
+  padding-top: 10px;
+}
+
+.error {
+  color: red;
+}
+
+.search-ui {
+  position:absolute !important;
+  top:10px;
+  right:50px;
+  z-index:999;
+  width: 180px !important;
+}

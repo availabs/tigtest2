@@ -1,0 +1,73 @@
+- color_scheme = @color_scheme if @symbology_subject == symbology.subject
+- color_scheme ||= symbology.quantile_breaks_color_scheme
+
+= simple_form_for :quantile_breaks_color_scheme, html: {action: '#', class:'quantile-breaks-symbology-form symbology-form form-horizontal'} do |f|
+  = f.hidden_field :symbology_id, name: 'symbology_id', value: symbology.id
+  = f.hidden_field :view_id, name: 'view_id', value: symbology.view.id
+  = f.hidden_field :subject, name: 'subject', value: symbology.subject
+
+  label.string.required.control-label for="quantile_breaks_color_scheme_start_color"
+    abbr title="required"
+      '*
+    'Start color
+
+  .input-group.color-picker
+    = f.input :start_color, input_html: {class: 'form-control colorfield validate-item', name: 'start_color', value: color_scheme[:start_color]}, label: false
+    span.input-group-addon
+      i
+  
+  label.string.required.control-label for="quantile_breaks_color_scheme_end_color"
+    abbr title="required"
+      '*
+    'End color
+  .input-group.color-picker
+    = f.input :end_color, input_html: {class: 'form-control colorfield validate-item', name: 'end_color', value: color_scheme[:end_color]}, label: false
+    span.input-group-addon
+      i
+  = f.input :class_count, collection: 3..10, input_html: {class: 'form-control validate-item', name: 'class_count', value: color_scheme[:class_count]}, include_blank: false, :selected => color_scheme[:class_count]
+  div style='text-align: center;'
+    button.btn.btn-primary.text-center.quantile-breaks-apply-button.apply-symbology  type="button" style="margin: 5px;"
+      'Apply
+    = render 'views/color_schemes/reset_symbology_button'
+  = render 'views/save_delete_symbology_buttons', symbology: symbology
+
+  javascript:
+    $(document).ready(function() {
+      $('.quantile-breaks-apply-button').off().on('click', function(e) {
+        var form = $(this).parents('form');
+        if(form.valid()) {
+          var viewId = form.find('input[name=view_id]').val();
+          var settings = {
+            subject: form.find('input[name=subject]').val(),
+            symbology_type: 'quantile_breaks',
+            color_scheme: {
+              start_color: form.find('input[name=start_color]').val(),
+              end_color: form.find('input[name=end_color]').val(),
+              class_count: parseInt(form.find('select[name=class_count]').val())
+            }
+          };
+
+          gatewayMapApp.updateViewSymbology(viewId, settings);
+        }
+      });
+
+      $('.quantile-breaks-symbology-form .save-as-symbology').off().on('click', function(e) {
+        var form = $(this).parents('form');
+        if(form.valid()) {
+          var symData = {
+            base_symbology_id: form.find('input[name=symbology_id]').val(),
+            color_schemes: {
+              start_color: form.find('input[name=start_color]').val(),
+              end_color: form.find('input[name=end_color]').val(),
+              class_count: parseInt(form.find('select[name=class_count]').val())
+            }
+          }
+
+          showSymbologySaveAsDialog(symData);
+        }
+      });
+    });
+
+
+
+

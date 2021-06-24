@@ -1,0 +1,62 @@
+= simple_form_for StudyArea.new, html: {method: :post, class: 'form-vertical'} do |f|
+  = f.hidden_field :user_id, value: current_user.id
+  - unless determine_most_powerful_role(current_user) == 'Public User'
+    = f.input :published, as: :boolean, boolean_style: :inline, label: "Share with all users?", wrapper: :checkbox, wrapper_html: {class: "pull-right"}, label_html: {style: "margin-left:1em;"}
+  = f.input :name, input_html: {class: 'form-control'}
+  = f.input :description, input_html: {class: 'form-control'}
+  - unless determine_most_powerful_role(current_user) == 'Public User'
+    = f.association :viewers, collection: (User.all.reject{|u| u == current_user }.map{ |c| [(c.display_name.nil? ? c.email : c.display_name), c.id] }), label: 'Share With:', wrapper_html: {style: "margin-top:1em;"}, input_html: {id: 'study_area_viewers', class: 'form-control multiselect', multiple: true}
+
+  br
+  button.btn.btn-primary#save_study type="button" style="margin-right:5px;" disabled="disabled" Save
+  a data-dismiss="modal" Close
+
+javascript:
+  $(document).ready(function(){
+    $('#study_area_viewers').multiselect({
+      multiple: true,
+      numberDisplayed: 1,
+      enableFiltering: true,
+      enableCaseInsensitiveFiltering: true,
+      buttonWidth: '20em'
+    });
+
+    $('#studyAreaModal').on('show.bs.modal', function() {
+      $('#study_area_name').on("keypress, keyup", function() {
+        if (!$.trim($('#study_area_name').val()).length) {
+          $('#save_study').attr('disabled', 'disabled');
+        } else {
+          $('#save_study').removeAttr('disabled');
+        }
+      });
+    });
+
+    $('#studyAreaModal').on('hide.bs.modal', function() {
+      gatewayMapApp.clearStudyArea();
+    });
+
+    $('#studyAreaModal').delegate('#save_study', 'click', function(){
+      $.ajax({
+        type: "POST",
+        url: '/study_areas',
+        data: {study_area: 
+                { 'user_id': $('#study_area_user_id').val(),
+                  'name': $('#study_area_name').val(),
+                  'description': $('#study_area_description').val(),
+                  'published': $('#study_area_published').prop('checked'),
+                  'wkt': gatewayMapApp.getStudyAreaWkt(),
+                  'viewer_ids': $('#study_area_viewers').val()
+                }
+              },
+        success: function (data) {
+          gatewayMapApp.clearStudyArea();
+          fadeModal('studyAreaModal', 'Study area', false);
+          newItem = "<li><a href='?area_id=" + data.id + "'> " + data.name + "</a></li>";
+          studyAreas = '#study-area-submenu ul.inner-menu';
+          $(studyAreas + ' li').add(newItem).sort(sortAlpha).appendTo(studyAreas);
+        },
+        dataType: 'json'
+      });
+      
+    });
+  });

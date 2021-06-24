@@ -1,0 +1,215 @@
+- source_or_view = params[:source] ? params[:source] : (params[:view] ? params[:view] : nil)
+- klass = params[:source] ? "Source" : (params[:view] ? "View" : nil)
+- obj = Object.const_get(klass)
+- prePopulated = obj.find(source_or_view).access_controls.where.not(agency_id: nil).sort_by{|ac| Agency.find(ac.agency_id).name }
+
+h2 style="margin-top:0;"
+  strong
+    | Access Controls - 
+    em= obj.find(source_or_view).name
+
+= simple_form_for @access_control do |f|
+  .row
+    .col-sm-9 style="margin-bottom: 2em;padding-top:1em;"
+      .navbar
+        nav.navbar-inner
+         .navbar-brand General
+
+      = f.error_notification
+      = display_base_errors @access_control
+
+      .row.text-center
+        .col-sm-3.col-sm-offset-3
+          h4 Show
+        .col-sm-3
+          h4 Download
+        .col-sm-3
+          h4 Comment
+          
+      .row
+        = f.simple_fields_for 'any' do |ac|
+          .col-sm-3.text-left
+            h4 * Guest User
+          = ac.hidden_field :source_id, value: params[:source] if params[:source]
+          = ac.hidden_field :view_id, value: params[:view] if params[:view]
+          = ac.hidden_field :role, value: nil
+          = ac.input :show, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: nil).nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: nil).show }, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+          = ac.input :download, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: nil).nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: nil).download}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+
+      hr
+
+      .row
+        = f.simple_fields_for 'public' do |ac|
+          .col-sm-3.text-left
+            h4 * Public User
+          = ac.hidden_field :source_id, value: params[:source] if params[:source]
+          = ac.hidden_field :view_id, value: params[:view] if params[:view]
+          = ac.hidden_field :role, value: "public"
+          = ac.input :show, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: "public").nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: "public").show}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+          = ac.input :download, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: "public").nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: "public").download}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+          = ac.input :comment, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: "public").nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: "public").comment}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+
+      hr
+
+      .row
+        = f.simple_fields_for 'agency' do |ac|
+          .col-sm-3.text-left
+            h4 * Agency User
+          = ac.hidden_field :source_id, value: params[:source] if params[:source]
+          = ac.hidden_field :view_id, value: params[:view] if params[:view]
+          = ac.hidden_field :role, value: "agency"
+          = ac.input :show, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: "agency", agency_id: nil, user_id: nil).nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: "agency", agency_id: nil, user_id: nil).show}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+          = ac.input :download, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: "agency", agency_id: nil, user_id: nil).nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: "agency", agency_id: nil, user_id: nil).download}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+          = ac.input :comment, as: :boolean, label: false, input_html: {checked: obj.find(source_or_view).access_controls.find_by(role: "agency", agency_id: nil, user_id: nil).nil? ? '' : obj.find(source_or_view).access_controls.find_by(role: "agency", agency_id: nil, user_id: nil).comment}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+
+    .col-sm-3
+      #addAgencies
+        h3= link_to 'Add Agencies', 'javascript:;', "data-toggle" => "collapse", "data-target" => "#agencies"
+
+      ul#agencies.collapse
+        - Agency.all.order(:name).each do |agency|
+          - bool = AccessControl.exist_for_object?(obj.find(source_or_view), agency)
+          li style="#{ bool == true ? 'display:none;' : ''}"
+            h5= link_to agency.name, 'javascript:;', class: "showAgency", "data-id" => agency.id
+
+      hr
+
+      #addUsers
+        h3= link_to 'Add Users', 'javascript:;', "data-toggle" => "collapse", "data-target" => "#existingAgencies"
+
+      ul#existingAgencies.collapse
+        - Agency.all.order(:name).each do |agency|
+          - bool = AccessControl.exist_for_object?(obj.find(source_or_view), agency)
+          li style="#{ bool == true ? '' : 'display:none;'}"
+            h5= link_to agency.name, 'javascript:;', "data-toggle" => "collapse", "data-target" => "#users#{agency.id}"
+            ul.collapse id="users#{agency.id}"
+              - agency.users.order(:display_name).each do |user|
+
+                - bool = AccessControl.exist_for_object?(obj.find(source_or_view), user)
+
+                li style="#{ bool == true ? 'display:none;' : '' }"
+                  = link_to user.display_name, 'javascript:;', class: "showUser", "data-id" => user.id, "data-agency-id" => agency.id
+
+  .row
+    .col-sm-9
+      .navbar
+        nav.navbar-inner
+         .navbar-brand style="margin-bottom:1.5em;" Agencies/Users
+
+      - prePopulated.each do |access_control|
+        .row.agencyRow
+          = f.simple_fields_for "#{access_control.agency_id}" do |ac|
+            .col-sm-3.text-left
+              h4= "* #{Agency.find(access_control.agency_id).name}"
+            = ac.hidden_field :source_id, value: access_control.source_id if access_control.source_id
+            = ac.hidden_field :view_id, value: access_control.view_id if access_control.view_id
+            = ac.hidden_field :agency_id, value: access_control.agency_id if access_control.agency_id
+            = ac.hidden_field :role, value: access_control.role if access_control.role
+            = ac.input :show, as: :boolean, label: false, input_html: {checked: access_control.show}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+            = ac.input :download, as: :boolean, label: false, input_html: {checked: access_control.download}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+            = ac.input :comment, as: :boolean, label: false, input_html: {checked: access_control.comment}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+
+        - Agency.find(access_control.agency_id).users.each do |user|
+          - query = (obj == Source ? AccessControl.where(source_id: source_or_view, user_id: user.id) : AccessControl.where(view_id: source_or_view, user_id: user.id))
+          - if query.count > 0
+            - query.each do |x|
+              .row.userRow
+                = f.simple_fields_for "user_#{user.id}" do |ac|
+                  .userLabel.col-sm-3.text-right
+                    h5= "* #{user.display_name}"
+                  = ac.hidden_field :source_id, value: x.source_id if x.source_id
+                  = ac.hidden_field :view_id, value: x.view_id if x.view_id
+                  = ac.hidden_field :user_id, value: x.user_id if x.user_id
+                  = ac.hidden_field :role, value: x.role if x.role
+                  = ac.input :show, as: :boolean, label: false, input_html: {checked: x.show}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+                  = ac.input :download, as: :boolean, label: false, input_html: {checked: x.download}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}
+                  = ac.input :comment, as: :boolean, label: false, input_html: {checked: x.comment}, boolean_style: :inline, wrapper_html: {class: "col-sm-3 text-center"}            
+        hr
+
+  .actions.pull-right
+    = f.submit 'Save', class: 'btn btn-primary', style: "margin-right:5px;"
+    = link_to("Reset", restore_default_access_controls_path(view: params[:view], source: params[:source]), data: {confirm: ("Are you sure?")}, class: 'btn btn-primary', style: "margin-right:5px;")
+    - if klass == "View" && AccessControl.exist_for_object?(View.find(source_or_view).source)
+      = link_to "Use Source Access Controls", use_source_access_controls_path(view: params[:view]), data: {confirm: "Are you sure?"}, class: "btn btn-primary", style: "margin-right:5px;"
+    = link_to 'Cancel', :back
+
+css:
+  h4 { margin-top: 0; }
+
+javascript:
+  $(document).ready(function() {
+    $(document).on('click', '.showAgency', function(){
+      if ($('form .row:last[class*=Row]').length) {
+        $('form .row:last').after('#{agency_fields}');
+      } else {
+        $('form .row:last .col-sm-9').append('#{agency_fields}');
+      }
+
+      name = $('.toParse > .agencyLabel').html().replace(/(\.\.\.)/, ' ' + $(this).text());
+      id = $(this).data('id');
+      hiddenFields = $('.toParse').children('input');
+      visibleFields = $('.toParse div.boolean input');
+      allFields = $.merge(hiddenFields, visibleFields);
+
+      $('.toParse > .agencyLabel').html(name);
+      $('#access_control_XXX_agency_id').val(id);
+
+      $.each(allFields, function(){
+        if ( $(this).attr('id') ) { $(this).attr('id', $(this).attr('id').replace(/(XXX)/g, id)); }
+        $(this).attr('name', $(this).attr('name').replace(/(XXX)/g, id));
+      });
+
+      $('.toParse').removeClass('toParse');
+      $(this).closest('li').hide();
+      $('ul#users' + id).closest('li').show();
+      $('form .row:last').addClass('agencyRow');
+    })
+
+    .on('click', '.removeAgency', function(){
+      name = $(this).parent().text().trim();
+      id = $(this).closest('.agencyLabel').siblings('input[id*=agency_id]').val();
+
+      $(this).closest('.row').prev('hr').remove();
+      $(this).closest('.row').remove();
+      
+      if ($('.userRow' + id).length) {
+        $('.userRow' + id).remove();
+        $('.showUser[data-agency-id=' + id + ']').closest('li').show();
+        $('#users' + id).closest('li').hide();
+      }
+
+      $('ul#users' + id).closest('li').hide();
+      $('.showAgency[data-id=' + id + ']').closest('li').show();
+    })
+
+    .on('click', '.showUser', function(){
+      $('form .agencyRow').has('input#access_control_' + $(this).data('agency-id') + '_role').after('#{user_field}');
+
+      name = $('.toParse > .userLabel').html().replace(/(\.\.\.)/, ' ' + $(this).text());
+      id = $(this).data('id');
+      agencyId = $(this).data('agency-id');
+      hiddenFields = $('.toParse').children('input');
+      visibleFields = $('.toParse div.boolean input');
+      allFields = $.merge(hiddenFields, visibleFields);
+
+      $('.toParse > .userLabel').html(name);
+      $('#access_control_user_XXX_user_id').val(id);
+
+      $.each(allFields, function(){
+        if ( $(this).attr('id') ) { $(this).attr('id', $(this).attr('id').replace(/(XXX)/g, id)); }
+        $(this).attr('name', $(this).attr('name').replace(/(XXX)/g, id));
+      });
+
+      $('.toParse').removeClass('toParse').addClass('userRow' + agencyId);
+      $(this).parent().hide();
+    })
+
+    .on('click', '.removeUser', function(){
+      name = $(this).parent().text().trim();
+      id = $(this).closest('.userLabel').siblings('input[id*=user_id]').val();
+      agencyId = $(this).closest('.row').attr('class').match(/\d+/);
+
+      $(this).closest('.row').remove();
+      $('.showUser[data-id=' + id + ']').parent().show();
+    });
+  });

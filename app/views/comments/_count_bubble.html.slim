@@ -1,0 +1,31 @@
+- source = nil if !source
+- view = nil if !view
+- app = !app ? nil : (app.to_s == 'view_metadata' ? 'metadata' : app)
+- in_table = false if !in_table
+- if current_user && Comment.is_commentable?(source, view, app) && current_user.has_any_role?(:admin, :agency_admin, :agency_user, :contributor, :librarian)
+  - @count = current_user.has_role?(:admin) ? comments_count(source, view, app, true) : comments_count(source, view, app, false, current_user.id)
+  - if @count > 0
+    - bubble_id = get_comment_bubble_id(source, view, app)
+    - if current_user.has_role?(:admin)
+      - @comments_full = Comment.where(blocked_by_id: nil).order("created_at desc").query_by(source, view, app)
+    - else
+      - my_admin_only = Comment.where(user_id: current_user.id, admin_only: true).query_by(source, view, app)
+      - other_comments = Comment.where(blocked_by_id: nil, admin_only: false).query_by(source, view, app)
+      - @comments_full = (my_admin_only + other_comments).sort_by(&:created_at).reverse!
+    - @comments = @comments_full[0,Rails.application.config.preview_comments_count]
+
+    - comment_bubble_id = in_table ? bubble_id + "-table" : bubble_id
+    - table_tag = '-table' if in_table
+    - icon_class = in_table ? '' : (view.nil? ? '' : 'view_comment')
+
+    a.comment-bubble id="#{comment_bubble_id}" type='button' href="#{comments_path(source_id: (source.id if source), view_id: (view.id if view), app: app)}"
+      .comment_icon class=icon_class
+        p= "#{@count > 99 ? '99+' : @count}"
+      javascript:
+        $("#" + "#{comment_bubble_id}").tooltip({
+          html: true,
+          container: 'body',
+          viewport: '#main',
+          placement: 'auto top',
+          title: "#{escape_javascript(render 'comments/preview_list')}"
+        });

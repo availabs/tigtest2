@@ -1,0 +1,5 @@
+<% unless @selected.blank? %>
+  $('#actionsMenu').html("<%=j render 'actions'%>");
+<% else %>
+  $('#actionsMenu').html("");
+<% end %>

@@ -1,0 +1,39 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog Agencies
+    
+table.table.table-condensed.table-hover.table-bordered.table-striped.users-table#datatable
+  thead
+    tr
+      th Name
+      th Description
+      th URL
+      th # of Users
+      th Created On
+      th
+  tbody
+    - @agencies.each do |agency|
+      tr
+        td= link_to agency.name, agency
+        td= agency.description
+        td= link_to agency.url, url_with_protocol(agency.url)
+        td= agency.users.count
+        td= agency.created_at.to_date
+        td.text-center= link_to("Delete agency", agency_path(agency), data: {confirm: ("Are you sure?")}, :method => :delete, :class => 'btn btn-primary btn-xs')
+
+= link_to "New Agency", new_agency_path
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "order": [[ 0, "asc" ]],
+      "searching": true,
+      "columnDefs": [
+        {"orderable": false, "targets": 5},
+        {"searchable": false, "targets": 5}
+      ],
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+  });

@@ -1,0 +1,49 @@
+tr
+  td style="min-width: 10em;"= link_to source.name, source_path(source)
+  td style="min-width: 10em;"= "---"
+  td style="min-width: 5.6em;"
+    - if user_signed_in?
+      - is_contributor = source.contributors.include?(current_user)
+      - is_librarian = source.librarians.include?(current_user)
+
+      = render partial: 'comments/count_bubble', locals: {source: source, in_table: true}
+
+      - if watches_exist_for_user?(current_user, source)
+        - watch = current_user.watches.find_by(source: source)
+
+        i.fa.fa-eye.pull-right id="source-watch-#{watch.id}" style="font-size:1.5em;" title="#{'Watched' unless watch.triggered?}"
+          - if watch.triggered?
+            = "!"
+            javascript:
+              $("#source-watch-#{watch.id}").tooltip({
+                html: true,
+                title: "#{escape_javascript(render 'watches/trigger_list', locals: {obj: source})}"
+              });
+      - if is_librarian
+        i.fa.fa-book.pull-right title="Librarian" style="font-size:1.5em;"
+      - if is_contributor
+        i.fa.fa-cloud-upload.pull-right title="Contributor" style="font-size:1.5em;"
+
+  td.text-center
+    - if @contributor
+      = render partial: 'contributor_menu', locals: {source: source}
+    - elsif @librarian
+      = render partial: 'librarian_menu', locals: {source: source}
+    - else
+      = render partial: 'default_menu', locals: {source: source}
+
+  - if source.agency
+    td= link_to source.agency.name, agency_path(source.agency)
+  - else
+    td= ""
+  td= source.topic_area
+  td.text-right= source.contributors.count
+  td.text-right= source.librarians.count
+  td.text-right= source.current_version
+  td.text-right
+  td.text-right
+  td.text-right
+  td= source.rows_updated_at.nil? ? "---" : source.rows_updated_at.strftime('%b %e, %Y at %H:%M %Z')
+  td= source.rows_updated_at
+  td= "---"
+  td= source.default_data_model.to_s

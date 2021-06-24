@@ -1,0 +1,23 @@
+= simple_form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => {:class => 'form-vertical' }) do |f|
+  = f.error_notification
+  = display_base_errors resource
+
+  .col-md-8.col-md-offset-2.well.well-special
+    h1.text-center style="margin-top:0;"
+      strong Sign Up
+
+    .col-md-8.col-md-offset-2
+      = f.input :display_name, :autofocus => true, :label => "Name", input_html: {class: 'form-control'}
+      = f.input :email, :required => true, input_html: {class: 'form-control'}
+      = f.input :phone, input_html: {class: 'form-control'}
+      = f.input :password, :required => true, input_html: {class: 'form-control'}
+      = f.input :password_confirmation, :required => true, input_html: {class: 'form-control'}
+
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    .pull-left
+      = f.button :submit, 'Sign up', :class => 'btn-primary'
+    .pull-right.text-right
+      = render "devise/shared/links"
+
+javascript:
+  $('.control-label').css('margin-top', '5px');

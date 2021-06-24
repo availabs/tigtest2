@@ -1,0 +1,16 @@
+- filter_form_id = "filter-form-#{@view.id}"
+= form_tag data_overlay_view_path, id: "#{filter_form_id}", method: :get, class: 'comparative-fact-form', remote: true do
+  .form-group
+    = render 'views/map_filters/value_column_filter'
+    div style="padding-left:10px;"
+      input#lower.number_range_filter.input-sm.form-control.number-field name="lower" type="text" value="#{@lower}"
+      'to
+      input#upper.number_range_filter.input-sm.form-control.number-field name="upper" type="text" value="#{@upper}"
+
+  '
+  .form-group style='text-align:center;'
+    = submit_tag 'Filter', class: 'btn btn-primary'
+
+= render partial: 'views/map_filters/form_callback', locals: {filter_container_id: filter_form_id, view_id: @view.id}
+
+= render partial: 'shared/numeric_only'

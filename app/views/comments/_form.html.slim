@@ -1,0 +1,37 @@
+= simple_form_for(@comment, html: {class:'form-vertical'}) do |f|
+  = f.error_notification
+  = display_base_errors @comment
+
+  .col-md-8.col-md-offset-2.well.well-special
+    = f.hidden_field :source_id, value: @source.id if @source
+    = f.hidden_field :view_id, value: @view.id if @view
+    = f.hidden_field :app, value: @app if@app
+
+    h1.text-center style="margin-top:0;"
+      strong Add Comment
+
+    .col-md-8.col-md-offset-2
+      h5.text-center
+        - if @source
+          = @source.name
+        - if @view
+          strong
+            |  
+            | / 
+          = @view.display_name
+        - if @app
+          strong
+            |  
+            | /   
+          = @app.titleize
+      = f.input :admin_only, as: :boolean, boolean_style: :inline, label: "Admin Only?", wrapper: :checkbox, wrapper_html: {class: "pull-right", title: "Prevent non-administrators from seeing this comment"}, label_html: {style: "margin-left:1em;"}
+      = f.input :subject, :autofocus => true, input_html: {class: 'form-control'}
+      = f.input :text, input_html: {rows: 10, class: 'form-control'}
+
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    = f.button :submit, 'Save', :class => 'btn-primary', style: "margin-right:5px;"
+    = link_to 'Back', :back
+
+javascript:
+  $('.col-md-12.well.well-small').closest('.row').removeClass('row');
+  $('.control-label').css('margin-top', '5px');

@@ -1,0 +1,5 @@
+== render partial: 'comments/full', locals: {comment: @comment, show: true}
+
+.col-md-8.col-md-offset-2 style="padding:0;"
+  = link_to "Edit", edit_comment_path(@comment), :class => "btn btn-primary", :style => "margin-right:5px;"
+  = link_to 'Back to Comments', comments_path

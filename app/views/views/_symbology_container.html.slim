@@ -1,0 +1,75 @@
+h4
+  = "Styles and Symbology"
+#symbologyContainer.panel-group role="tablist" aria-multiselectable="true"
+
+javascript:
+  $(document).ready(function() {
+    // validate colors
+    $.validator.addMethod( 'isColorValid', function(v, element){
+      var isValid = this.optional(element);
+      if(!isValid) {
+        var color = null;
+        try {
+          color = chroma.color(v);
+        } catch(err) {
+          color = null;
+        }
+
+        isValid = (color != null);
+      }
+      return isValid;
+
+    }, 'Invalid color' );
+
+    $.validator.addMethod( 'isMinValid', function(v, element){
+      var minV = parseFloat(v);
+      var isOptional = this.optional(element) && isNaN(minV);
+
+      var currentContainer = $(element).parents('fieldset');
+      var maxVElement = currentContainer.find('input.max-value')[0];
+      var maxV = parseFloat($(maxVElement).val());
+
+      var maxValid = isNaN(maxV) || 
+        ( !isNaN(minV) && minV <= maxV );
+
+      var prevContainer = currentContainer.prev('fieldset');
+      var prevMaxValid = true;
+      if(prevContainer.length > 0) {
+        var prevMaxVElement = prevContainer.find('input.max-value')[0];
+        var prevMaxV = parseFloat($(prevMaxVElement).val());
+        var prevMaxValid = isNaN(prevMaxV) || 
+        ( !isNaN(minV) && minV >= prevMaxV );
+      }
+
+      return isOptional || (maxValid && prevMaxValid);
+
+    }, "Min Value should be within the range of previous class's Max Value and current class's Max Value." );
+
+    $.validator.addMethod( 'isMaxValid', function(v, element){
+      var maxV = parseFloat(v);
+      var isOptional = this.optional(element) && isNaN(maxV);
+
+      var currentContainer = $(element).parents('fieldset');
+      var minVElement = currentContainer.find('input.min-value')[0];
+      var minV = parseFloat($(minVElement).val());
+      var minValid = isNaN(minV) || 
+        ( !isNaN(maxV) && maxV >= minV );
+
+      var nextContainer = currentContainer.next('fieldset');
+      var nextMinValid = true;
+      if(nextContainer.length > 0) {
+        var nextMinVElement = nextContainer.find('input.min-value')[0];
+        var nextMinV = parseFloat($(nextMinVElement).val());
+        var nextMinValid = isNaN(nextMinV) || 
+        ( !isNaN(maxV) && maxV <= nextMinV );
+      }
+
+      return isOptional || (minValid && nextMinValid);
+
+    }, "Max Value should be within the range of current class's Min Value and next class's Min Value." );
+
+    jQuery.validator.classRuleSettings.colorfield = { isColorValid: true };
+    jQuery.validator.classRuleSettings.validmin = { isMinValid: true };
+    jQuery.validator.classRuleSettings.validmax = { isMaxValid: true };
+  });
+    

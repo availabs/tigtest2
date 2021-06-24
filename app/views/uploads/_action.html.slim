@@ -1,0 +1,6 @@
+br
+.row
+  .col-md-2
+    .pull-right
+      = link_to name, link, remote: remote, class: 'btn btn-primary btn-lg',
+          data: {confirm: ("Are you sure?\n" + @message)}

@@ -1,0 +1,14 @@
+- format_string = '%d' if local_assigns[:format_string].nil?
+- offset = 0 if local_assigns[:offset].nil?
+.col-md-12#timeSliderContainer style="padding:0px"
+  label
+    '#{units_label}:&nbsp;
+  b #{format(format_string, min + offset)} &nbsp;
+  input.col-sm-6[ id="timeSlider" type="text" value=""
+    data-slider-min="#{min}" data-slider-max="#{max}"
+    data-slider-value="#{value}"
+    data-slider-ticks="#{values}" data-slider-handle="triangle" ]
+  b &nbsp; #{format(format_string, max + offset)}
+  ' &nbsp;(current:
+  span id="current" #{format(format_string, value + offset)}
+  ' )

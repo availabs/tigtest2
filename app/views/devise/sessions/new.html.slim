@@ -1,0 +1,20 @@
+= simple_form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => {:class => 'form-vertical' }) do |f|
+  = f.error_notification
+
+  .col-md-8.col-md-offset-2.well.well-special
+    h1.text-center style="margin-top:0;"
+      strong Sign In
+  
+    .col-md-8.col-md-offset-2
+      = f.input :email, :autofocus => true, input_html: {class: 'form-control'}
+      = f.input :password, input_html: {class: 'form-control'}
+      = f.input :remember_me, wrapper: :checkbox, class: 'form-control', label_html: {style: 'margin-left:20px;'}, :as => :boolean if devise_mapping.rememberable?
+
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    .pull-left
+      = f.button :submit, 'Sign In', :class => 'btn-primary'
+    .pull-right.text-right
+      = render "devise/shared/links"
+
+javascript:
+  $('.control-label').css('margin-top', '5px');

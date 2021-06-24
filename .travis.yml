@@ -1,0 +1,30 @@
+language: ruby
+cache: bundler
+bundler_args: "--without development"
+sudo: false
+dist: trusty
+sudo: false
+addons:
+  postgresql: "9.5"
+  apt:
+    packages:
+      - postgresql-9.5-postgis-2.3
+rvm:
+- 2.2.0
+before_install:
+  - gem install bundler
+before_script:
+- cp config/database.yml.travis config/database.yml
+script:
+- bundle exec /usr/bin/env RAILS_ENV=test rake db:drop db:create db:schema:load
+- bundle exec /usr/bin/env RAILS_ENV=test rspec
+- bundle exec /usr/bin/env RAILS_ENV=test cucumber --quiet --format progress --tags ~@javascript
+branches:
+  only:
+    - develop
+    - master
+notifications:
+  slack:
+    on_success: change
+    on_failure: always
+    secure: ZOnwRFxoIH52Q0OKlJWuHNH5z0oW0Ek0qJ5etwhd4Z0S9dhXZ0hM41tEhzLvjt5NRnuMkNXVfBCtqjhTT3RMS+Zm+xn8GMUXuRZZ6arSXRmMIqwR9SHYpPLzUkFl5dlncZ/mr0db4SdEEkhjvhacbKS1SoJWAgGmSB4hltb3RAI=

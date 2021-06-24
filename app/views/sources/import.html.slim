@@ -1,0 +1,101 @@
+.col-md-12
+  .well
+    legend
+      strong
+        | Import 
+        = @source.name
+    = simple_form_for  @view, method: :get, url: '/views/17/map',
+      html: {class: 'form-horizontal'} do |f|
+
+      .col-md-3 style="margin-bottom:20px;"
+        = f.input :name, label: 'Scenario', collection: ['2020 No Build No Build', '2035 Optimistic', '2015 Baseline', '2000 Backcast'], input_html: {class: 'form-control'}
+
+      .row
+        ul.thumbnails.unstyled.col-md-12
+          li.col-md-6
+            .thumbnail
+              h4 
+                strong Include
+              input type='checkbox'  Scenario Summary
+              br
+              input type='checkbox'  Zonal Results
+              ul.unstyled
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Long Term Model Results
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Validation Metric
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Tour/Trip Counts
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Other...
+              input type='checkbox'  Network Results
+              ul.unstyled
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  CBD Crossings
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  County Screenlines
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Link-by-link Volumes
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Other...
+              input type='checkbox'  Trip Tables
+              ul.unstyled
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  All Dimensions
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Peak Periods Only
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Transit Only
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Run Script 
+                  select
+                    option Mode share by time
+              input type='checkbox'  Skims
+              br
+              input type='checkbox'  Model Execution Log
+          li.col-md-6
+            .thumbnail
+              h4
+                strong Access
+              input type='radio'  All Members
+              br
+              input type='radio'  General Public + All Members
+              br
+              input type='radio'  Limited Access
+              ul.unstyled
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Steering Committee
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Modelers
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  NYMTC Members
+                li 
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  input type='checkbox'  Others...
+              input type='checkbox'  Expires on 
+              select
+                option = (DateTime.now + 1.month).strftime('%a, %e %b %Y')
+                option = (DateTime.now + 6.months).strftime('%a, %e %b %Y')
+                option = (DateTime.now + 1.year).strftime('%a, %e %b %Y')
+                option = (DateTime.now + 2.years).strftime('%a, %e %b %Y')
+
+        .col-md-2.pull-right
+          = f.button :submit, 'OK', class: 'btn btn-default', style: "margin-right:5px;"
+          = f.button :submit, 'Cancel', class: 'btn btn-default'
+
+        

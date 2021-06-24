@@ -1,0 +1,136 @@
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyBeCuOz-Vi_XafgtR0xaJZ1kQUz0ZJQl_E"
+.row.col-md-12.map-header
+  .row
+    .col-md-5
+      h4#viewname
+        = @view.name
+        - if @include_year_slider
+          ' &nbsp;(current:
+          span id="current" #{@slider_value}
+          ' )
+        - if @include_hour_slider
+          ' &nbsp;(current:
+          span id="currentHour" #{@hours_hash[@hour_slider_value]}
+          ' )
+        span.map-filter-string data-view-id="#{@view.id}"
+          - if @filter_string
+            ' :
+            = @filter_string
+    .col-md-4
+      = render partial: 'layouts/area_dropdown', locals: {area_name: @area_name, regions: @regions, subregions: @subregions, study_areas: @study_areas, current_data_name: @current_data_name}
+    - if @view.value_columns.try(:size) > 1
+      .col-md-3
+        = render 'views/value_column_dropdown'
+    .col-md-3.map_range style="#{ (!@lower.blank? || !@upper.blank?) ? '' : 'display:none;'}"
+      label
+        = "#{@view.statistic.nil? ? "" : @view.statistic.name} from #{@lower} to #{@upper} "
+      a.btn.btn-sm.btn-default href="?lower=&upper=" Reset
+
+  .row.col-md-12#sourceFilter
+    - if @include_year_slider
+      = render partial: 'yearslider', locals: {min: @slider_min, max: @slider_max, value: @slider_value, values: @slider_values}  
+    - if @include_hour_slider
+      = render partial: 'hourslider', locals: {min: @hour_slider_min, max: @hour_slider_max, value: @hour_slider_value, values: @hour_slider_values, hours: @hours_hash, view: @view} 
+
+= render 'map_container'
+= render 'symbology_save_as_dialog'
+    
+- if @area_geom_wkt
+  javascript: 
+    $(document).ready(function() {
+      var map = gatewayMapApp.getMap();
+      if(map) {
+        map.addAreaBoundaryLayerFromWKT("#{@area_geom_wkt}");
+      }
+    });
+
+javascript:
+  $(window).on('load resize', function(){
+    var minMapHeight = #{NymtcGateway::Application.config.min_map_height};
+    var newMainHeight = $('.container').outerHeight(true)
+        - $('.navbar').outerHeight(true)
+        - $('.breadcrumb').outerHeight(true)
+        - $('.footer').outerHeight(true);
+    var mapHeaderHeight = $('.map-header').outerHeight(true);
+    var newMapHeight = newMainHeight 
+        - mapHeaderHeight;
+    if (newMapHeight < minMapHeight) {
+      newMapHeight = minMapHeight;
+      newMainHeight = newMapHeight + mapHeaderHeight;
+    }
+    $('#main').height(newMainHeight);
+    $('.gateway-map-container').height(newMapHeight);
+    setTimeout(function(){
+      gatewayMapApp.getMap().LMmap.invalidateSize(true)
+      }, 500);
+  });
+
+  $('#legend').on('change', 'select', function(e) {
+    var el = e.currentTarget;
+    var layerId = $(el).parents('.legend').data('layer-id');
+    var symIndex = parseInt(el.value);
+    gatewayMapApp.switchLayerSymbology(layerId, symIndex);
+  });
+
+  window.onbeforeunload = function(){
+    if(gatewayMapApp.isCaching()) {
+      var snapshot_params = gatewayMapApp.exportParameters() || {};
+      snapshot_params.exported_at = (new Date()).toISOString(); //used to expire the cache
+      localStorage.setItem("map-snapshot-#{@view.id}", JSON.stringify(snapshot_params));
+    }
+  }
+
+- if user_signed_in?
+  javascript:
+    $('#snapshotModal').delegate('#save_snap', 'click', function(){
+      var addedLayers = $('#layers input:checked');
+      getAdditionalFilterValues(addedLayers, #{@view.id});
+
+      $.ajax({
+        type: "POST",
+        url: '/snapshots',
+        data: {snapshot: 
+                { 'user_id': #{current_user.id},
+                  'view_id': $('#snapshot_view_id').val(),
+                  'area_id': $('#snapshot_area_id').val(),
+                  'app': window.location.pathname.split("/").splice(-1)[0],
+                  'name': $('#snapshot_name').val(),
+                  'description': $('#snapshot_description').val(),
+                  'range_high': $('#snapshot_range_high').val(),
+                  'range_low': $('#snapshot_range_low').val(),
+                  'filters': $('#snapshot_filters').val(),
+                  'map_settings': JSON.stringify(gatewayMapApp.exportParameters()),
+                  'published': $('#snapshot_published').prop('checked'),
+                  'viewer_ids': $('#snapshot_viewers').val()
+                }
+              },
+        success: function () {
+          fadeModal('snapshotModal', 'Snapshot', false);
+        },
+        dataType: 'json'
+      });
+    });
+
+    $('.update_snapshot').click(function(){
+      var addedLayers = $('#layers input:checked');
+      getAdditionalFilterValues(addedLayers, #{@view.id});
+
+      $.ajax({
+        type: "PUT",
+        url: '/snapshots/#{params[:snapshot]}',
+        data: {snapshot:
+                { 'view_id': $('#snapshot_view_id').val(),
+                  'area_id': $('#snapshot_area_id').val(),
+                  'app': window.location.pathname.split("/").splice(-1)[0],
+                  'range_high': $('#snapshot_range_high').val(),
+                  'range_low': $('#snapshot_range_low').val(),
+                  'filters': $('#snapshot_filters').val(),
+                  'map_settings': JSON.stringify(gatewayMapApp.exportParameters())
+                }
+              },
+        success: function () {
+          fadeModal('existingSnapshotsModal', 'Snapshot', true);
+        },
+        dataType: 'json'
+      });
+    });

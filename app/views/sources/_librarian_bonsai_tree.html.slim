@@ -1,0 +1,80 @@
+ul.nav.nav-list
+  - @sources.each do |source|
+
+    - if source.librarians.include?(current_user)
+
+      li.source-wrapper.tree-toggler
+        = render partial: 'comments/count_bubble', locals: {source: source}
+        h4.source-name.collapsed id="#{source.id}" data-toggle="collapse" data-target="#sources#{source.id}" style="#{bonsai_source_css(source)}" title="#{source.description}"
+          strong= "#{source.name}..."
+
+        - if current_user
+          - if watches_exist_for_user?(current_user, source)
+            = render partial: 'sources/watch_icon_and_tooltip', locals: {obj: source}
+
+        - if AccessControl.determine_show_controls(current_user, source, true)
+          = render partial: 'sources/librarian_menu', locals: {source: source}
+
+        ul.sources.nav.nav-list.tree.collapse id="sources#{source.id}" style="margin-left:30px;"
+          - source.views.order(:name).each do |view|
+            - if view.librarians.include?(current_user)
+              li.view
+                = render partial: 'comments/count_bubble', locals: {source: source, view: view}
+                - if @dashboard
+                  a.btn.btn-link href="#{sources_path}" title="#{view.description}" style="#{bonsai_view_css(view)}"
+                    = view.name + " (v#{view.current_version})"
+                - else
+                  button.btn.btn-link type="button" data-remote="true" data-url="?id=#{view.id}&librarian_id=#{current_user.id}" title="#{view.description}" id="view#{view.id}" style="#{bonsai_view_css(view)}"
+                    = view.name + " (v#{view.current_version})"
+                - if current_user
+                  - if watches_exist_for_user?(current_user, view)
+                    = render partial: 'sources/watch_icon_and_tooltip', locals: {obj: view}
+
+    - else
+
+      - count = 0
+
+      - source.views.order(:name).each do |view|
+        - if view.librarians.include?(current_user)
+
+          - count += 1
+
+          - if count <= 1
+            li.source-wrapper.tree-toggler
+              = render partial: 'comments/count_bubble', locals: {source: source}
+              h4.source-name.collapsed id="#{source.id}" data-toggle="collapse" data-target="#sources#{source.id}" style="#{bonsai_source_css(source)}" title="#{source.description}"
+                strong= "#{source.name}..."
+
+              - if current_user
+                - if watches_exist_for_user?(current_user, source)
+                  = render partial: 'sources/watch_icon_and_tooltip', locals: {obj: source}
+
+              ul.sources.nav.nav-list.tree.collapse id="sources#{source.id}" style="margin-left:30px;"
+                li.view
+                  = render partial: 'comments/count_bubble', locals: {source: source, view: view}
+                  - if @dashboard
+                    a.btn.btn-link href="#{sources_path}" title="#{view.description}" style="#{bonsai_view_css(view)}"
+                      = view.name + " (v#{view.current_version})"
+                  - else
+                    button.btn.btn-link type="button" data-remote="true" data-url="?id=#{view.id}&librarian_id=#{current_user.id}" title="#{view.description}" id="view#{view.id}" style="#{bonsai_view_css(view)}"
+                      = view.name + " (v#{view.current_version})"
+                  - if current_user
+                    - if watches_exist_for_user?(current_user, view)
+                      = render partial: 'sources/watch_icon_and_tooltip', locals: {obj: view}
+          - else
+
+            li.view
+              = render partial: 'comments/count_bubble', locals: {source: source, view: view}  
+              button.btn.btn-link type="button" data-remote="true" data-url="?id=#{view.id}&librarian_id=#{current_user.id}" title="#{view.description}" id="view#{view.id}" data-source-id="#{source.id}" style="#{bonsai_view_css(view)}"
+                = view.name + " (v#{view.current_version})"
+              - if current_user
+                - if watches_exist_for_user?(current_user, view)
+                  = render partial: 'sources/watch_icon_and_tooltip', locals: {obj: view}
+
+javascript:
+  $('.breadcrumb div.active').text("Librarian");
+  misaligned = $('li.view:not(ul[id^=sources] > li.view)');
+  $.each(misaligned, function(idx, val){ 
+    id = $(val).children('button').attr('data-source-id');
+    $('ul#sources' + id).append($(val));
+  });

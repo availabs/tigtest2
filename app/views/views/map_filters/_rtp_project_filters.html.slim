@@ -1,0 +1,61 @@
+- filter_form_id = "filter-form-#{@view.id}"
+= form_tag data_overlay_view_path, id: "#{filter_form_id}", method: :get, class: 'rtp-project-form', remote: true do
+
+  .form-group
+    = content_tag :label, 'RTP ID'
+    = select_tag :rtp_id, options_for_select(@rtp_ids, @rtp_id), required: false, class: 'form-control rtp-filter rtp-id-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Year'
+    = select_tag :current_year, options_for_select(@years, @current_year), required: false, class: 'form-control rtp-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Cost'
+    div style="padding-left:10px;"
+      input#cost_lower.rtp-filter.number_range_filter.input-sm.form-control.number-field name="cost_lower" type="text" value="#{@cost_lower}"
+      'to
+      input#cost_upper.rtp-filter.number_range_filter.input-sm.form-control.number-field name="cost_upper" type="text" value="#{@cost_upper}"
+
+  .form-group
+    = content_tag :label, 'Project Type'
+    = select_tag :ptype, options_for_select(@ptypes, @current_ptype), required: false, class: 'form-control rtp-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Plan Portion'
+    = select_tag :plan_portion, options_for_select(@plan_portions, @current_plan_portion), required: false, class: 'form-control rtp-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Sponsor'
+    = select_tag :sponsor, options_for_select(@sponsors, @current_sponsor), required: false, class: 'form-control rtp-filter', include_blank: true
+
+  .form-group style='text-align:center;'
+    = submit_tag 'Filter', class: 'btn btn-primary', id: 'filter-submit'
+
+  div style='text-align: center;'
+    button.btn.btn-primary.text-center.clear-filters-button type="button"
+      'Clear
+
+= render partial: 'views/map_filters/form_callback', locals: {filter_container_id: filter_form_id, view_id: @view.id}
+
+= render partial: 'shared/numeric_only'
+
+javascript:
+  $(document).ready(function() {
+    $('.clear-filters-button').off().on('click', function(e) {
+      var form = $(this).parents('form');
+      $(form).find(".rtp-filter").each(function (index) {
+        $(this).val(null);
+      });
+      selectize.clear();
+      $(form).find("#filter-submit").click();
+    });
+  });
+  var $select = $("#" + "#{filter_form_id}" + " .rtp-id-filter").selectize({
+    create: true,
+    createOnBlur: true,
+    persist: false,
+    hideSelected: true
+  });
+  var selectize = $select[0].selectize;
+  selectize.createItem('#{@rtp_id}');
+

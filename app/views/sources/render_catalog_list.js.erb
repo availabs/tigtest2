@@ -1,0 +1,7 @@
+<% if @contributor %>
+  $('#treeview').append("<%= j(render partial: 'sources/contributor_bonsai_tree', locals: {sources: @sources}) %>");
+<% elsif @librarian %>
+  $('#treeview').append("<%= j(render partial: 'sources/librarian_bonsai_tree', locals: {sources: @sources}) %>");
+<% else %>
+  $('#treeview').append("<%= j(render partial: 'sources/bonsai_tree', locals: {sources: @sources}) %>");
+<% end %>

@@ -1,0 +1,3 @@
+sudo -u postgres psql -d gateway_test2 -c "insert into  public.speed_fact_tmc_version_mappings (data_year,tmc_year,created_at, updated_at) values (2019, 2017, NOW(), NOW())"
+
+sudo -u postgres psql -d gateway_test2 -c "insert into public.map_layers (id, title, url, name, category, layer_type, geometry_type, reference_column, label_column, visibility, label_visibility, version, style, highlight_style, attribution, predefined_symbology, created_at, updated_at) SELECT nextval('map_layers_id_seq'::regclass), title, url, 'tmc 2019', category, layer_type, geometry_type, reference_column,        label_column, visibility, label_visibility, '2019', style, highlight_style, attribution, predefined_symbology, NOW(), NOW()  FROM public.map_layers where id = 17";

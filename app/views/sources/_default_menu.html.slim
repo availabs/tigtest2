@@ -1,0 +1,36 @@
+.btn-group
+  button.btn.dropdown-toggle.btn-xs data-toggle="dropdown" id="##{source.name}"
+    span.caret
+  ul.dropdown-menu#actionDropdown role="menu" aria-labelledby="dropdownMenu"
+    li
+      = link_to 'View Metadata', source, title: "View a selection of fields that describe a Source's contents"
+    - if user_signed_in?
+      - is_contributor = source.contributors.include?(current_user)
+      - is_librarian = source.librarians.include?(current_user)
+
+      - if current_user.has_role?(:admin) || is_contributor || is_librarian || (current_user.has_role?(:agency_admin) && (source.agency == current_user.agency if source.agency))
+        li
+          - if current_user.has_role?(:admin)
+            = link_to 'Edit Metadata', edit_source_path(source, admin: true, contributor: is_contributor, librarian: is_librarian), title: "Edit a selection of fields that describe a Source's contents and origin"
+          - elsif current_user.has_role?(:agency_admin)
+            = link_to 'Edit Metadata', edit_source_path(source, agency_admin: true, contributor: is_contributor, librarian: is_librarian), title: "Edit a selection of fields that describe a Source's contents and origin"
+          - else
+            = link_to 'Edit Metadata', edit_source_path(source, contributor: is_contributor, librarian: is_librarian), title: "Edit a selection of fields that describe a Source's contents and origin"
+        li
+          - if source.access_controls.empty?
+            = link_to 'Create Access Controls', new_access_control_path(source: source.id), title: "Control who can view, download, or comment on a Source or View"
+          - else
+            - controls = source.access_controls.find_by(role: nil) || source.access_controls.find_by(role: 'public') || source.access_controls.find_by(role: 'agency')
+            = link_to 'Edit Access Controls', edit_access_control_path(controls, source: source.id), title: "Control who can view, download, or comment on a Source or View"
+    - if user_signed_in?
+      li
+        = link_to 'Watch All Views', watch_source_path(source, all_views: true), title: "Be alerted to any activity for all Views within this Source"
+      li
+        = link_to 'Unwatch All Views', unwatch_source_path(source, all_views: true), title: "Stop being alerted to activity for all Views within this Source"
+      li
+        - watched_text = current_user.watches.find_by(source: source).nil? ? 'Watch Source Only' : 'Unwatch Source Only'
+        - watched_link = current_user.watches.find_by(source: source).nil? ? watch_source_path(source) : unwatch_source_path(source)
+        = link_to watched_text, watched_link, title: "Be alerted to any activity for this Source"
+    - if current_user && current_user.has_any_role?(:admin, :agency_user, :agency_admin, :public) && AccessControl.allow_for_comment?(current_user, source)
+      li
+        = link_to 'Add comment', new_comment_path + "?source_id=#{source.id}", title: "Post a comment"

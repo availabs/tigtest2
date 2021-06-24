@@ -1,0 +1,4 @@
+https://github.com/Ignitewithus/heroku-buildpack-mdbtools
+https://github.com/camsys/heroku-buildpack-vendorbinaries.git
+https://github.com/camsys/heroku-buildpack-rgeo-prep.git
+https://github.com/heroku/heroku-buildpack-ruby.git

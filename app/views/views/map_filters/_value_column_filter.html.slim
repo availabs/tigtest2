@@ -1,0 +1,5 @@
+- columns = (@view.value_columns || []).collect {|col| [@view.column_label(col), col]}
+- if columns && columns.size > 1
+  .form-group
+    = content_tag :label, 'Column'
+    = select_tag :value_column, options_for_select(columns, @current_value_column), required: true, class: 'form-control value-column-filter'

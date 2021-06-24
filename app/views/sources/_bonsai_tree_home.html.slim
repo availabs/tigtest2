@@ -1,0 +1,40 @@
+ul.nav.nav-list
+  - @relevant_sources.each do |source|
+
+    - source_css = ''
+    - if user_signed_in?
+      - if @user_can_view_comments
+        - source_comments = source.comments.where(blocked_by_id: nil)
+        - my_comments_count = source.comments.where(blocked_by_id: nil, user: current_user).size
+        - other_nonadmin_comments_count = source.comments.where(blocked_by_id: nil, admin_only: false).size
+        - other_admin_only_count = source.comments.where(blocked_by_id: nil, admin_only: true).size
+
+        - if source_comments.nil? || (my_comments_count == 0 && other_nonadmin_comments_count == 0 && (current_user.has_role?(:admin) ? other_admin_only_count == 0 : other_admin_only_count > 0))
+          - source_css = 'margin-left:30px;'
+
+    li.source-wrapper.tree-toggler
+      = render partial: 'comments/count_bubble', locals: {source: source}
+      h4.source-name.collapsed id="#{source.id}" data-toggle="collapse" data-target="#sources#{source.id}" style="#{source_css}" title="#{source.short_description}"
+        -firstView = AccessControl.viewable_views(current_user, source)[0]
+        -is_contributor = firstView.contributors.include?(current_user)
+        -is_librarian = firstView.librarians.include?(current_user)
+        -if is_contributor
+          -contributor_id = current_user.id
+        -if is_librarian
+          -librarian_id = current_user.id
+        a.btn.btn-link href="#{sources_path}?id=#{source.id}&source=#{source.id}&selected=#{firstView.id}&contributor_id=#{contributor_id}&librarian_id=#{librarian_id}" title="#{firstView.short_description}"
+          strong= "#{source.name}"
+
+      - if current_user
+        - if watches_exist_for_user?(current_user, source)
+          = render partial: 'sources/watch_icon_and_tooltip', locals: {obj: source}
+        - if source.librarians.include?(current_user)
+          i.fa.fa-book.pull-right style="font-size:1.5em;margin-top:7px;" title="Librarian"
+        - if source.contributors.include?(current_user)
+          i.fa.fa-cloud-upload.pull-right style="font-size:1.5em;margin-top:7px;" title="Contributor"
+      - if AccessControl.determine_show_controls(current_user, source, true)
+        = render partial: 'sources/default_menu', locals: {source: source}
+
+    
+
+          

@@ -1,0 +1,87 @@
+- lower = ((@lower.nil? || @lower.blank?) ? ((params[:lower].nil? || params[:lower].blank?) ? nil : params[:lower].to_i) : @lower.to_i)
+- upper = ((@upper.nil? || @upper.blank?) ? ((params[:upper].nil? || params[:upper].blank?) ? nil : params[:upper].to_i) : @upper.to_i)
+- if @speed_fact_filters && !@speed_fact_filters.empty?
+  - @speed_fact_filters[:aggregate_to] = params[:aggregate_to] || @aggregate_to[1]
+  - @speed_fact_filters[:chart_type] = params[:chart_type] || @chart_type
+  - @speed_fact_filters[:slider_value] = session["slider-#{View.find(params[:id]).source.id}-year"] || @slider_value
+
+- if @speed_fact_filters.nil? || @speed_fact_filters.empty? || @speed_fact_filters.blank?
+  - if @count_fact_filters.nil? || @count_fact_filters.empty? || @count_fact_filters.blank?
+    - if params[:action] == 'chart'
+      - aggregate_to, aggregate_function = nil
+      - if @view.data_model != CountFact
+        - aggregate_to = params[:aggregate_to] || @aggregate_to[1]
+        - aggregate_function = params[:agg_function] || @agg_function
+      - filter_val = {aggregate_to: aggregate_to, chart_type: params[:chart_type] || @chart_type, slider_value: session["slider-#{View.find(params[:id]).source.id}-year"] || @slider_value, agg_function:  aggregate_function} 
+    - else
+      - filter_val = {}
+  - else
+    - filter_val = @count_fact_filters
+- else
+  - filter_val = @speed_fact_filters
+
+= simple_form_for @snapshot, html: {method: :post, class: 'form-vertical'} do |f|
+  = f.error_notification
+  = display_base_errors @snapshot
+
+  = f.hidden_field :view_id, value: View.find(params[:id]).id if params[:id]
+  = f.hidden_field :app, value: params[:action]
+  = f.hidden_field :area_id, value: (@area.nil? ? -1 : @area.id)
+  = f.hidden_field :range_high, value: upper
+  = f.hidden_field :range_low, value: lower
+  = f.hidden_field :filters, value: filter_val
+
+  p style="margin-bottom: 10px;"
+    strong
+      = "#{View.find(params[:id]).source.name} / "
+      = "#{View.find(params[:id]).display_name} / "
+      = params[:action].titleize
+
+  .row
+    .col-md-4
+      p.area_name
+        strong Area:
+        = " #{@area.nil? ? 'All' : @area.name}"
+    
+    .col-md-4
+      p.lower_limit style="#{!lower.blank? ? '' : 'display:none;'}"
+        strong Lower Limit:
+        = " #{lower}" if lower
+  
+    .col-md-4
+      p.upper_limit style="#{!upper.blank? ? '' : 'display:none;'}"
+        strong Upper Limit:
+        = " #{upper}" if upper
+
+  = f.input :published, as: :boolean, boolean_style: :inline, label: "Share with all users?", wrapper: :checkbox, wrapper_html: {class: "pull-right"}, label_html: {style: "margin-left:1em;"}
+  = f.input :name, input_html: {class: 'form-control', placeholder: 'Enter a descriptive name for your snapshot'}
+  = f.input :description, input_html: {rows: 5, class: 'form-control', placeholder: 'A helpful description of your snapshot may include information about the various filters you have applied (area, number of entries per page, hidden columns, etc.)'}
+  = f.association :viewers, collection: (User.all.reject{|u| u == current_user }.map{ |c| [(c.display_name.nil? ? c.email : c.display_name), c.id] }), label: 'Share With:', wrapper_html: {style: "margin-top:1em;"}, input_html: {id: 'snapshot_viewers', class: 'form-control multiselect', multiple: true}
+  
+  br
+  button.btn.btn-primary#save_snap type="button" style="margin-right:5px;" disabled="disabled" Save
+  a data-dismiss="modal" Close
+
+javascript:
+  $(document).ready(function() {
+    checkForRangeChange('lower');
+    checkForRangeChange('upper');
+    checkForMapFilterChange();
+
+    $('#snapshotModal').on('show.bs.modal', function() {
+      $('#snapshot_name').on("keypress, keyup", function() {
+        if (!$.trim($('#snapshot_name').val()).length) {
+          $('#save_snap').attr('disabled', 'disabled');
+        } else {
+          $('#save_snap').removeAttr('disabled');
+        }
+      });
+    });
+
+    $('#snapshot_viewers').multiselect({ 
+      numberDisplayed: 1,
+      enableFiltering: true,
+      enableCaseInsensitiveFiltering: true,
+      buttonWidth: '20em'
+    });
+  });

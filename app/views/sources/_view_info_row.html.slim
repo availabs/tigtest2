@@ -1,0 +1,76 @@
+tr
+  td style="min-width: 10em;"= link_to view.source.name, source_path(view.source)
+  td style="min-width: 10em;"= link_to view.name, view_path(view)
+  td style="min-width: 5.6em;"
+    - if user_signed_in?
+      - is_contributor = view.contributors.include?(current_user)
+      - is_librarian = view.librarians.include?(current_user)
+
+      = render partial: 'comments/count_bubble', locals: {source: view.source, view: view, in_table: true}
+
+      - if watches_exist_for_user?(current_user, view)
+        - watch = current_user.watches.find_by(view: view)
+
+        i.fa.fa-eye.pull-right id="source-watch-#{watch.id}" style="font-size:1.5em;" title="#{'Watched' unless watch.triggered?}"
+          - if watch.triggered?
+            = "!"
+            javascript:
+              $("#source-watch-#{watch.id}").tooltip({
+                html: true,
+                title: "#{escape_javascript(render 'watches/trigger_list', locals: {obj: view})}"
+              });
+      - if is_librarian
+        i.fa.fa-book.pull-right title="Librarian" style="font-size:1.5em;"
+      - if is_contributor
+        i.fa.fa-cloud-upload.pull-right title="Contributor" style="font-size:1.5em;"
+
+  td.text-center
+    .btn-group
+      button.btn.dropdown-toggle.btn-xs data-toggle="dropdown" id="##{view.name}"
+        span.caret
+      ul.dropdown-menu#actionDropdown class="actionDropdown#{view.id}" role="menu" aria-labelledby="dropdownMenu"
+        - if user_signed_in?
+          - filter_actions(current_user, view).each do |name|
+            - @class = ''          
+            - if view && view.has_action?(name)
+              - if @contributor
+                li= table_dropdown_item(view, name, 'contributor', current_user)
+              - elsif @librarian
+                li= table_dropdown_item(view, name, 'librarian', current_user)
+              - elsif current_user.has_role?(:agency_admin) && !current_user.has_role?(:admin) && !(@librarian || @contributor)
+                li= table_dropdown_item(view, name, 'agency_admin', current_user)
+              - elsif current_user.has_role?(:admin) && !(@librarian || @contributor)
+                li= table_dropdown_item(view, name, 'admin', current_user)
+              - else
+                li= table_dropdown_item(view, name, nil, current_user)
+        - else
+          - filter_actions(nil, view).each do |name|
+            - if view && view.has_action?(name)
+              li= table_dropdown_item(view, name, nil, nil)
+
+        - if view && current_user && (current_user.has_any_role?(:admin, :contributor, :librarian) || (current_user.has_role?(:agency_admin) && (view.source.agency == current_user.agency)))
+          - access_url = view.access_controls.empty? ? new_access_control_path(view: view.id) : edit_access_control_path(view.access_controls.find_by(role: [nil, 'public', 'agency']), view: view.id)
+          li= link_to 'Access Controls', access_url
+
+        - if view && current_user && current_user.has_any_role?(:admin, :agency_user, :agency_admin, :public) && AccessControl.allow_for_comment?(current_user, view)
+          li= link_to 'Add Comment', (new_comment_path + "?view_id=#{view.id}")
+
+        - if view && current_user && current_user.has_any_role?(:admin, :librarian)
+          li= link_to 'Delete', view_path(view), method: :delete, data: {confirm: "Are you sure?"}
+
+  td.col-md-1
+    - if view.source.agency
+      = link_to view.source.agency.name, agency_path(view.source.agency)
+    - else
+      = ""
+  td= view.topic_area
+  td.text-right= view.contributors.count
+  td.text-right= view.librarians.count
+  td.text-right= view.current_version
+  td.text-right= Upload.where(view: view).count
+  td.text-right= view.download_count
+  td.text-right= view.view_count
+  td= view.rows_updated_at.nil? ? '---' : view.rows_updated_at.strftime('%b %e, %Y at %H:%M %Z')
+  td= view.rows_updated_at
+  td= view.statistic ? view.statistic.name : "---"
+  td= view.data_model.to_s

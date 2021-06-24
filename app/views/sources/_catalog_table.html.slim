@@ -1,0 +1,66 @@
+table.table.table-condensed.table-hover.table-bordered.table-striped#datatable
+  thead
+    tr
+      th= "Source"
+      th= "View"
+      th= "Status"
+      th= "Actions"
+      th= "Agency"
+      th= "Topic Area"
+      th.integer.text-right= "Contributor Count"
+      th.integer.text-right= "Librarian Count"
+      th.integer.text-right= "Update Count"
+      th.integer.text-right= "Upload Count"
+      th.integer.text-right= "Download Count"
+      th.integer.text-right= "View Count"
+      th= "Last Update"
+      th
+      th= "Statistic"
+      th= "Data Model"
+  tbody
+    - sources.each do |source|
+      - if @contributor
+        = render partial: 'sources/contributor_rows', locals: {source: source}
+      - elsif @librarian
+        = render partial: 'sources/librarian_rows', locals: {source: source}
+      - else
+        = render partial: 'sources/default_rows', locals: {source: source}
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "order": [[ 0, "asc" ]],
+      "searching": true,
+      "columnDefs": [
+        {"orderable": false, "targets": [2, 3]},
+        {"searchable": false, "targets": [2, 3]},
+        {"orderData": [13,12], "targets": 12},
+        {"visible": false, "targets": 13}
+      ],
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+
+    oTable.yadcf([
+      {column_number: 0, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 1, filter_type: "text", filter_reset_button_text: false},
+      
+      
+      {column_number: 4, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 5, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 6, filter_type: "text", filter_reset_button_text: false, filter_default_label: ''},
+      {column_number: 7, filter_type: "text", filter_reset_button_text: false, filter_default_label: ''},
+      {column_number: 8, filter_type: "text", filter_reset_button_text: false, filter_default_label: ''},
+      {column_number: 9, filter_type: "text", filter_reset_button_text: false, filter_default_label: ''},
+      {column_number: 10, filter_type: "text", filter_reset_button_text: false, filter_default_label: ''},
+      {column_number: 11, filter_type: "text", filter_reset_button_text: false, filter_default_label: ''},
+
+      {column_number: 14, filter_type: "text", filter_reset_button_text: false},
+      {column_number: 15, filter_type: "text", filter_reset_button_text: false}
+    ]);
+  });
+
+css:
+  .yadcf-filter { max-width: 100px; }
+  .integer .yadcf-filter { max-width: 50px; }

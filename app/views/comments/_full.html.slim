@@ -1,0 +1,73 @@
+- view = comment.view.nil? ? nil : comment.view
+- app = comment.app.nil? ? nil : comment.app
+
+.col-md-8.col-md-offset-2.well.well-special
+  h1.text-center style="margin-top:0;"
+    strong Comment on:
+
+  .media id="comment-#{comment.id}" style="margin-top: 10px;"
+    .media-body
+      - if show == true
+        h5.text-center
+          = link_to comment.source.name, source_path(comment.source)
+          - if view
+            strong
+              |  
+              | / 
+            = link_to view.name, view_path(view)
+          - if app
+            strong
+              |  
+              | / 
+            = link_to app.capitalize, (view_path(view) + "/" + app)
+        br
+        .col-md-10.col-md-offset-1
+          - if comment.user
+            = link_to "#{comment.user.display_name.blank? ? comment.user.email : comment.user.display_name}", user_path(comment.user), class: "username"
+          - else
+            = 'Deleted User'
+          = " commented at #{comment.created_at.strftime('%m/%d/%y %I:%M%p')}"
+          hr
+          h4
+            strong
+              = comment.subject
+          - comment_text = comment.text
+          - if comment_text.length > 0
+            p
+              = h(comment_text).gsub(/\n/, '<br/>').html_safe
+
+      - else
+        small
+          = link_to comment.source.name, source_path(comment.source)
+          - if view
+            strong
+              |  
+              | / 
+            = link_to view.name, view_path(view)
+          - if app
+            strong
+              |  
+              | / 
+            = link_to app.capitalize, (view_path(view) + "/" + app)
+          br
+          - if comment.user
+            = link_to "#{comment.user.display_name.blank? ? comment.user.email : comment.user.display_name}", user_path(comment.user), class: "username"
+          - else
+            = 'deleted user'
+          = " commented at #{comment.created_at.strftime('%m/%d/%y %I:%M%p')}"
+        br
+        strong
+          = comment.subject
+        - comment_text = comment.text
+        - if comment_text.length > 0
+          p style="margin:0px;"
+            = h(comment_text).gsub(/\n/, '<br/>').html_safe
+
+javascript:
+  $(".username").tooltip({
+    html: true,
+    container: 'body',
+    viewport: '#main',
+    placement: 'auto top',
+    title: "#{comment.user ? comment.user.email : 'deleted user'}"
+  });

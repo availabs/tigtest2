@@ -1,0 +1,30 @@
+.col-md-12#yearSliderContainer style="padding:0px" title="Drag to filter records by year"
+  label
+    'Year:&nbsp;
+  b #{min} &nbsp;
+  input.col-sm-6[ id="yearSlider" type="text" value=""
+    data-slider-min="#{min}" data-slider-max="#{max}"
+    data-slider-value="#{value}"
+    data-slider-ticks="#{values}" data-slider-handle="triangle" ]
+  b &nbsp; #{max}
+
+javascript:
+  $('#yearSlider').slider().on('change', function(ev){
+    var prevYear = ev.value.oldValue;
+    var year = ev.value.newValue;
+    var allowYears = #{values};
+    if(!allowYears || allowYears.indexOf(year) < 0) {
+      $(this).slider('setValue', prevYear, false, false);
+      return false;
+    }
+    gatewayMapApp.switchYearColumn(year);
+    $('#current').text(year);
+    $('#yearSlider').data('slider-value', year);
+    $.ajax({
+      type: "POST",
+      url: "#{update_year_view_path}",
+      data: {
+        year: year
+      }
+    });
+  });

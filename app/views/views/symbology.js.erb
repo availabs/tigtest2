@@ -1,0 +1,11 @@
+var panelId = "#symbology-" + "<%= @view.id %>";
+if ($(panelId).length == 0) {
+  $('#symbologyContainer').append("<%=escape_javascript(render partial: 'symbology_panel', locals: {view: @view})%>");
+
+  if($('#symbologyContainer .panel-collapse.in').length == 0) {
+    $("#symbologyContainer .panel-collapse:first").collapse('show');
+  }
+} else {
+  $(panelId).replaceWith("<%=escape_javascript(render partial: 'symbology_panel', locals: {view: @view})%>");
+  $(panelId + " .panel-collapse").collapse('show');
+}

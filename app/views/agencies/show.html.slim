@@ -1,0 +1,40 @@
+.col-xs-8.col-xs-offset-2.well.well-special
+  .col-xs-6.agency-info style="border-right:1px solid grey;"
+    h2.text-center
+      strong= @agency.name
+    p.text-center
+      em= link_to @agency.url, url_with_protocol(@agency.url)
+    p= @agency.description
+
+  .col-xs-6.users
+    - if !@agency.users.empty?
+      h4.text-center style="margin-top:25px;"
+        em Users
+      ul#users.in style="margin-top:1em;"
+        - @agency.users.each do |user|
+          li style="margin-top:0.25em;"
+            = link_to (user.display_name.blank? ? user.email : user.display_name), user_path(user)
+      a.pull-right data-toggle="collapse" data-target="#users" show less
+
+    - else
+      h4.text-center style="margin-top:25px;"
+        em No users are a part of this agency.
+
+.col-xs-8.col-xs-offset-2 style="padding:0;"
+  - if current_user.has_any_role?(:admin, :agency_admin)
+    = link_to "Edit Agency", edit_agency_path(@agency), :class => "btn btn-primary", :style => "margin-right:5px;"
+    = link_to "Edit Users", edit_agency_path(@agency, existing_users: true), :class => "btn btn-primary", :style => "margin-right:5px;"
+    = link_to "New User", new_user_path(agency: @agency), :class => "btn btn-primary", :style => "margin-right:5px;"
+    - if current_user.has_role?(:admin)
+      = link_to "Back to All Agencies", agencies_path, :style => "margin-right:5px;"
+        
+  - else
+    = link_to "Back", :back
+            
+javascript:
+  toggleShowMoreLink();
+  if ( $('.agency-info').height() < $('.users').height() ) {
+    $('.agency-info').height($('.users').height());
+  } else {
+    $('.users').height($('.agency-info').height());
+  }

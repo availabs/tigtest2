@@ -1,0 +1,3 @@
+<%== @data_table.to_js %>
+<%== "var currentPop = #{@current_pop};" %>
+<%== "var currentPopStr = '#{number_with_precision(@current_pop*1000, precision: 0, delimiter: ',')}';" %>

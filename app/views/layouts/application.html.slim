@@ -1,0 +1,62 @@
+doctype html
+html
+  head
+    meta content="width=device-width, initial-scale=1.0" name="viewport" 
+    title= content_for?(:title) ? yield(:title) : "NYMTC Transportation Information Gateway"
+    meta content=(content_for?(:description) ? yield(:description) : "NYMTC Gateway") name="description" 
+    = stylesheet_link_tag "application", :media => "all"
+    = csrf_meta_tags
+    = yield(:head)
+    = javascript_include_tag "application"
+  body class=("#{controller_name} #{action_name}") 
+    .container
+      nav.navbar.header role="navigation" 
+        = render 'layouts/navigation'
+      .dont-print
+        = render_breadcrumbs :builder => ::BootstrapBreadcrumbsBuilder
+      = javascript_tag do
+        ' $('.breadcrumb').append('<div id="action-group" class="pull-right"><a style="padding-right: 5px;" href="#{html_help_path}##{@controller_tag}_#{@action_tag}#{@special}" target="_help" title="Display help for this page"><i class="fa fa-question fa-lg"></i></a></div>');
+      - if current_user && @view && @view_action && (params[:action] != 'edit') && current_user.has_any_role?(:admin, :agency_user, :agency_admin, :contributor, :librarian, :public) && AccessControl.allow_for_comment?(current_user, @view)
+        = javascript_tag do
+          ' $('.breadcrumb .pull-right').prepend('<a style="padding-right: 5px;" href="#{new_comment_path}?view_id=#{@view.id}&&app=#{@view_action}" title="Leave a comment on the current View and App for others"><i class="fa fa-comment"></i> Add Comment</a>' + "#{escape_javascript(render partial: 'comments/count_bubble', locals: {source: @view.source, view: @view, app: @view_action})}");
+
+      - if current_user && @view && @view_action && (params[:action] != 'edit') && current_user.has_any_role?(:admin, :agency_user, :agency_admin, :contributor, :librarian) && !AccessControl.allow_for_comment?(current_user, @view)
+        = javascript_tag do
+          ' $('.breadcrumb .pull-right').prepend('<span>View Comments </span>' + "#{escape_javascript(render partial: 'comments/count_bubble', locals: {source: @view.source, view: @view, app: @view_action})}");
+
+      - if current_user && @view && @view_action && (@view_action != :view_metadata) && (@view_action != :edit_metadata) && (@app != "metadata")
+        = javascript_tag do
+          ' $('.breadcrumb .pull-right').prepend('<a style="padding-right: 5px;" href="#snapshotModal" data-toggle="modal" title="Save filters and customizable features for later"><i class="fa fa-camera"></i> Take Snapshot</a>' + "#{escape_javascript(render partial: 'snapshots/existing_snapshots', locals: {view: @view, app: Snapshot.apps[@view_action]})}");
+        #snapshotModal.modal.fade tabindex="-1" role="dialog" aria-labelledby="snapshotModalLabel" aria-hidden="true"
+          .modal-dialog
+            .modal-content.well.well-sm.well-special
+              .modal-header
+                h4.modal-title
+                  strong New Snapshot
+              .modal-body
+                = render "snapshots/form"
+
+      - if @view_action == :chart
+        = javascript_tag do
+          ' $('.breadcrumb .pull-right').prepend('<a style="padding-right: 5px;" href="#" id="exportChart"><i class="fa fa-download"></i> Export to PNG</a>');
+          ' $('.breadcrumb .pull-right').prepend('<a style="padding-right: 5px;" href="#" id="exportChartToCSV"><i class="fa fa-download"></i> Export to CSV</a>');
+
+      - if current_user && @view && @view_action && (@view_action == :map)
+        #studyAreaModal.modal.fade tabindex="-1" role="dialog" aria-hidden="true"
+          .modal-dialog
+            .modal-content.well.well-sm.well-special
+              .modal-header
+                h4.modal-title
+                  strong New Study Area
+              .modal-body
+                = render "study_areas/form"
+
+      div id='main' role="main" 
+        = render 'layouts/messages'
+        = yield
+      /! ! end of #main
+      .footer.text-right.dont-print
+        = "v#{Rails.application.config.version}"
+    /! ! end of .container
+
+

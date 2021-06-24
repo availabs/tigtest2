@@ -1,0 +1,13 @@
+- commented_by = @comment.user ? (@comment.user.display_name.blank? ? @comment.user.email : @comment.user.display_name) : "(Deleted User)"
+h2
+  = "'#{@obj.name}' Update:"
+hr
+p
+  em= "#{commented_by}"
+  = " has added the comment '#{@comment.subject}' to"
+  strong= " '#{@obj.name}' "
+  = "on #{@comment.created_at.strftime("%b %e, %Y %l:%M%P")}."
+p
+  = "First, log into the Gateway and then "
+  = link_to "Click here", comment_url(@comment)
+  = " to view the comment."

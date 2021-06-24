@@ -1,0 +1,34 @@
+label
+  ' Column: 
+  - view_id = @view.id
+  span.dropdown.value-columns-dropdown data-view-id="#{view_id}"
+
+    button.btn.dropdown-toggle.btn-sm.btn-default data-toggle="dropdown" href="#" id="currentValueColumn"
+      ' #{@view.column_label(@current_value_column)}
+      b.caret
+      '
+    ul.dropdown-menu id="valueColumnDropdown" role="menu" aria-labelledby="dLabel"
+      - @view.value_columns.each do |column|
+        - column_label = @view.column_label(column)
+        li
+          a href='#' data-value-column="#{column}" data-value-column-label="#{column_label}" data-view-id="#{view_id}"
+            ' #{column_label}
+
+javascript:
+  $(function() {
+    $('#valueColumnDropdown a').on('click', function(){
+      //update dropdown title
+      $("#currentValueColumn").html($(this).text() + '<b class="caret"></b>');
+
+      //sync status with filter value_column dropdown
+      var viewId = $(this).data('view-id');
+      var currentValueColumn = $(this).data('value-column');
+      var filterForm = $('#filter-form-' + viewId);
+      filterForm.find('select[name=value_column]').val(currentValueColumn);
+      filterForm.find('input[name=lower]').val('');
+      filterForm.find('input[name=upper]').val('');
+      $('.map-header .map_range label').text('from to ');
+      $('.map-header .map_range').hide();
+      filterForm.submit();
+    });
+  });

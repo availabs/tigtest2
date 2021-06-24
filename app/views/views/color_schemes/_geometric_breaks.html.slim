@@ -1,0 +1,77 @@
+- color_scheme = @color_scheme if @symbology_subject == symbology.subject
+- color_scheme ||= symbology.geometric_breaks_color_scheme
+= simple_form_for :geometric_breaks_color_scheme, html: {action: '#', class:'geometric-breaks-symbology-form symbology-form form-horizontal'} do |f|
+  = f.hidden_field :symbology_id, name: 'symbology_id', value: symbology.id
+  = f.hidden_field :view_id, name: 'view_id', value: symbology.view.id
+  = f.hidden_field :subject, name: 'subject', value: symbology.subject
+  label.string.required.control-label for="geometric_breaks_color_scheme_start_color"
+    abbr title="required"
+      '*
+    'Start color
+
+  .input-group.color-picker
+    = f.input :start_color, input_html: {class: 'form-control colorfield validate-item', name: 'start_color', value: color_scheme[:start_color]}, label: false
+    span.input-group-addon
+      i
+  label.string.required.control-label for="quantile_breaks_color_scheme_start_color"
+    abbr title="required"
+      '*
+    'Start color
+
+  .input-group.color-picker
+    = f.input :end_color, input_html: {class: 'form-control colorfield validate-item', name: 'end_color', value: color_scheme[:end_color]}, label: false
+    span.input-group-addon
+      i
+  = f.input :gap_value, input_html: {class: 'form-control validate-item', type: 'number', name: 'gap_value', value: color_scheme[:gap_value]}
+  = f.input :multiplier, input_html: {class: 'form-control validate-item', type: 'number', name: 'multiplier', value: color_scheme[:multiplier]}, required: false
+  div style='text-align: center;'
+    button.btn.btn-primary.text-center.geometrics-breaks-apply-button.apply-symbology  type="button" style="margin: 5px;"
+      'Apply
+    = render 'views/color_schemes/reset_symbology_button'
+  = render 'views/save_delete_symbology_buttons', symbology: symbology
+  
+  javascript:
+    $(document).ready(function() {
+      $('.geometrics-breaks-apply-button').off().on('click', function(e) {
+        var form = $(this).parents('form');
+        if(form.valid()) {
+          var viewId = form.find('input[name=view_id]').val();
+          var settings = {
+            subject: form.find('input[name=subject]').val(),
+            symbology_type: 'geometric_breaks',
+            color_scheme: {
+              start_color: form.find('input[name=start_color]').val(),
+              end_color: form.find('input[name=end_color]').val(),
+              gap_value: parseFloat(form.find('input[name=gap_value]').val())
+            }
+          };
+          
+          var multiplier = form.find('input[name=multiplier]').val();
+          if(multiplier.trim()) {
+            settings.color_scheme.multiplier = parseFloat(multiplier);
+          }
+
+          gatewayMapApp.updateViewSymbology(viewId, settings);
+        }
+      });
+
+      $('.geometric-breaks-symbology-form .save-as-symbology').off().on('click', function(e) {
+        var form = $(this).parents('form');
+        if(form.valid()) {
+          var symData = {
+            base_symbology_id: form.find('input[name=symbology_id]').val(),
+            color_schemes: {
+              start_color: form.find('input[name=start_color]').val(),
+              end_color: form.find('input[name=end_color]').val(),
+              gap_value: parseFloat(form.find('input[name=gap_value]').val())
+            }
+          }
+
+          showSymbologySaveAsDialog(symData);
+        }
+      });
+    });
+
+
+
+

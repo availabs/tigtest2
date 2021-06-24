@@ -1,0 +1,17 @@
+// Place all the styles related to the Snapshots controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+#snapshotModal .modal-content.well.well-sm,
+#existingSnapshotsModal .modal-content.well.well-sm {
+  padding: 0;
+}
+
+#snapshotModal #submit-btn:disabled,
+.edit_snapshot #submit-btn:disabled {
+  background-color: #777777;
+}
+
+#existingSnapshotsModal a:hover {
+  color: #E5662E;
+}

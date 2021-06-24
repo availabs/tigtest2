@@ -1,0 +1,10 @@
+# Assume this is production environment
+production:
+  adapter: postgis
+  encoding: unicode
+  database: <%= ENV['DB_SCHEMA'] %>
+  pool: <%= ENV['DB_POOL_SIZE'].to_i %>
+  username: <%= ENV['DB_USER_NAME'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
+  host: <%= ENV['DB_HOST'] %>
+  port: <%= ENV['DB_PORT'].to_i %>

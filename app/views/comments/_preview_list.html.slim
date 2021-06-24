@@ -1,0 +1,5 @@
+- n = Rails.application.config.preview_comments_count
+- n = @count if n > @count
+= render partial: 'comments/comment', collection: @comments, locals: {is_preview: true}
+<br>
+small= "1-#{n} of #{@count}"

@@ -1,0 +1,9 @@
+- if lookup_context.template_exists?("views/map_filters/#{view.data_model.name.underscore}_filters", [], true)
+  .panel.panel-default id="filter-#{view.id}"
+    .panel-heading role="tab" id="filter-heading-#{view.id}"
+      h5.panel-title
+        a.collapsed data-toggle="collapse" data-parent="#filterContainer" href="#filter-collapse-#{view.id}" aria-expanded="false" aria-controls="filter-collapse-#{view.id}"
+          = view.name
+    .panel-collapse.collapse role="tabpanel" aria-labelledby="filter-heading-#{view.id}" id="filter-collapse-#{view.id}"
+      .panel-body
+        = render partial: "views/map_filters/#{view.data_model.name.underscore}_filters" rescue nil

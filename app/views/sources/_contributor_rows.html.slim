@@ -1,0 +1,11 @@
+- if source.contributors.include?(current_user)
+  = render partial: 'source_info_row', locals: {source: source}
+
+  - source.views.each do |view|
+    - if view.contributors.include?(current_user)
+      = render partial: 'view_info_row', locals: {view: view}
+
+- else
+  - source.views.each do |view|
+    - if view.contributors.include?(current_user)
+      = render partial: 'view_info_row', locals: {view: view}

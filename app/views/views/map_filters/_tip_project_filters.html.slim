@@ -1,0 +1,57 @@
+- filter_form_id = "filter-form-#{@view.id}"
+= form_tag data_overlay_view_path, id: "#{filter_form_id}", method: :get, class: 'tip-project-form', remote: true do
+
+  .form-group
+    = content_tag :label, 'TIP ID'
+    = select_tag :tip_id, options_for_select(@tip_ids, @tip_id), required: false, class: 'form-control tip-filter tip-id-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Project Type'
+    = select_tag :ptype, options_for_select(@ptypes, @current_ptype), required: false, class: 'form-control tip-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'MPO Name'
+    = select_tag :mpo, options_for_select(@mpos, @current_mpo), required: false, class: 'form-control tip-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Agency'
+    = select_tag :sponsor, options_for_select(@sponsors, @current_sponsor), required: false, class: 'form-control tip-filter', include_blank: true
+
+  .form-group
+    = content_tag :label, 'Cost'
+    div style="padding-left:10px;"
+      input#cost_lower.tip-filter.number_range_filter.input-sm.form-control.number-field name="cost_lower" type="text" value="#{@cost_lower}"
+      'to
+      input#cost_upper.tip-filter.number_range_filter.input-sm.form-control.number-field name="cost_upper" type="text" value="#{@cost_upper}"
+
+  .form-group style='text-align:center;'
+    = submit_tag 'Filter', class: 'btn btn-primary', id: 'filter-submit'
+
+  div style='text-align: center;'
+    button.btn.btn-primary.text-center.clear-filters-button type="button"
+      'Clear
+
+= render partial: 'views/map_filters/form_callback', locals: {filter_container_id: filter_form_id, view_id: @view.id}
+
+= render partial: 'shared/numeric_only'
+
+javascript:
+  $(document).ready(function() {
+    $('.clear-filters-button').off().on('click', function(e) {
+      var form = $(this).parents('form');
+      $(form).find(".tip-filter").each(function (index) {
+        $(this).val(null);
+      });
+      selectize.clear();
+      $(form).find("#filter-submit").click();
+    });
+
+    var $select = $("#" + "#{filter_form_id}" + " .tip-id-filter").selectize({
+      create: true,
+      createOnBlur: true,
+      persist: false,
+      hideSelected: true
+    });
+    var selectize = $select[0].selectize;
+    selectize.createItem('#{@tip_id}');
+  });

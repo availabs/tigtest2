@@ -1,0 +1,23 @@
+- if obj.class == Source
+  - watch = current_user.watches.find_by(source: obj)
+
+  i.fa.fa-eye.pull-right id="source-watch-#{watch.id}" style="font-size:1.5em;margin-top:7px;" title="#{'Watched' unless watch.triggered?}"
+    - if watch.triggered?
+      = "!"
+      javascript:
+        $("#source-watch-#{watch.id}").tooltip({
+          html: true,
+          title: "#{escape_javascript(render 'watches/trigger_list', locals: {obj: obj})}"
+        });
+
+- else
+  - watch = current_user.watches.find_by(view: obj)
+
+  i.fa.fa-eye.pull-right id="view-watch-#{watch.id}" title="#{'Watched' unless watch.triggered?}"
+    - if watch.triggered?
+      = "!"
+      javascript:
+        $("#view-watch-#{watch.id}").tooltip({
+          html: true,
+          title: "#{escape_javascript(render 'watches/trigger_list', locals: {obj: obj})}"
+        });

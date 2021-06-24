@@ -1,0 +1,20 @@
+.col-md-12.well.well-small
+  h2.text-center style="margin-top:0;"
+    strong
+      | Edit #{@user.display_name}
+  = simple_form_for(@user, :url => registration_path(@user), :html => { :method => :put, :class => 'form-vertical col-md-6 col-md-offset-3' }) do |f|
+    = f.error_notification
+    = display_base_errors @user
+    = f.input :display_name, :autofocus => true, :label => "Name", input_html: {class: 'form-control'}
+    = f.input :email, :required => true, input_html: {class: 'form-control'}
+    = f.input :phone, input_html: {class: 'form-control'}
+    = f.input :recent_activity_dashboard_limit, :label => 'Max Nº of recent activities on dashboard', :required => false, input_html: {class: 'form-control'}
+    = f.input :recent_activity_expanded_limit, :label => 'Max Nº of recent activities when expanded', :required => false, input_html: {class: 'form-control'}
+    = f.input :password, :autocomplete => "off", :hint => "leave it blank if you don't want to change it", :required => false, input_html: {class: 'form-control'}
+    = f.input :password_confirmation, :required => false, input_html: {class: 'form-control'}
+    = f.input :current_password, :hint => "we need your current password to confirm your changes", :required => true, input_html: {class: 'form-control'}
+    = f.button :submit, 'Update', :class => 'btn-primary'
+
+javascript:
+  $('.col-md-12.well.well-small').closest('.row').removeClass('row');
+  $('.control-label').css('margin-top', '5px');

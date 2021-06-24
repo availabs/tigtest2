@@ -1,0 +1,42 @@
+- is_speed_fact_model = view.data_model == SpeedFact
+- offset = is_speed_fact_model ? -1 : 0
+- value = value.to_i
+- value = ( is_speed_fact_model ? SpeedFact::MID_HOURS_PER_PERIOD[value] : LinkSpeedFact::MID_HOURS_PER_PERIOD[value] ) if value < 0
+- format_string = '%02d:00'
+.col-md-12#hourSliderContainer style="padding:0px" title="Drag to change the hour displayed"
+  label
+    'Hour:&nbsp;
+  b #{format(format_string, min + offset)} &nbsp;
+  input[ id="hourSlider" type="text" value="" data-view-id="#{@view.id}"
+    data-slider-min="#{min}" data-slider-max="#{max}"
+    data-slider-value="#{value}"
+    data-slider-ticks="#{values}" data-slider-handle="triangle" ]
+  b &nbsp; #{format(format_string, max + offset)}
+
+javascript:
+  $(document).ready(function() {
+    var hours = #{hours.to_json.html_safe};
+    var is_speed_fact_model = #{is_speed_fact_model};
+    $('#hourSlider').slider({
+      formatter: function(value) {
+        return $.formatNumber(is_speed_fact_model ? (value-1) : value, {format:'00', locale:'us'}) + ':00';
+      }
+    }).on('change', function(ev){
+      var prevHour = ev.value.oldValue;
+      var hour = ev.value.newValue;
+      var allowHours = #{values};
+      if(!allowHours || allowHours.indexOf(hour) < 0) {
+        $(this).slider('setValue', prevHour, false, false);
+        return false;
+      }
+
+      $('#currentHour').text(hours[hour]);
+      
+      $('#hourSlider').data('slider-value', hour);
+      
+      //update hour filter value
+      $("#filter-#{view.id} form select[name=hour]").val(hour);
+      //apply filter
+      $("#filter-#{view.id} form").submit();
+    });
+  });

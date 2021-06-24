@@ -1,0 +1,97 @@
+= simple_form_for @source do |f|
+  = f.error_notification
+
+  - agency_id_val = @source.agency_id || ((current_user.agency.nil? || current_user.agency.name == 'CS') ? Agency.find_by(name: 'NYMTC').id : current_user.agency.id)
+
+  .col-xs-12 style="padding:0;"
+    .col-md-10.col-md-offset-1.well.well-special
+      h1.text-center style="margin-top:0;"
+        - if @source.id.nil?
+          strong New Source
+        - else
+          strong Edit Source
+
+      .col-md-8.col-md-offset-2
+        = f.hidden_field :user_id, value: current_user.id
+        = f.hidden_field :rows_updated_by_id, value: current_user.id
+        
+        - unless @admin
+          = f.hidden_field :agency_id, value: agency_id_val
+        
+        - if @contributor || @librarian || @admin
+          = f.input :name, input_html: {class: 'form-control'}
+          = f.input :description, input_html: {class: 'form-control'}
+          
+          - if @admin
+            = f.association :agency, input_html: {class: 'form-control'}
+          - else
+            = f.label 'Agency'
+            = text_field_tag 'Agency', nil, class: 'form-control', disabled: true, placeholder: Agency.find(agency_id_val).name
+
+          - if @librarian || @admin || @agency_admin
+            = f.input :default_data_model, collection: Rails.application.config.data_models.collect(&:camelize).sort, input_html: {class: 'form-control'}
+
+          = f.input :current_version, input_html: {class: 'form-control'}
+          = f.input :data_starts_at, as: :string, input_html: {class: 'form-control', data: {value: (@source.data_starts_at.nil? ? nil : @source.data_starts_at.strftime("%Y/%m/%d"))}}
+          = f.input :data_ends_at, as: :string, input_html: {class: 'form-control', data: {value: (@source.data_ends_at.nil? ? nil : @source.data_ends_at.strftime("%Y/%m/%d"))}}
+          = f.input :origin_url, label: "Origin URL", input_html: {class: 'form-control'}
+          .hide-me
+            = f.input :topic_area, input_html: {class: 'form-control'}
+            = f.input :source_type, input_html: {class: 'form-control'}
+
+          = f.input :disclaimer, input_html: {class: 'form-control'}
+
+
+        - if !@admin && (@contributor || @agency_admin)
+          = f.association :contributors, collection: @contributors, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'source_contributors', class: 'form-control multiselect', multiple: true}
+
+        - if @admin
+          = f.association :contributors, as: :grouped_select, collection: @admin_contributors, group_method: :last, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'source_contributors', class: 'form-control multiselect', multiple: true}
+
+        - if !@admin && (@librarian || @agency_admin)
+          = f.association :librarians, collection: @librarians, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'source_librarians', class: 'form-control multiselect', multiple: true}
+
+        - if @admin
+          = f.association :librarians, as: :grouped_select, collection: @admin_librarians, group_method: :last, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'source_librarians', class: 'form-control multiselect', multiple: true}
+
+    .col-md-10.col-md-offset-1.actions style="padding:0;"
+      = f.submit 'Save', class: 'btn btn-primary', style: "margin-right:5px;"
+      = link_to 'Cancel', :back
+
+javascript:
+  $('#source_data_starts_at, #source_data_ends_at').datetimepicker({
+    viewMode: "years",
+    format: "MMMM D YYYY",
+    minDate: moment(new Date("1965/01/01")),
+    maxDate: moment(new Date("2100/01/01")),
+    icons: {
+      time: 'fa fa-clock-o',
+      date: 'fa fa-calendar',
+      up: 'fa fa-chevron-up',
+      down: 'fa fa-chevron-down',
+      previous: 'fa fa-chevron-left',
+      next: 'fa fa-chevron-right'
+    }
+  });
+  
+  $(function(){
+    if ("#{@source.data_starts_at.nil?}" == "false") {
+      startDate = moment(new Date($('#source_data_starts_at').attr('data-value')));
+      $('#source_data_starts_at').data('DateTimePicker').defaultDate(startDate);
+    }
+    if ("#{@source.data_ends_at.nil?}" == "false") {
+      endDate = moment(new Date($('#source_data_ends_at').attr('data-value')));
+      $('#source_data_ends_at').data('DateTimePicker').defaultDate(endDate);
+    }
+  });
+
+  $('#source_contributors, #source_librarians').multiselect({ 
+    numberDisplayed: 1,
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    includeSelectAllOption: true,
+    buttonWidth: '20em'
+  });
+
+  $('.col-md-12.well.well-small').closest('.row').removeClass('row');
+  $('.control-label').css('margin-top', '5px');

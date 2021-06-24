@@ -1,0 +1,37 @@
+.navbar
+  nav.navbar-inner
+    .navbar-brand.catalog What I'm Watching
+  
+table.table.table-condensed.table-hover.table-bordered.table-striped#datatable
+  thead
+    tr
+      th Source
+      th View
+      th Last Seen At
+      th Last Triggered At
+      th Delete
+  tbody
+    - @watches.each do |watch|
+      tr
+        td= watch.source ? (link_to watch.source.name, source_path(watch.source), title: "Go to Source") : '-'
+        td= watch.view ? (link_to watch.view.name, view_path(watch.view), title: "Go to View") : '-'
+        td= watch.last_seen_at.nil? ? '-' : watch.last_seen_at.to_date
+        td= watch.last_triggered_at.nil? ? '-' : watch.last_triggered_at.to_date
+        td.text-center
+          = link_to watch_path(watch), :method => :delete, title: "Stop watching this", :data => {:confirm => "Are you sure?"} do
+            i.fa.fa-close
+
+javascript:
+  $(document).ready(function(){
+    var oTable = $('#datatable').dataTable({
+      "order": [[ 3, "asc" ]],
+      "searching": true,
+      "columnDefs": [
+        {"orderable": false, "targets": [4]},
+        {"searchable": false, "targets": [4]}
+      ],
+      "lengthChange": true,
+      "pagingType": "full_numbers",
+      "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>"
+    });
+  });

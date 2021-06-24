@@ -1,0 +1,27 @@
+<% if !@export %>
+  show_alert("<%= @message %>");
+<% else %>
+  show_alert("The exporting task has been created, it may take a short while to get processed. Please don't navigate away from page.", 'info');
+  (function checkStatus() {
+    $.ajax({
+      url: "<%= status_shapefile_export_path(@export) %>",
+    })
+      .done(function(status) {
+        if(!status) {
+          show_alert('You are not permitted to view this information.');
+        }
+        else if(status.file_path) {
+          window.open("<%= download_shapefile_export_path(@export) %>", '_blank');
+
+          hide_alert();
+        } else if (['failure', 'error'].indexOf(status.status) >= 0) {
+          show_alert(status.message);
+        } else {
+          setTimeout(checkStatus, 1000);
+        }
+      })
+      .fail(function() {
+        show_alert('The exporting task has failed. Please try again or contact system admin.');
+      });
+  }());
+<% end %>

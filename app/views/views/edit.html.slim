@@ -1,0 +1,10 @@
+ruby:
+  if current_user
+    @admin = current_user.has_role?(:admin)
+    @contributor = @view.contributors.include?(current_user)
+    @librarian = @view.librarians.include?(current_user)
+    @agency_admin = current_user.has_role?(:agency_admin) && (@view.source.agency == current_user.agency) if @view.source.agency
+  end
+
+== render 'form'
+

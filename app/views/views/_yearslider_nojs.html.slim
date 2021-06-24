@@ -1,0 +1,12 @@
+.col-md-12#yearSliderContainer style="padding:0px"
+  label
+    'Year:&nbsp;
+  b #{min} &nbsp;
+  input.col-sm-6[ id="yearSlider" type="text" value=""
+    data-slider-min="#{min}" data-slider-max="#{max}"
+    data-slider-value="#{value}"
+    data-slider-ticks="#{values}" data-slider-handle="triangle" ]
+  b &nbsp; #{max}
+  ' &nbsp;(current:
+  span id="current" #{@slider_value}
+  ' )

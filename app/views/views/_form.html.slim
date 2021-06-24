@@ -1,0 +1,235 @@
+= simple_form_for (@copy ? View.new : @view) do |f|
+  .row
+    .col-md-6.col-md-offset-3
+      = f.error_notification
+      - if false
+        = f.input :data, as: :file, label: 'Upload New Data', required: true, input_html: {accept: 'text/csv', class: 'form-control'}
+
+  = f.hidden_field :current_version, value: @view.current_version + 1
+  = f.hidden_field :rows_updated_by_id, value: current_user.id
+  = f.hidden_field :user_id, value: current_user.id
+  - source = @view.source || Source.find(params[:source_id])
+  = f.hidden_field :source_id, value: source.id
+  
+  - if true
+    - @view = @copied_view if @copy
+    .col-xs-12 style="padding:0;"
+      .col-md-10.col-md-offset-1.well.well-special
+        h1.text-center style="margin-top:0;"
+          strong= @copy ? "Copy of #{@copied_view.name} (v#{@copied_view.current_version})" : (@view.id ? "Updating #{@view.name} (v#{@view.current_version})" : "New View")
+
+        .col-md-8.col-md-offset-2
+          - if @librarian || @contributor || @admin
+            = f.input :name, input_html: {class: 'form-control', value: (@copy ? nil : @view.name)}
+            = f.input :description, input_html: {class: 'form-control', value: (@copy ? nil : @view.description)}
+            = f.label :source_id
+            = text_field_tag 'Source', source.name, class: 'form-control', disabled: true
+            = f.input :current_version, input_html: {class: 'form-control'}
+            = f.input :data_starts_at, as: :string, input_html: {class: 'form-control', data: {value: (@view.data_starts_at.nil? ? nil : @view.data_starts_at.strftime("%Y/%m/%d"))}}
+            = f.input :data_ends_at, as: :string, input_html: {class: 'form-control', data: {value: (@view.data_ends_at.nil? ? nil : @view.data_ends_at.strftime("%Y/%m/%d"))}}
+            = f.input :origin_url, label: "Origin URL", input_html: {class: 'form-control', value: @view.origin_url}
+
+            .hide-me
+              = f.input :topic_area, input_html: {class: 'form-control'}
+
+          - if @librarian || @admin
+            .col-xs-12 style="padding:0;"
+              = f.association :roles, collection: Action.all_actions_filtered, as: :check_boxes, label: "Actions", label_method: lambda {|r| r.name.titleize }, value_method: :id, item_wrapper_class: "col-md-4", checked: (@view.role_ids.empty? ? [Action.find_by(name: "view_metadata").id, Action.find_by(name: "edit_metadata").id] : @view.role_ids)
+              = f.hidden_field('role_ids][', value: Action.where(name: 'edit_metadata').pluck(:id).first)
+              = f.hidden_field('role_ids][', value: Action.where(name: 'view_metadata').pluck(:id).first)
+              = f.hidden_field :data_levels, value: @view.data_levels
+              = f.hidden_field :data_hierarchy, value: @view.data_hierarchy
+              = f.hidden_field :spatial_level, value: @view.spatial_level
+            - selected_model = @view.data_model.present? ? @view.data_model : source.default_data_model
+            = f.input :data_model, collection: Rails.application.config.data_models.collect(&:camelize).sort, include_blank: 'Please select a Data model...', selected: selected_model, input_html: {class: 'form-control'}
+            .form-group.statistic_type
+              label
+                abbr title="required"
+                  = "*"
+                = " Statistic"
+              = select_tag :statistic_type, options_for_select(ComparativeFact.statistic_types, @view.statistic.try(:name)), required: true, class: 'form-control'
+
+            br
+            p
+              = "Use the + / - symbols to add or delete the column "
+              strong= "to the right "
+              = "of the column selected."
+            .table-responsive
+              table#column_data.table.table-striped.table-bordered.table-condensed style="margin-bottom:0;"
+                thead
+                tbody
+                  tr
+                    th.text-center.col_0
+                      a.add_col style="padding-right:5px;"
+                        .fa.fa-plus
+                      a.remove_col
+                        .fa.fa-minus
+
+                    - if @view.id && !@view.column_labels.empty?
+                      - @view.column_labels.each_with_index do |label, idx|
+                        th.text-center class="col_#{idx + 1}"
+                          a.add_col style="padding-right:5px;"
+                            .fa.fa-plus
+                          a.remove_col
+                            .fa.fa-minus
+                    - else
+                      th.text-center
+                        a.add_col style="padding-right:5px;"
+                          .fa.fa-plus
+                        a.remove_col
+                          .fa.fa-minus
+
+                  tr.columns
+                    th
+                      = "Columns "
+
+                    = f.simple_fields_for :columns do |col|
+                      - if @view.id && !@view.columns.empty?
+                        - @view.columns.each_with_index do |column, idx|
+                          td= col.input_field "col_#{idx}", class: 'form-control-mock', value: @view.columns[idx]
+                      - else
+                        td= col.input_field "col_0", class: 'form-control-mock'
+
+                  tr.column_labels
+                    th= "Column Labels"
+                    = f.simple_fields_for :column_labels do |col|
+                      - if @view.id && !@view.column_labels.empty?
+                        - @view.column_labels.each_with_index do |label, idx|
+                          td= col.input_field "col_#{idx}", class: 'form-control-mock', value: @view.column_labels[idx]
+                      - else
+                        td= col.input_field "col_0", class: 'form-control-mock'
+
+                  tr.column_types
+                    th= "Column Types"
+                    = f.simple_fields_for :column_types do |col|
+                      - if @view.id && !@view.column_types.empty?
+                        - @view.column_types.each_with_index do |types, idx|
+                          td= col.input_field "col_#{idx}", class: 'form-control-mock', value: @view.column_types[idx]
+                      - else
+                        td= col.input_field "col_0", class: 'form-control-mock'
+
+                  - if @view.data_model.present? && !@view.data_model.pivot?
+                    tr.value_columns
+                      th= "Display Value?"
+                      = f.simple_fields_for :value_columns do |col|
+                        - if @view.id && !@view.value_columns.empty?  
+                          - @view.columns.each_with_index do |val_col, idx|
+                            td.text-center= col.check_box "col_#{idx}", { checked: (true if @view.value_columns.include?(val_col)) }, "true", "false"
+                        - else
+                          - @view.columns.each_with_index do |val_col, idx|
+                            td.text-center= col.check_box "col_#{idx}", {}, "true", "false"
+
+            = f.input :value_name, input_html: {class: 'form-control', value: @view.value_name }
+            = f.input :row_name, input_html: {class: 'form-control', value: @view.row_name }
+            = f.input :column_name, input_html: {class: 'form-control', value: @view.column_name }
+            = f.input :download_instructions, input_html: {class: 'form-control', value: @view.download_instructions }
+
+          - if @admin
+            = f.association :contributors, as: :grouped_select, collection: @admin_contributors, group_method: :last, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'view_contributors', class: 'form-control multiselect', multiple: true}
+          - elsif @contributor || @agency_admin
+            = f.association :contributors, collection: @contributors, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'view_contributors', class: 'form-control multiselect', multiple: true}
+
+
+          - if @admin
+            = f.association :librarians, as: :grouped_select, collection: @admin_librarians, group_method: :last, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'view_librarians', class: 'form-control multiselect', multiple: true}
+          - elsif @librarian || @agency_admin
+            = f.association :librarians, collection: @librarians, wrapper_html: {class: 'col-md-12', style: "margin-top:1em;padding:0;"}, input_html: {id: 'view_librarians', class: 'form-control multiselect', multiple: true}
+
+      .col-md-10.col-md-offset-1.actions style="padding:0;"
+        = f.submit 'Save', class: 'btn btn-primary', style: "margin-right:5px;"
+        = link_to 'Cancel', :back
+
+- @view = @copied_view if @copy
+
+css:
+  .form-control-mock {
+    border: 1px solid #CCC;
+    border-radius: 4px;
+    height: 2.25em;
+    padding: 6px 12px;
+  }
+
+javascript:
+  $('#view_data_starts_at, #view_data_ends_at').datetimepicker({
+    viewMode: "years",
+    format: "MMMM D YYYY",
+    minDate: moment(new Date("1965/01/01")),
+    maxDate: moment(new Date("2100/01/01")),
+    icons: {
+      time: 'fa fa-clock-o',
+      date: 'fa fa-calendar',
+      up: 'fa fa-chevron-up',
+      down: 'fa fa-chevron-down',
+      previous: 'fa fa-chevron-left',
+      next: 'fa fa-chevron-right'
+    }
+  });
+
+  $(function(){
+    if ("#{@view.data_starts_at.nil?}" == "false") {
+      startDate = moment(new Date($('#view_data_starts_at').attr('data-value')));
+      $('#view_data_starts_at').data('DateTimePicker').defaultDate(startDate);
+    }
+    if ("#{@view.data_ends_at.nil?}" == "false") {
+      endDate = moment(new Date($('#view_data_ends_at').attr('data-value')));
+      $('#view_data_ends_at').data('DateTimePicker').defaultDate(endDate);
+    }
+  });
+
+  $('#view_contributors, #view_librarians').multiselect({ 
+    numberDisplayed: 1,
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    includeSelectAllOption: true,
+    buttonWidth: '20em'
+  });
+
+  $('#view_contributors').multiselect('select', #{@view.contributors.map(&:id)});
+  $('#view_contributors').multiselect('select', #{current_user.id});
+  $('#view_librarians').multiselect('select', #{@view.librarians.map(&:id)});
+  $('#view_librarians').multiselect('select', #{current_user.id});
+
+  $('.col-md-12.well.well-small').closest('.row').removeClass('row');
+  $('.control-label').css('margin-top', '5px');
+  $('#column_data tr.columns td').length > 1 ? $('#remove_col').show() : $('#remove_col').hide();
+
+  var incrementAttrs = function(elem, fieldName, val) {
+    elem.children('input').val('');
+    elem.children('input').attr('id', ('view_' + fieldName + '_col_' + val));
+    elem.children('input').attr('name', ('view[' + fieldName + '][col_' + val + ']'));
+    $('#column_data tr.' + fieldName).append(elem);
+  }
+
+  var makeColumnsEven = function(cols){
+    max = Math.max($('tr.columns td').length, $('tr.column_labels td').length, $('tr.column_types td').length);
+    cols.forEach(function(elem, idx, arr){
+      numCols = $('tr.' + elem + ' td').length;
+      if ( numCols < max ) {
+        for (i = numCols; i < max; i++) {
+          newCol = $('tr.' + elem + ' td:last').clone().val('');
+          $('tr.' + elem).append(newCol);
+          incrementAttrs(newCol, elem, i);
+        }
+      }
+    });
+  }
+
+  makeColumnsEven(['columns', 'column_labels', 'column_types']);
+  makeColumnsInteractive();
+
+  // Only show statistic dropdown for ComparativeFact model
+  function show_statistic_type_dropdown() {
+    if($('#view_data_model').val() == 'ComparativeFact') {
+      $('.statistic_type').show();
+    } else {
+      $('.statistic_type').hide();
+    }
+  }
+
+  show_statistic_type_dropdown();
+
+  $(function() {
+    $('#view_data_model').on('change', function() {
+      show_statistic_type_dropdown();
+    });
+  });

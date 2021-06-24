@@ -1,0 +1,5 @@
+- is_preview = false if !is_preview
+- if is_preview
+  = render partial: 'comments/preview', locals: {comment: comment}
+- else
+  = render partial: 'comments/full', locals: {comment: comment, show: false}

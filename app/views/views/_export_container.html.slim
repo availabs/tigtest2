@@ -1,0 +1,7 @@
+h4
+  = "Click to export as Shapefile"
+#exportContainer.panel-group role="tablist" aria-multiselectable="true"
+  - (views || []).each do |view|
+    - if view.data_model.try(:exportable_as_shp?)
+      p
+        = link_to view.name, export_shp_view_path(view), id: "export-shp-#{@view.id}", remote: true

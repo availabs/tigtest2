@@ -1,0 +1,33 @@
+- geometry_versions = {"taz": BaseGeometryVersion.versions(:taz), "county": BaseGeometryVersion.versions(:county)}
+- geometry_versions_options = {}
+- geometry_versions.each do |k, v|
+  -  geometry_versions_options[k] = "#{ActionController::Base.helpers.options_for_select(v)}"
+- geometry_versions_options = geometry_versions_options.to_json.html_safe
+
+.col-md-6
+  = form.input :year, input_html: {class: 'upload_year form-control'}
+.col-md-6
+  = form.input :to_year, input_html: {class: 'upload_year form-control'}
+.col-md-6
+  = form.input :data_level, label: 'Data Level', collection: ['TAZ', 'County'],include_blank: false, input_html: { class: 'upload_data_level form-control' }
+.col-md-6
+  = form.input :geometry_version, label: 'Area Boundary Base Year', collection: geometry_versions[:taz], include_blank: false, input_html: { class: 'upload_geometry_base_year form-control' }
+
+javascript:
+  $(function() {
+    $('.upload_year').datetimepicker({
+      viewMode: "years",
+      format: "YYYY",
+      minDate: moment(new Date("1965/01/01")),
+      maxDate: moment(new Date("2100/01/01")),
+      icons: {
+        previous: 'fa fa-chevron-left',
+        next: 'fa fa-chevron-right'
+      }
+    });
+
+    $('.upload_data_level').on('change', function() {
+      var dataLevel = $(this).val().toLowerCase();
+      $(this).parents('form').find('.upload_geometry_base_year').html(#{geometry_versions_options}[dataLevel]);
+    });
+  });

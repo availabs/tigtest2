@@ -1,0 +1,14 @@
+- updated_by = @obj.rows_updated_by ? (@obj.rows_updated_by.display_name.blank? ? @obj.rows_updated_by.email : @obj.rows_updated_by.display_name) : "(Deleted User)"
+h2
+  = "'#{@obj.name}' Update:"
+hr
+p
+  - url = @obj.class == Source ? source_url(@obj) : view_url(@obj)
+  em= "#{updated_by}"
+  = " updated the metadata for"
+  strong= " '#{@obj.name}' "
+  = "on #{@obj.updated_at.strftime("%b %e, %Y %l:%M%P")}."
+p
+  = "First, log into the Gateway and then "
+  = link_to "Click here", url
+  = " to view the changes."

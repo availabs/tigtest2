@@ -1,0 +1,47 @@
+- show_searchbox = [DemographicFact, ComparativeFact, SpeedFact, LinkSpeedFact, RtpProject, TipProject].index(@view.data_model)
+- if show_searchbox
+  - search_prompt = 'Search '
+  - search_help = ''
+  - if !@view.data_levels.empty?
+    - view_level = @view.data_levels[0].downcase
+    - if view_level == 'taz'
+      - search_prompt += 'TAZ'
+      - search_help = 'Provide TAZ ID, e.g., 100'
+    - elsif view_level == 'county'
+      - search_prompt += 'County'
+      - search_help = 'Provide county name, e.g., New York'
+    - elsif view_level == 'census_tract'
+      - search_prompt += 'Census Tract'
+      - search_help = 'Provide census tract ID, e.g., New York:100'
+    - elsif view_level == 'tmc'
+      - search_prompt += 'TMC'
+      - search_help = 'Provide TMC ID, e.g., 120N15331'
+    - elsif view_level == 'link'
+      - search_prompt += 'LINK'
+      - search_help = 'Provide Link ID, e.g., 16777582'
+    - elsif view_level == 'project'
+      - search_prompt += 'Project'
+      - search_help = 'Provide project ID or project description'
+
+  - search_prompt += '...'
+  .input-group.search-ui
+    input.form-control id='mapSearch' placeholder="#{search_prompt}"
+    span.search-help.input-group-addon data-toggle="tooltip" data-placement="top" style="padding: 5px;" title="#{search_help}"
+      i.fa.fa-lg.fa-question-circle
+
+  javascript:
+    $(document).ready(function() {
+      $('.search-help').tooltip()
+
+      $('#mapSearch').on('keyup', function() {
+        var keyword = $(this).val();
+        waitForFinalEvent(function(){
+          gatewayMapApp.searchViewLayer("#{@view.id}", keyword);
+        }, 500, 'search_map');
+      });
+
+      // search box styling
+      $('.search-ui').css('right', '140px');
+      $('.leaflet-control-layers-toggle').addClass('pull-right');
+      $('.leaflet-control-layers-toggle').after('<span style="font-size: large;padding: 10px;">Layers</span>');
+    });

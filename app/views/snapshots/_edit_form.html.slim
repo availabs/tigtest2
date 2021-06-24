@@ -1,0 +1,59 @@
+= simple_form_for @snapshot, html: {method: :put, class: 'form-vertical edit_snapshot'} do |f|
+  - if @snapshot.errors.any?
+    #error_explanation
+      h2 = "#{pluralize(@snapshot.errors.count, "error")} prohibited this snapshot from being saved:"
+      ul
+        - @snapshot.errors.full_messages.each do |message|
+          li = message
+
+  = f.error_notification
+  = display_base_errors @snapshot
+
+  .col-md-8.col-md-offset-2.well.well-special
+    h1.text-center style="margin-top:0;"
+      strong Edit Snapshot
+
+    h4.text-center style="margin-bottom: 10px;"
+      strong
+        = "#{@snapshot.view.source.name} / "
+        = "#{@snapshot.view.display_name} / "
+        = @snapshot.app.titleize
+
+    .row.text-center
+      .col-md-4
+        p.area_name
+          strong Area:
+          = " #{@snapshot.area.nil? ? 'All' : @snapshot.area.name}"
+      .col-md-4
+        p.lower_limit
+          strong Lower Limit:
+          - if @snapshot.range_low && !(@snapshot.range_low.nil? || @snapshot.range_low.blank?)
+            = " #{@snapshot.range_low}"
+      .col-md-4
+        p.upper_limit
+          strong Upper Limit:
+          - if @snapshot.range_high && !(@snapshot.range_high.nil? || @snapshot.range_high.blank?)
+            = " #{@snapshot.range_high}"
+
+    .col-md-10.col-md-offset-1
+      hr
+    .col-md-8.col-md-offset-2
+      = f.input :published, as: :boolean, boolean_style: :inline, label: "Share with all users?", wrapper: :checkbox, wrapper_html: {class: "pull-right"}, label_html: {style: "margin-left:1em;"}
+      = f.input :name, input_html: {class: 'form-control'}
+      = f.input :description, input_html: {rows: 5, class: 'form-control'}
+      = f.association :viewers, collection: @viewers, label: 'Share With:', wrapper_html: {style: "margin-top:1em;"}, input_html: {id: 'snapshot_viewers', class: 'form-control multiselect', multiple: true}
+  
+  .col-md-8.col-md-offset-2.actions style="padding:0;"
+    = f.button :submit, 'Save', :id => 'submit-btn', :class => 'btn-primary', style: "margin-right:5px;"
+    = link_to 'Back', "/?expand=snap"
+
+
+javascript:
+  $(document).ready(function(){
+    $('#snapshot_viewers').multiselect({ 
+      numberDisplayed: 1,
+      enableFiltering: true,
+      enableCaseInsensitiveFiltering: true,
+      buttonWidth: '20em'
+    });
+  });

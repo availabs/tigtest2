@@ -1,0 +1,23 @@
+- filter_form_id = "filter-form-#{@view.id}"
+= form_tag data_overlay_view_path, id: "#{filter_form_id}", method: :get, class: 'demographic-fact-form', remote: true do
+  .form-group
+    input name="year" type="hidden" 
+    - if !unswitched?
+      input#lower name="lower" type="hidden" 
+      input#upper name="upper" type="hidden" 
+    = label_tag (@view.value_name == :density) ? "Density" : @view.statistic.caption
+    - if unswitched?
+      div style="padding-left:10px;"
+        input#lower.number_range_filter.input-sm.form-control.number-field name="lower" type="text" value="#{@lower}"
+        'to
+        input#upper.number_range_filter.input-sm.form-control.number-field name="upper" type="text" value="#{@upper}"
+    - else
+      div#densityFilter style="padding-left:10px;"
+    ' &nbsp;
+
+  .form-group style='text-align:center;'
+    = submit_tag 'Filter', class: 'btn btn-primary'
+
+= render partial: 'views/map_filters/form_callback', locals: {filter_container_id: filter_form_id, view_id: @view.id}
+
+= render partial: 'shared/numeric_only'

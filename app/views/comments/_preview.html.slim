@@ -1,0 +1,14 @@
+.media id="comment-#{comment.id}"
+  .media-body
+    small
+      strong
+        = comment.subject.truncate(20)
+    - if comment.admin_only == true
+      br
+      small
+        em
+          = "to System Administrator"
+    br
+    small= "#{comment.user ? (comment.user.display_name.blank? ? comment.user.email : comment.user.display_name) : 'deleted user' } wrote: #{comment.text.truncate(50)}"
+    br
+    small= "#{time_ago_in_words(comment.created_at)} ago (on #{comment.created_at.strftime("%e %b, %Y at %H:%M %Z")})"

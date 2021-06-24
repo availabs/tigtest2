@@ -1,0 +1,63 @@
+/ currently only support following data models
+- if view.data_model.try(:styleable?)
+  .panel.panel-default id="symbology-#{view.id}"
+    .panel-heading role="tab" id="symbology-heading-#{view.id}"
+      h5.panel-title
+        a.collapsed data-toggle="collapse" data-parent="#symbologyContainer" href="#symbology-collapse-#{view.id}" aria-expanded="false" aria-controls="symbology-collapse-#{view.id}"
+          = view.name
+    .panel-collapse.collapse role="tabpanel" aria-labelledby="symbology-heading-#{view.id}" id="symbology-collapse-#{view.id}"
+      .panel-body
+        - if lookup_context.template_exists?("views/map_styles/#{view.data_model.name.underscore}_styles", [], true)
+          = render partial: "views/map_styles/#{view.data_model.name.underscore}_styles", locals: {view: view}
+        - symbologies = view.data_model.try(:has_multiple_value_columns?) ? view.symbologies_for_column(@current_value_column) : view.symbologies
+        - if symbologies.count > 0
+          select.form-control.symbology-list id="symbology-list-#{view.id}"
+            - selected_sym_id = nil
+            - symbologies.each do |sym|
+              - sym_subject = sym.subject + (sym.is_default ? " (default)" : "")
+              - if @symbology_subject == sym.subject
+                - selected_sym_id = sym.id
+                option value="#{sym.id}" data-is-default="#{sym.is_default}" selected='selected'
+                  = sym_subject
+              - else
+                option value="#{sym.id}" data-is-default="#{sym.is_default}"
+                  = sym_subject
+          - selected_sym_id ||= symbologies.first.try(:id)
+          - symbologies.each do |sym|
+            - is_selected = sym.id == selected_sym_id
+            .col-sm-12.symbology-form-container id="symbology-#{sym.id}" style="padding: 0px; #{is_selected ? '' : 'display:none'}"
+              = render partial: "views/color_schemes/#{sym.symbology_type}", locals: {symbology: sym}
+
+          javascript:
+            $(document).ready(function(){
+              var panelId = "#symbology-#{@view.id}";
+
+              $(panelId + ' .symbology-list').on('change', function() {
+                var selectedSymId = $(this).val();
+                $(this).siblings('.symbology-form-container').each(function(){
+                  if($(this).prop('id') != ("symbology-" + selectedSymId)) {
+                    $(this).hide();
+                  } else {
+                    $(this).show();
+                    $(this).find('.apply-symbology:first').click();
+                  }
+                });
+              });
+
+              // color picker
+              $(panelId + ' .color-picker').colorpicker();
+
+              $(panelId + ' .symbology-form').on('keyup', '.validate-item', function() {
+                var validator = $(this).parents('.symbology-form').validate();
+                validator.element($(this));
+              });
+
+              var colorfieldSelector = panelId + " .colorfield";
+
+              $(colorfieldSelector).attr(
+                'data-content', "You can type a color name or value; or use the color picker on the right side.</br></br>Support color formats: hex, rgb, rgba, hsl, hsla</br></br><a href='/colors.html' target='_blank'>Click here to see the list of pre-defined color names.</a>"
+              )
+
+              createPopover(colorfieldSelector);
+
+            });
