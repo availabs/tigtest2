@@ -108,3 +108,14 @@ NymtcGateway::Application.routes.draw do
   get 'system_change_report', controller: :application
   get 'user_activity_report', controller: :application
 end
+
+NymtcGateway::Application.routes.draw do
+
+  get '/v2/map', :to => static('v2/index.html')
+  get '/v2/map', :to => static('v2/css/font-awesome/css/all.css')
+  get '/v2/views/:viewId/map', :to => static('v2/index.html')
+  get '/v2/views/:viewId/css/font-awesome/css/all.css', :to => static('v2/css/font-awesome/css/all.css')
+  get '/v2/views/:viewId/css/font-awesome/webfonts/fa-solid-900.woff2', :to => static('v2/css/font-awesome/webfonts/fa-solid-900.woff2')
+
+
+end
