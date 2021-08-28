@@ -10,7 +10,3 @@ echo "upload worker"
 bin/delayed_job -i uploads --queue=uploads restart
 echo "running delayed_jobs:"
 ps aux | grep delayed_job
-echo "restart nginx"
-sudo service nginx restart
-echo "nginx status:"
-sudo service nginx status
