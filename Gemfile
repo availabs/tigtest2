@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.2.0'
 gem 'rails', '4.1.6'
-gem 'pg'
+gem 'pg', '~> 0.18'
 gem 'sass-rails'
 gem 'coffee-rails'
 gem 'uglifier', '>= 1.0.3'
@@ -31,7 +31,7 @@ gem 'activeresource', '~> 4.0.0'
 gem 'protected_attributes'
 gem 'font-awesome-rails'
 gem 'activerecord-postgis-adapter', '= 1.1.0'
-# gem 'activerecord-postgis-adapter', "3.0.0.beta1"
+#gem 'activerecord-postgis-adapter', "~> 3"
 gem 'rgeo'
 gem 'rgeo-geojson'
 gem 'rgeo-shapefile'

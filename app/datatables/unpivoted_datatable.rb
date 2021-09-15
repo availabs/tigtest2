@@ -1,5 +1,5 @@
 class UnpivotedDatatable < AjaxDatatablesRails::Base
-  include AjaxDatatablesRails::Extensions::SimplePaginator
+  #include AjaxDatatablesRails::Extensions::SimplePaginator
   include ToCsv
 
   # TODO: once we have a class besides ComparativeFact, make this depend on view/model.
