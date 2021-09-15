@@ -17,6 +17,8 @@ class TipProject < ActiveRecord::Base
       RGeo::Shapefile::Reader.open(filename, :factory => factory) do |file|
         # Figure out what version of each key to use
         mpopin_key = file[0].keys.detect {|k| k.downcase.strip == 'mpopin'}
+        yield("mpopin_key #{mpopin_key} keys #{file[0].keys.to_s}") if block_given?
+        Delayed::Worker.logger.info("mpopin_key #{mpopin_key} keys #{file[0].keys.to_s}" )
         cost_key = file[0].keys.detect do |k|
           k = k.downcase.strip
           k == 'cost' || k == 'projcost'
@@ -199,6 +201,7 @@ class TipProject < ActiveRecord::Base
 
   def self.processZip(io, view)
     yield('parsing shapefiles') if block_given?
+    Delayed::Worker.logger.debug("process ZIp : #{io.path}")
     dest_dir = ZipFileGenerator.new(io.path).unzip_file_to_dir
     Dir.entries(dest_dir).each do |entry|
       next unless File.extname(entry) == '.shp'

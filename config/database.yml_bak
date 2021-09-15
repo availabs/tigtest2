@@ -1,0 +1,28 @@
+# Assume this is production environment
+production:
+  adapter: postgis
+  encoding: unicode
+  database: <%= ENV['DB_SCHEMA'] %>
+  pool: <%= ENV['DB_POOL_SIZE'].to_i %>
+  username: <%= ENV['DB_USER_NAME'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
+  host: <%= ENV['DB_HOST'] %>
+  port: <%= ENV['DB_PORT'].to_i %>
+
+development:
+  adapter: postgis
+  database:  nymtc_development
+  pool: 5
+  username: postgres
+  password: transit
+  host: lor.availabs.org
+  port: 5432
+
+test:
+  adapter: postgis
+  DB_SCHEMA:    nymtc_development
+  DB_POOL_SIZE: "5"
+  DB_USER_NAME: postgres
+  DB_PASSWORD:  transit
+  DB_HOST:    lor.availabs.org
+  DB_PORT:    "5432"

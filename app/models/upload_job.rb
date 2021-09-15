@@ -16,6 +16,7 @@ class UploadJob < ProgressJob::Base
     @upload.update_attribute(:status, :processing)
     # create file stream
     update_stage('downloading file')
+    Delayed::Worker.logger.debug("Stellar public path: #{@upload.public_path}")
     file = open(URI.encode(@upload.public_path), {
                   content_length_proc: lambda {|length| update_progress_max(length)},
                   progress_proc: lambda {|size| set_progress(size)}
@@ -30,7 +31,7 @@ class UploadJob < ProgressJob::Base
       line_count = 0
       
       delegate(file, ext) do |stage, count|
-        Delayed::Worker.logger.debug("Stellar: #{stage}")
+        Delayed::Worker.logger.debug("Stellar: stage = #{stage}")
         return unless Delayed::Job.exists?(@job)
         
         case stage
