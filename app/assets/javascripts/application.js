@@ -22,8 +22,8 @@
 //= require bootstrap.colorpicker
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 //= require jquery_ujs
-//= require jquery-ui/autocomplete
-//= require jquery-ui/datepicker
+//= require jquery-ui/widgets/autocomplete
+//= require jquery-ui/widgets/datepicker
 //= require leaflet
 //= require leaflet-providers
 //= require leaflet.draw
