@@ -91,11 +91,7 @@ GEM
       railties (>= 3.2, < 5.0)
     bootstrap3-datetimepicker-rails (4.0.0)
       momentjs-rails (>= 2.8.1)
-<<<<<<< HEAD
-    breadcrumbs_on_rails (3.0.1)
-=======
     breadcrumbs_on_rails (2.3.0)
->>>>>>> 30eb8a7243b3d37a8e1d162567f532c640082a70
     builder (3.2.4)
     bulk_data_methods (1.1.2)
       activerecord (>= 3.0.0)
