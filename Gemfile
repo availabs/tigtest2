@@ -12,6 +12,7 @@ gem 'leaflet-providers-rails', github: 'zentrification/leaflet-providers-rails'
 gem 'jquery-rails'
 gem "jquery-validation-rails"
 gem 'jquery-ui-rails'
+gem 'rails-static-router'
 # gem 'bootstrap-sass', '~> 3.0.1.0.rc'
 gem 'bootstrap-sass'
 gem 'cancan'

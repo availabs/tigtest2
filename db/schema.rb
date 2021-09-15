@@ -17,6 +17,22 @@ ActiveRecord::Schema.define(version: 20181016233700) do
   enable_extension "plpgsql"
   enable_extension "postgis"
   enable_extension "postgis_topology"
+  enable_extension "postgres_fdw"
+
+  create_table "2010_2040_earnings_(held_constant_in_$2010)", force: true do |t|
+    t.spatial "geom",      limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string  "area",      limit: 80
+    t.string  "area_type", limit: 80
+    t.decimal "2010"
+    t.decimal "2015"
+    t.decimal "2020"
+    t.decimal "2025"
+    t.decimal "2030"
+    t.decimal "2035"
+    t.decimal "2040"
+  end
+
+  add_index "2010_2040_earnings_(held_constant_in_$2010)", ["geom"], :name => "sidx_2010_2040_earnings_(held_constant_in_$2010)_geom", :spatial => true
 
   create_table "access_controls", force: true do |t|
     t.integer  "source_id"
@@ -677,6 +693,60 @@ ActiveRecord::Schema.define(version: 20181016233700) do
   add_index "tip_projects", ["sponsor_id"], :name => "index_tip_projects_on_sponsor_id"
   add_index "tip_projects", ["tip_id"], :name => "index_tip_projects_on_tip_id"
   add_index "tip_projects", ["view_id"], :name => "index_tip_projects_on_view_id"
+
+  create_table "tl_2011_09_taz10", force: true do |t|
+    t.spatial "geom",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string  "statefp10",  limit: 2
+    t.string  "countyfp10", limit: 3
+    t.string  "mpoce10",    limit: 8
+    t.string  "tadce10",    limit: 8
+    t.string  "tazce10",    limit: 8
+    t.string  "geoid10",    limit: 13
+    t.string  "mtfcc10",    limit: 5
+    t.string  "funcstat10", limit: 1
+    t.integer "aland10",    limit: 8
+    t.integer "awater10",   limit: 8
+    t.string  "intptlat10", limit: 11
+    t.string  "intptlon10", limit: 12
+  end
+
+  add_index "tl_2011_09_taz10", ["geom"], :name => "sidx_tl_2011_09_taz10_geom", :spatial => true
+
+  create_table "tl_2011_34_taz10", force: true do |t|
+    t.spatial "geom",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string  "statefp10",  limit: 2
+    t.string  "countyfp10", limit: 3
+    t.string  "mpoce10",    limit: 8
+    t.string  "tadce10",    limit: 8
+    t.string  "tazce10",    limit: 8
+    t.string  "geoid10",    limit: 13
+    t.string  "mtfcc10",    limit: 5
+    t.string  "funcstat10", limit: 1
+    t.integer "aland10",    limit: 8
+    t.integer "awater10",   limit: 8
+    t.string  "intptlat10", limit: 11
+    t.string  "intptlon10", limit: 12
+  end
+
+  add_index "tl_2011_34_taz10", ["geom"], :name => "sidx_tl_2011_34_taz10_geom", :spatial => true
+
+  create_table "tl_2011_36_taz10", force: true do |t|
+    t.spatial "geom",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string  "statefp10",  limit: 2
+    t.string  "countyfp10", limit: 3
+    t.string  "mpoce10",    limit: 8
+    t.string  "tadce10",    limit: 8
+    t.string  "tazce10",    limit: 8
+    t.string  "geoid10",    limit: 13
+    t.string  "mtfcc10",    limit: 5
+    t.string  "funcstat10", limit: 1
+    t.integer "aland10",    limit: 8
+    t.integer "awater10",   limit: 8
+    t.string  "intptlat10", limit: 11
+    t.string  "intptlon10", limit: 12
+  end
+
+  add_index "tl_2011_36_taz10", ["geom"], :name => "sidx_tl_2011_36_taz10_geom", :spatial => true
 
   create_table "tmcs", force: true do |t|
     t.string   "name"

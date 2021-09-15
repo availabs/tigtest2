@@ -19,7 +19,7 @@ MIN_THREADS:                  "1"
 PUMA_WORKERS:                 "2"
 RESTART_THRESHOLD:            "500"
 ROLES:                        [admin, public,  contributor, agency]
-SECRET_KEY_BASE:              #UPDATE
+SECRET_KEY_BASE:              911ead7b173d82e5bbf2e3b0a07ca12fc3cb0ebbaeda8d0e383121a509ebf9cfce36784de476cefc45187281ec80f9f01ea1e3343a4229973d6d4b59c0cc634d
 
 production:
   DB_SCHEMA:    gateway_prod

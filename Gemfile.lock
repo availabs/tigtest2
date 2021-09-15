@@ -91,7 +91,11 @@ GEM
       railties (>= 3.2, < 5.0)
     bootstrap3-datetimepicker-rails (4.0.0)
       momentjs-rails (>= 2.8.1)
+<<<<<<< HEAD
     breadcrumbs_on_rails (3.0.1)
+=======
+    breadcrumbs_on_rails (2.3.0)
+>>>>>>> 30eb8a7243b3d37a8e1d162567f532c640082a70
     builder (3.2.4)
     bulk_data_methods (1.1.2)
       activerecord (>= 3.0.0)
@@ -308,6 +312,8 @@ GEM
       ruby-graphviz (~> 1.2)
     rails-observers (0.1.2)
       activemodel (~> 4.0)
+    rails-static-router (1.0.4)
+      railties (>= 4.1, < 6.2)
     rails_12factor (0.0.3)
       rails_serve_static_assets
       rails_stdout_logging
@@ -487,6 +493,7 @@ DEPENDENCIES
   quiet_assets
   rails (= 4.1.6)
   rails-erd
+  rails-static-router
   rails_12factor
   rails_autolink
   rgeo
