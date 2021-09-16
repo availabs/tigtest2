@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.2.0'
 gem 'rails', '4.1.6'
-gem 'pg', '~> 0.18'
+gem 'pg'
 gem 'sass-rails'
 gem 'coffee-rails'
 gem 'uglifier', '>= 1.0.3'
@@ -31,7 +31,7 @@ gem 'activeresource', '~> 4.0.0'
 gem 'protected_attributes'
 gem 'font-awesome-rails'
 gem 'activerecord-postgis-adapter', '= 1.1.0'
-#gem 'activerecord-postgis-adapter', "~> 3"
+# gem 'activerecord-postgis-adapter', "3.0.0.beta1"
 gem 'rgeo'
 gem 'rgeo-geojson'
 gem 'rgeo-shapefile'
@@ -59,40 +59,40 @@ gem 'leaflet-draw-rails'
 
 gem 'rails_12factor', group: [:integration, :production, :qa, :staging]
 
-group :development do
-  gem 'thin'
-  gem 'better_errors'
-  gem 'binding_of_caller'
-  gem 'quiet_assets'
-  # gem 'debugger'
-  gem 'pry-rails'
-  gem 'pry-stack_explorer'
-  gem 'pry-nav'
-  gem 'guard'
-  gem 'guard-bundler'
-  gem 'guard-cucumber'
-  gem 'guard-rails'
-  gem 'guard-rspec'
-  gem 'derailed_benchmarks'
-  gem 'rails-erd'
-end
+# group :development do
+#   gem 'thin'
+#   gem 'better_errors'
+#   gem 'binding_of_caller'
+#   gem 'quiet_assets'
+#   # gem 'debugger'
+#   gem 'pry-rails'
+#   gem 'pry-stack_explorer'
+#   gem 'pry-nav'
+#   gem 'guard'
+#   gem 'guard-bundler'
+#   gem 'guard-cucumber'
+#   gem 'guard-rails'
+#   gem 'guard-rspec'
+#   gem 'derailed_benchmarks'
+#   gem 'rails-erd'
+# end
 
-group :development, :test do
-  gem 'factory_girl_rails'
-  gem 'rspec-rails'
-  gem 'awesome_print'
-  gem 'byebug'
-end
+# group :development, :test do
+#   gem 'factory_girl_rails'
+#   gem 'rspec-rails'
+#   gem 'awesome_print'
+#   gem 'byebug'
+# end
 
-group :test do
-  gem 'capybara'
-  gem 'cucumber-rails', :require=>false
-  gem 'database_cleaner'
-  gem 'email_spec'
-  gem 'launchy'
-  gem 'selenium-webdriver'
-  gem 'temping'
-  gem "ZenTest"
-  gem "autotest-rails"
-  gem 'simplecov'
-end
+# group :test do
+#   gem 'capybara'
+#   gem 'cucumber-rails', :require=>false
+#   gem 'database_cleaner'
+#   gem 'email_spec'
+#   gem 'launchy'
+#   gem 'selenium-webdriver'
+#   gem 'temping'
+#   gem "ZenTest"
+#   gem "autotest-rails"
+#   gem 'simplecov'
+# end
