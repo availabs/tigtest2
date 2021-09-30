@@ -1928,8 +1928,8 @@ class ViewsController < ApplicationController
     # Rule 1: return full day if min_hour == max_hour
 
     @hourfilter = []
-    if upper_hour > lower_hour 
-      @hourfilter = (lower_hour..upper_hour).to_a
+    if upper_hour >= lower_hour 
+      @hourfilter = (lower_hour..(upper_hour-1)).to_a
     else
      @hourfilter = (lower_hour..23).to_a + (0..upper_hour).to_a
     end 

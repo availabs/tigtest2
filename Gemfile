@@ -59,23 +59,23 @@ gem 'leaflet-draw-rails'
 
 gem 'rails_12factor', group: [:integration, :production, :qa, :staging]
 
-# group :development do
-#   gem 'thin'
-#   gem 'better_errors'
-#   gem 'binding_of_caller'
-#   gem 'quiet_assets'
-#   # gem 'debugger'
-#   gem 'pry-rails'
-#   gem 'pry-stack_explorer'
-#   gem 'pry-nav'
-#   gem 'guard'
-#   gem 'guard-bundler'
-#   gem 'guard-cucumber'
-#   gem 'guard-rails'
-#   gem 'guard-rspec'
-#   gem 'derailed_benchmarks'
-#   gem 'rails-erd'
-# end
+group :development do
+  gem 'thin'
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  gem 'quiet_assets'
+  # gem 'debugger'
+  gem 'pry-rails'
+  gem 'pry-stack_explorer'
+  gem 'pry-nav'
+  gem 'guard'
+  gem 'guard-bundler'
+  gem 'guard-cucumber'
+  gem 'guard-rails'
+  gem 'guard-rspec'
+  gem 'derailed_benchmarks'
+  gem 'rails-erd'
+end
 
 # group :development, :test do
 #   gem 'factory_girl_rails'
