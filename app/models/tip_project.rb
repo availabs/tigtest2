@@ -32,11 +32,13 @@ class TipProject < ActiveRecord::Base
         desc_key = file[0].keys.detect {|k| k.downcase.strip == 'lgdesc'}
         
         file.each do |record|
+          Delayed::Worker.logger.info("record for each file" )
           attributes = Hash.new
           attributes[:view] = view
           attributes[:geography] = record.geometry.try(:as_text)
 
           attributes[:tip_id] = record[mpopin_key]
+          Delayed::Worker.logger.info("record #{record[mpopin_key]} #{mpopin_key}" )
 
           ptype = record['PTYPE']
           case ptype
