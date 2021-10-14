@@ -186,6 +186,12 @@ index 4bdbaec..9a46671 100644
 
 Possible option: [kigster/puma-daemon](https://github.com/kigster/puma-daemon)
 
+See [Remove daemonization #2170](https://github.com/puma/puma/pull/2170#issuecomment-766405111)
+
+> Please take a look - this functionality has been extracted into puma-daemon
+> ruby gem. I would love some additional testing if you'd like to use
+> daemonization with 5+ Puma
+
 ## 🎉🎉🎉🎉 `bundle exec puma -C config/puma.rb` ran
 
 Whoot.
@@ -283,4 +289,23 @@ index 45f0045..cb616c3 100644
  #gem 'whacamole'
  # https://github.com/fiksu/partitioned/issues/70#issuecomment-233443202
 +gem 'partitioned', git: 'https://github.com/AirHelp/partitioned.git', branch: 'rails-5-2'
+```
+
+## Passing string to be evaluated in :if and :unless conditional options is not supported. Pass a symbol for an instance method, or a lambda, proc or block, instead.
+
+### Passing string to be evaluated in :if and :unless Solution
+
+See: [Rails: How to replace :if and :unless option for rails 5.2](https://stackoverflow.com/a/46720365/3970755)
+
+```diff
+diff --git a/app/models/comment.rb b/app/models/comment.rb
+index c772440..3a4745f 100644
+--- a/app/models/comment.rb
++++ b/app/models/comment.rb
+@@ -6,7 +6,7 @@ class Comment < ActiveRecord::Base
+   validates :user, presence: true
+   validates :subject, presence: true
+   validates :source, presence: true
+-  validates :view, presence: true, unless: "app.nil?"
++  validates :view, presence: true, unless: -> { app.nil? }
 ```
