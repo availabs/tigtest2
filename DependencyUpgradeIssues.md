@@ -192,6 +192,8 @@ See [Remove daemonization #2170](https://github.com/puma/puma/pull/2170#issuecom
 > ruby gem. I would love some additional testing if you'd like to use
 > daemonization with 5+ Puma
 
+---
+
 ## 🎉🎉🎉🎉 `bundle exec puma -C config/puma.rb` ran
 
 Whoot.
@@ -328,3 +330,9 @@ index 3a4745f..fb98bd7 100644
 -  enum app: [ :table, :map, :chart, :metadata ]
 +  # enum app: [ :table, :map, :chart, :metadata ]
 ```
+
+---
+
+## 🎉🎉🎉🎉 App renders
+
+Whoot.
