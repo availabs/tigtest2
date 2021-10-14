@@ -44,6 +44,7 @@ gem 'momentjs-rails', '>= 2.8.1'
 gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
 #gem 'whacamole'
 # https://github.com/fiksu/partitioned/issues/70#issuecomment-233443202
+gem 'partitioned', git: 'https://github.com/AirHelp/partitioned.git', branch: 'rails-5-2'
 gem 'bootstrap-multiselect-rails'
 gem 'rubyzip'
 gem 'filepicker-rails'

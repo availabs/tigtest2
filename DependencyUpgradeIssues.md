@@ -266,3 +266,21 @@ index 4c327b1..d770db3 100644
 -  belongs_to :rows_updated_by, class_name: User
 +  belongs_to :rows_updated_by, class_name: "User"
 ```
+
+## uninitialized constant Partitioned
+
+### uninitialized constant Partitioned Solution
+
+- See [Upgrade to Rails 5.1.7 and get ArgumentException on save #75](https://github.com/fiksu/partitioned/issues/75#issue-546246268)
+
+```diff
+diff --git a/Gemfile b/Gemfile
+index 45f0045..cb616c3 100644
+--- a/Gemfile
++++ b/Gemfile
+@@ -44,6 +44,7 @@ gem 'momentjs-rails', '>= 2.8.1'
+ gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
+ #gem 'whacamole'
+ # https://github.com/fiksu/partitioned/issues/70#issuecomment-233443202
++gem 'partitioned', git: 'https://github.com/AirHelp/partitioned.git', branch: 'rails-5-2'
+```

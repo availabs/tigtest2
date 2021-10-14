@@ -1,4 +1,13 @@
 GIT
+  remote: https://github.com/AirHelp/partitioned.git
+  revision: 24103ead1c495329201527adac787cca013fa917
+  branch: rails-5-2
+  specs:
+    partitioned (2.1.0)
+      activerecord (~> 5.2.3)
+      pg
+
+GIT
   remote: https://github.com/rweng/jquery-datatables-rails.git
   revision: d486b31b192a2924b1913e080ad23460e6b96d31
   specs:
@@ -313,6 +322,7 @@ DEPENDENCIES
   mdb
   momentjs-rails (>= 2.8.1)
   newrelic_rpm
+  partitioned!
   pg
   pivot_table
   progress_job
