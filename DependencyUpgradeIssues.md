@@ -249,3 +249,20 @@ app/controllers/snapshots_controller.rb
 ag before_filter -l | while read f; do sed -i 's/before_filter/before_action/g' "$f"; d
 one
 ```
+
+## A class was passed to `:class_name` but we are expecting a string.
+
+### A class was passed to `:class_name` Solution
+
+```diff
+diff --git a/app/models/source.rb b/app/models/source.rb
+index 4c327b1..d770db3 100644
+--- a/app/models/source.rb
++++ b/app/models/source.rb
+@@ -3,7 +3,7 @@ class Source < ActiveRecord::Base
+   belongs_to :agency
+   has_many :views
+   has_many :uploads
+-  belongs_to :rows_updated_by, class_name: User
++  belongs_to :rows_updated_by, class_name: "User"
+```
