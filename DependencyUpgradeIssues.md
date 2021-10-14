@@ -359,7 +359,7 @@ See: [ActionController::Parameters deprecation warning: Method size is deprecate
 
 ## ActionView::Template::Error (uninitialized constant BootstrapBreadcrumbsBuilder (production only)
 
-See: [https://stackoverflow.com/a/51165512/3970755](ActionView::Template::Error "uninitialized constant `LibObject`")
+See: [ActionView::Template::Error "uninitialized constant `LibObject`](https://stackoverflow.com/a/51165512/3970755)
 
 ### uninitialized constant BootstrapBreadcrumbsBuilder Solution
 
