@@ -164,3 +164,28 @@ Install successful.
 ## 🎉🎉🎉🎉 `bundle exec rake assets:precompile` ran without errors
 
 Whoot.
+
+## config/puma.rb:7:in \`\_load_from': undefined method \`daemonize' for #\<Puma::DSL:0x0000556b302a4f18\> (NoMethodError)
+
+- [Puma undefined local variable or method daemonize](https://stackoverflow.com/questions/67735620/puma-undefined-local-variable-or-method-daemonize-error)
+
+### undefined method `daemonize' Temporary Solution
+
+```diff
+diff --git a/config/puma.rb b/config/puma.rb
+index 4bdbaec..9a46671 100644
+--- a/config/puma.rb
++++ b/config/puma.rb
+@@ -4,7 +4,7 @@ bind  "unix://#{root}/tmp/sockets/puma.sock"
+ pidfile "#{root}/tmp/pids/puma.pid"
+ state_path "#{root}/tmp/sockets/puma.state"
+ directory "#{root}"
+-daemonize true
++# daemonize true
+```
+
+Possible option: [kigster/puma-daemon](https://github.com/kigster/puma-daemon)
+
+## 🎉🎉🎉🎉 `bundle exec puma -C config/puma.rb` ran
+
+Whoot.
