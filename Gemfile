@@ -28,7 +28,7 @@ gem 'gon'
 gem 'bootstrap-slider-rails'
 gem 'google_visualr'
 gem 'activeresource'
-#gem 'protected_attributes'
+gem 'protected_attributes_continued'
 gem 'font-awesome-rails'
 gem 'activerecord-postgis-adapter'
 #gem 'activerecord-postgis-adapter', "~> 3"
@@ -43,7 +43,7 @@ gem 'mdb'
 gem 'momentjs-rails', '>= 2.8.1'
 gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
 #gem 'whacamole'
-gem 'partitioned', '~> 1.3.4'
+# https://github.com/fiksu/partitioned/issues/70#issuecomment-233443202
 gem 'bootstrap-multiselect-rails'
 gem 'rubyzip'
 gem 'filepicker-rails'
@@ -96,3 +96,5 @@ gem 'rails_12factor', group: [:integration, :production, :qa, :staging]
 #   gem "autotest-rails"
 #   gem 'simplecov'
 # end
+
+gem "activerecord5-redshift-adapter", "~> 1.0"
