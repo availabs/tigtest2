@@ -309,3 +309,22 @@ index c772440..3a4745f 100644
 -  validates :view, presence: true, unless: "app.nil?"
 +  validates :view, presence: true, unless: -> { app.nil? }
 ```
+
+## You tried to define an enum named "app" on the model "Comment", but this will generate a class method "table", which is already defined by ActiveRecord::Relation.
+
+### Temporary You tried to define an enum named "app" Solution
+
+- See [How to Migrate from Paperclip to Rails ActiveStorage Discussion](https://gorails.com/forum/how-to-migrate-from-paperclip-to-rails-activestorage-discussion#forum_post_11290)
+
+```diff
+diff --git a/app/models/comment.rb b/app/models/comment.rb
+index 3a4745f..fb98bd7 100644
+--- a/app/models/comment.rb
++++ b/app/models/comment.rb
+@@ -8,7 +8,7 @@ class Comment < ActiveRecord::Base
+   validates :source, presence: true
+   validates :view, presence: true, unless: -> { app.nil? }
+
+-  enum app: [ :table, :map, :chart, :metadata ]
++  # enum app: [ :table, :map, :chart, :metadata ]
+```
