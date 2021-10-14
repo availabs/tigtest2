@@ -336,3 +336,43 @@ index 3a4745f..fb98bd7 100644
 ## 🎉🎉🎉🎉 App renders
 
 Whoot.
+
+## undefined method `count' for #<ActionController
+
+```sh
+NoMethodError in ViewsController#table
+
+undefined method `count' for #<ActionController::Parameters:0x00007fc8ec256478>
+Extracted source (around line #6):
+
+#4   def initialize(params, options={})
+#5     puts params
+*6     @col_count = params[:columns].count
+#7     super
+#8   end
+#9
+```
+
+### undefined method `count' for #<ActionController Solution
+
+See: [ActionController::Parameters deprecation warning: Method size is deprecated and will be removed in Rails 5.1](https://stackoverflow.com/questions/40256292/actioncontrollerparameters-deprecation-warning-method-size-is-deprecated-and)
+
+## ActionView::Template::Error (uninitialized constant BootstrapBreadcrumbsBuilder (production only)
+
+See: [https://stackoverflow.com/a/51165512/3970755](ActionView::Template::Error "uninitialized constant `LibObject`")
+
+### uninitialized constant BootstrapBreadcrumbsBuilder Solution
+
+```diff
+diff --git a/config/application.rb b/config/application.rb
+index b01f52c..79ab6b5 100644
+--- a/config/application.rb
++++ b/config/application.rb
+@@ -77,7 +77,8 @@ module NymtcGateway
+
+     # Custom directories with classes and modules you want to be autoloadable.
+     # config.autoload_paths += %W(#{config.root}/extras)
+-    config.autoload_paths += %W(#{config.root}/lib)
++    # config.autoload_paths += %W(#{config.root}/lib)
++    config.eager_load_paths << Rails.root.join('lib')
+```
