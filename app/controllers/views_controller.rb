@@ -3,9 +3,9 @@ class ViewsController < ApplicationController
   before_action :get_view, only: [:show, :edit, :update, :destroy, :chart, :table, :map, :data_overlay, :export_shp, :demo_statistics, :feature_geometry, :layer_ui, :symbology, :update_year, :tmc_roadname, :link_roadname, :watch, :unwatch]
   before_action :check_valid_view, only: [:chart, :map, :table]
   before_action :set_snapshots, only: [:chart, :map, :table]
-  before_filter :enforce_access_controls_show, only: [:chart, :map, :table, :show, :export_shp]
-  before_filter :enforce_access_controls_update, only: [:edit]
-  before_filter :enforce_ownership, only: [:chart, :map, :table]
+  before_action :enforce_access_controls_show, only: [:chart, :map, :table, :show, :export_shp]
+  before_action :enforce_access_controls_update, only: [:edit]
+  before_action :enforce_ownership, only: [:chart, :map, :table]
   before_action :get_admins, only: [:new, :edit, :create, :update]
 
   # GET /views/1/map

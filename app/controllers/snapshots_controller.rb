@@ -1,6 +1,6 @@
 class SnapshotsController < ApplicationController
   before_action :set_snapshot, only: [:show, :edit, :update, :destroy]
-  before_filter :enforce_ownership, only: [:edit, :destroy]
+  before_action :enforce_ownership, only: [:edit, :destroy]
 
   def show
     @snapshot = Snapshot.find(params[:id])

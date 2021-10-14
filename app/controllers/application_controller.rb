@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  before_filter :configure_permitted_parameters, if: :devise_controller?
-  before_filter :set_action_and_controller
+  before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_action_and_controller
 
   rescue_from CanCan::AccessDenied do |exception|
     redirect_to root_path, :alert => exception.message.gsub('this', 'that')

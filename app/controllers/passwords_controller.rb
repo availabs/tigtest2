@@ -1,5 +1,5 @@
 class PasswordsController < Devise::PasswordsController
-  before_filter :validate_reset_password_token, only: :edit
+  before_action :validate_reset_password_token, only: :edit
 
   private
 

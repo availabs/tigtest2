@@ -189,3 +189,63 @@ Possible option: [kigster/puma-daemon](https://github.com/kigster/puma-daemon)
 ## 🎉🎉🎉🎉 `bundle exec puma -C config/puma.rb` ran
 
 Whoot.
+
+## undefined method `before_filter' for ApplicationController:Class
+
+```sh
+Routing Error
+
+undefined method `before_filter' for ApplicationController:Class
+Did you mean?  before_action
+
+Rails.root: /home/paul/AVAIL/tig-docker/mount_dirs/gateway
+
+Application Trace
+app/controllers/application_controller.rb:3:in `<class:ApplicationController>'
+app/controllers/application_controller.rb:1:in `<top (required)>'
+app/controllers/views_controller.rb:1:in `<top (required)>'
+```
+
+- [Undefined method for 'before_filter'](https://stackoverflow.com/a/45015788/3970755)
+
+```sh
+$ ag before_filter
+spec/controllers/views_controller_spec.rb
+84:      controller.class.skip_before_filter :enforce_access_controls_show
+97:      controller.class.skip_before_filter :enforce_access_controls_show
+
+app/controllers/comments_controller.rb
+2:  before_filter :enforce_ownership, only: [:show, :edit]
+3:  before_filter :set_comment, only: [:show, :edit, :update, :block, :unblock, :destroy]
+
+app/controllers/users_controller.rb
+2:  before_filter :authenticate_user!
+
+app/controllers/views_controller.rb
+6:  before_filter :enforce_access_controls_show, only: [:chart, :map, :table, :show, :export_shp]
+7:  before_filter :enforce_access_controls_update, only: [:edit]
+8:  before_filter :enforce_ownership, only: [:chart, :map, :table]
+
+app/controllers/registrations_controller.rb
+2:  skip_before_filter :require_no_authentication, only: [:new, :create]
+
+app/controllers/sources_controller.rb
+2:  before_filter :enforce_access_controls, only: [:show, :edit]
+
+app/controllers/passwords_controller.rb
+2:  before_filter :validate_reset_password_token, only: :edit
+
+app/controllers/application_controller.rb
+3:  before_filter :configure_permitted_parameters, if: :devise_controller?
+4:  before_filter :set_action_and_controller
+
+app/controllers/snapshots_controller.rb
+3:  before_filter :enforce_ownership, only: [:edit, :destroy]
+```
+
+### undefined method 'before_filter' Solution
+
+```sh
+ag before_filter -l | while read f; do sed -i 's/before_filter/before_action/g' "$f"; d
+one
+```
