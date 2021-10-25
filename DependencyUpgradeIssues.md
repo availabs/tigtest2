@@ -377,6 +377,37 @@ index b01f52c..79ab6b5 100644
 +    config.eager_load_paths << Rails.root.join('lib')
 ```
 
+## Client Uncaught TypeError: getUrlParam is not a function
+
+Solution:
+
+```diff
+diff --git a/app/views/views/table.html.slim b/app/views/views/table.html.slim
+index 472f9ef..3f812ee 100644
+--- a/app/views/views/table.html.slim
++++ b/app/views/views/table.html.slim
+@@ -136,7 +136,7 @@
+ javascript:
+-  var snapshot = getUrlParam('snapshot');
++  var snapshot = window.getUrlParam('snapshot');
+```
+
+## Leaflet
+
+Solution: Lock the gem versions
+
+```gemfile
+# ========== Front-End::Leaflet ==========
+# axyjo/leaflet-rails: This gem provides the leaflet.js map display library for your Rails 5 application.
+gem 'leaflet-rails', '= 0.7.4'
+# NOTE: The following two leaflet gems currently (2021-10-24) have zero stars on GitHub.
+# https://rubygems.org/gems/leaflet-draw-rails
+# igor-drozdov/leaflet-draw-rails: Leaflet.draw plugin for your Rails application.
+gem 'leaflet-draw-rails', '= 0.1.0'
+# zentrification/leaflet-providers-rails: leaflet-providers plugin packaged for the rails 3 asset pipeline
+gem 'leaflet-providers-rails', github: 'zentrification/leaflet-providers-rails'
+```
+
 ## NoMethodError - undefined method `simple_search' for #<UnpivotedDatatable
 
 ```log
