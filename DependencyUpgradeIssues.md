@@ -376,3 +376,75 @@ index b01f52c..79ab6b5 100644
 +    # config.autoload_paths += %W(#{config.root}/lib)
 +    config.eager_load_paths << Rails.root.join('lib')
 ```
+
+## NoMethodError - undefined method `simple_search' for #<UnpivotedDatatable
+
+```log
+NoMethodError - undefined method `simple_search' for #<UnpivotedDatatable:0x000056318b12f148>:
+  app/datatables/unpivoted_datatable.rb:106:in `filter_records'
+```
+
+The server logs this error when the client requests data tables.
+The error prevents the tables from populating and rendering.
+
+The _'ajax-datatables-rails'_ gem adds the `AjaxDatatablesRails` module to the application.
+This module is extended in the following classes:
+
+```ruby
+# app/datatables/pivoted_datatable.rb
+class PivotedDatatable < AjaxDatatablesRails::Base
+```
+
+```ruby
+# app/datatables/unpivoted_datatable.rb
+class UnpivotedDatatable < AjaxDatatablesRails::Base
+```
+
+The `PivotedDatatable` and `UnpivotedDatatable` classes are used in _app/controllers/views_controller.rb_.
+
+```sh
+$ git rev-parse HEAD
+a743db03882034dc28c8aae3ff11e6979f15fbc8
+$ ag 'ivoted_table'
+controllers/views_controller.rb
+262:          pivoted_table = PivotedDatatable.new(params,
+263:          # pivoted_table = PivotedDatatable.new(view_context,
+273:          render text: (params[:filtered] ? pivoted_table.to_csv(@view) : @view.data_model.to_csv(@view))
+287:        unpivoted_table = UnpivotedDatatable.new(view_context,
+296:        format.json { render json: unpivoted_table }
+300:          render text: (params[:filtered] ? unpivoted_table.to_csv(@view) : @view.data_model.to_csv(@view))
+```
+
+### Root cause of NoMethodError - undefined method `simple_search'
+
+Prior to the application dependency upgrades, the application used
+_ajax-datatables-rails (0.3.0)_ which was released January 30, 2015. The
+current version, as of 2021-10-25, is \_(1.3.1) which was released February 09, 2021.
+
+In version _ajax-datatables-rails (0.3.0)_, `simple_search` was [defined
+](https://github.com/jbox-web/ajax-datatables-rails/blob/v0.3.0/lib/ajax-datatables-rails/base.rb#L95-L100)
+as an instance method on `AjaxDatatablesRails::Base`.
+
+```ruby
+def simple_search(records)
+  return records unless (params[:search].present? && params[:search][:value].present?)
+  conditions = build_conditions_for(params[:search][:value])
+  records = records.where(conditions) if conditions
+  records
+end
+```
+
+In version _ajax-datatables-rails (1.3.1)_, [`AjaxDatatablesRails:Datatable::SimpleSearch`](https://github.com/jbox-web/ajax-datatables-rails/blob/b79f3bfc78142516583616e66a37004c7d98fdd4/lib/ajax-datatables-rails/datatable/simple_search.rb#L5)
+is a class that must be instantiated. See
+[code](https://github.com/jbox-web/ajax-datatables-rails/blob/b79f3bfc78142516583616e66a37004c7d98fdd4/spec/ajax-datatables-rails/datatable/simple_search_spec.rb#L8).
+
+NOTE: We could not rollback the version to _ajax-datatables-rails (0.3.0)_
+because is is incompatible with the current `ActionController::Parameters` version:
+
+```log
+NoMethodError - undefined method `each_value' for #<ActionController::Parameters:0x0000555b426fc2a8>
+Did you mean?  each_pair:
+  ajax-datatables-rails (0.3.0) lib/ajax-datatables-rails/base.rb:76:in `sort_records'
+```
+
+Additionally, the `ajax-datatables-rails` gem is [no help](https://github.com/Shipstr/ajax-datatables-rails-alt-api/search?q=simple_search).
