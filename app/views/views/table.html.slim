@@ -136,7 +136,7 @@
 - map_action_column_index = [8] if @rtp_project_column_filter
 - map_action_column_index = [7] if @tip_project_column_filter
 javascript:
-  var snapshot = getUrlParam('snapshot');
+  var snapshot = window.getUrlParam('snapshot');
   if (snapshot) { var savedTable = JSON.parse("#{@snapshot_filters}".replace(/(&quot;)/g, "\"").replace(/(=&gt;)/g, ":").replace(/(nil)/g, "null")); }
   var tableData;
   var oTable = $('##{@view.data_model.to_s.underscore}').dataTable( {
