@@ -10,6 +10,10 @@ class ViewsController < ApplicationController
 
   # GET /views/1/map
   def map
+    if @view[:name] && @view[:name] == 'NPMRDS'
+      return redirect_to "/v2/views/#{@view[:id]}/map"
+    end
+
     add_view_switch_breadcrumb @view, :map
     add_action_switch_breadcrumb :map
 
