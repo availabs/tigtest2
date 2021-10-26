@@ -1,8 +1,10 @@
+### TODO FIXME TODO FIXME: MUST to verify that sorting and filtering work.
+
 class PivotedDatatable < AjaxDatatablesRails::Base
   include ToCsv
 
-  def initialize(view, options={})
-    @col_count = view.params[:columns].count
+  def initialize(params, options={})
+    @col_count = params[:columns].to_unsafe_h.count
     super
   end
 
@@ -52,7 +54,7 @@ class PivotedDatatable < AjaxDatatablesRails::Base
     end
     @searchable_columns
   end
-  
+
   def as_json(opts = {})
     row_name = options[:view].row_name || :area
     count_sym = "#{row_name}_id".to_sym
@@ -91,7 +93,7 @@ class PivotedDatatable < AjaxDatatablesRails::Base
   # override base
   def sort_records(records)
     sort_by = []
-    params[:order].each_value do |item|
+    params[:order].to_unsafe_h.each_value do |item|
       column = sort_column(item)
       dir = sort_direction(item)
 
@@ -104,13 +106,13 @@ class PivotedDatatable < AjaxDatatablesRails::Base
         row_name = view.row_name || :area
 
         # check if the row_name exists in both the data_model and linked model
-        
+
         order_name_id = nil
         if row_name.to_s.camelize.constantize.column_names.include? "#{row_name}_id"
           order_name_id = "#{row_name}s.#{row_name}_id".to_sym
         end
         pluck_name_id = "#{model.table_name}.#{row_name}_id".to_sym
-        
+
         @row_ids = filter_records(get_raw_records)
           .where({column_name => index})
           .group(order_name_id, pluck_name_id)
@@ -123,12 +125,12 @@ class PivotedDatatable < AjaxDatatablesRails::Base
       else
         sort_by << "#{column} #{dir}"
       end
-      
+
     end
-    
+
     records.order(sort_by.join(", "))
   end
-  
+
   # Does not use <model>::range_select as that is too slow
   def range_filter(records)
     lower = params[:lower]
@@ -150,7 +152,7 @@ class PivotedDatatable < AjaxDatatablesRails::Base
       row_name = options[:view].row_name || :area
       records = records.where({"#{row_name}_id".to_sym => @row_ids})
     end
-    
+
     records
   end
 
@@ -172,7 +174,6 @@ class PivotedDatatable < AjaxDatatablesRails::Base
 
     filters = options[:filters].except(options[:view].column_name)
     model.select_facts(options[:view], area, area_type, filters, for_count)
-    
   end
 
   def join_enclosures(base, areas)
@@ -220,7 +221,7 @@ class PivotedDatatable < AjaxDatatablesRails::Base
             end
           end
 
-          key = fact.send(column_name).to_s 
+          key = fact.send(column_name).to_s
           row[key] = fact.send(view.value_name)
         end
         index +=1
@@ -245,12 +246,12 @@ class PivotedDatatable < AjaxDatatablesRails::Base
       facts.where('value >= ? AND value <= ?', lower, upper).count
     end
   end
-  
+
   def range_select(facts, lower, upper)
     return facts if lower.blank? && upper.blank?
 
     value_method = facts[0].view.value_name
-    
+
     if upper.blank?
       lower = lower.to_i
       facts.select { |fact| fact.send(value_method) >= lower }
@@ -269,7 +270,7 @@ class PivotedDatatable < AjaxDatatablesRails::Base
 
   def load_paginator
   end
-  
+
   def paginate_records(records)
     Rails.logger.debug "row_ids: #{@row_ids}"
     if @row_ids
@@ -278,6 +279,72 @@ class PivotedDatatable < AjaxDatatablesRails::Base
       records.offset(offset).limit(per_page)
     end
   end
+
+  # ========== start: ajax-datatables-rails from 0.3.0 to 1.3.1 upgrade patches ==========
+  # NOTE: Upgrading jbox-web/ajax-datatables-rails from 0.3.0 to 1.3.1 caused a lot of issues.
+  #       Many methods previously defined on AjaxDatatablesRails::Base were removed.
+  #       I added them back in by refering to the 0.3.0 source code:
+  #       * https://github.com/jbox-web/ajax-datatables-rails/blob/v0.3.0/lib/ajax-datatables-rails/base.rb
+
+  def simple_search(records)
+    return records unless (params[:search].present? && params[:search][:value].present?)
+    conditions = build_conditions_for(params[:search][:value])
+    records = records.where(conditions) if conditions
+    records
+  end
+
+  def aggregate_query
+    conditions = searchable_columns.each_with_index.map do |column, index|
+      value = params[:columns]["#{index}"][:search][:value] if params[:columns]
+      search_condition(column, value) unless value.blank?
+    end
+    conditions.compact.reduce(:and)
+  end
+
+  def composite_search(records)
+    conditions = aggregate_query
+    records = records.where(conditions) if conditions
+    records
+  end
+
+  def sort_column(item)
+    new_sort_column(item)
+  rescue
+    deprecated_sort_column(item)
+  end
+
+  def new_sort_column(item)
+    model, column = sortable_columns[sortable_displayed_columns.index(item[:column])].split('.')
+    col = [model.constantize.table_name, column].join('.')
+  end
+
+  def deprecated_sort_column(item)
+    sortable_columns[sortable_displayed_columns.index(item[:column])]
+  end
+
+  def sort_direction(item)
+    options = %w(desc asc)
+    options.include?(item[:dir]) ? item[:dir].upcase : 'ASC'
+  end
+
+  def sortable_displayed_columns
+    @sortable_displayed_columns ||= generate_sortable_displayed_columns
+  end
+
+  def generate_sortable_displayed_columns
+    @sortable_displayed_columns = []
+    params[:columns].to_unsafe_h.each_value do |column|
+      @sortable_displayed_columns << column[:data] if column[:orderable] == 'true'
+    end
+    @sortable_displayed_columns
+  end
+
+  def offset
+    params.fetch(:start, 0).to_i
+  end
+
+
+  # ========== end: ajax-datatables-rails from 0.3.0 to 1.3.1 upgrade patches ==========
 
   # ==== Insert 'presenter'-like methods below if necessary
 end

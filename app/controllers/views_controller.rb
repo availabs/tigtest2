@@ -201,6 +201,7 @@ class ViewsController < ApplicationController
     # datatables settings
     @lengthMenu = "[[10, 25, 50, 100], [10, 25, 50, 100]]"
     @filterCols = "[]"
+    # ??? TODO: Is this trying to predict response time ??? The view uses it in a timeout.
     @searchDelay = ([SpeedFact, LinkSpeedFact].include? @view.data_model) ? 1200 : 400
     @default_order = '[[ 0, "asc"]]'
     if (@view.data_model == ComparativeFact) || (@view.data_model == CountFact)
@@ -241,7 +242,7 @@ class ViewsController < ApplicationController
       filename = @view.name.blank? ? "Table" : @view.name.gsub(/[^0-9A-z.\-]/, '_')
       if @view.data_model.pivot? && unswitched?
         # puts "--------------------------------------------------------------------------- AJAX LOAD"
-        format.json { render json: PivotedDatatable.new(view_context,
+        format.json { render json: PivotedDatatable.new(params,
                                                         {
                                                             view: @view,
                                                             model: @view.data_model,
@@ -253,7 +254,7 @@ class ViewsController < ApplicationController
         }
         format.csv {
           response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
-          pivoted_table = PivotedDatatable.new(view_context,
+          pivoted_table = PivotedDatatable.new(params,
                                                {
                                                    view: @view,
                                                    model: @view.data_model,
@@ -277,7 +278,7 @@ class ViewsController < ApplicationController
         }
       else
         # puts "--------------------------------------------------------------------------- AJAX LOAD"
-        unpivoted_table = UnpivotedDatatable.new(view_context,
+        unpivoted_table = UnpivotedDatatable.new(params,
                                                  {
                                                     view: @view,
                                                     model: @view.data_model,
