@@ -68,6 +68,8 @@ gem 'rubyzip'
 gem 'filepicker-rails'
 # roo-rb/roo: Roo provides an interface to spreadsheets of several sorts.
 gem 'roo'
+# brianmario/yajl-ruby: A streaming JSON parsing and encoding library for Ruby (C bindings to yajl)
+gem 'yajl-ruby', require: 'yajl'
 
 # ===== Front-End =====
 # slim-template/slim-rails: Slim templates generator for Rails
