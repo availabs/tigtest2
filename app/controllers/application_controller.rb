@@ -139,7 +139,9 @@ class ApplicationController < ActionController::Base
   protected
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.for(:sign_up) << :display_name
+    # https://stackoverflow.com/a/37342259/3970755
+    # devise_parameter_sanitizer.for(:sign_up) << :display_name
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:display_name])
   end
 
 end
