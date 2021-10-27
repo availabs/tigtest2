@@ -10,7 +10,8 @@ class ViewsController < ApplicationController
 
   # GET /views/1/map
   def map
-    if @view[:name] && @view[:name] == 'NPMRDS'
+    if ['NPMRDS'].include? @view[:name]
+      increment_view_count
       return redirect_to "/v2/views/#{@view[:id]}/map"
     end
 
