@@ -51,7 +51,14 @@ class TipProject < ActiveRecord::Base
           end
           attributes[:ptype] = Ptype.where(name: ptype_name).first_or_create
 
-          attributes[:cost] = record[cost_key][ /\d+(?:\.\d+)?/ ] if record[cost_key]
+          # attributes[:cost] = record[cost_key][ /\d+(?:\.\d+)?/ ] if record[cost_key]
+          if record[cost_key]
+            if record[cost_key].respond_to?('[]') # If record[cost_key] is a string
+              attributes[:cost] = record[cost_key][ /\d+(?:\.\d+)?/ ] # get only the digits
+            else
+              attributes[:cost] = record[cost_key]
+            end
+          end
           attributes[:mpo] = Mpo.where(name: record['MPONAME']).first_or_create
           attributes[:county] = Area.where(name: record['COUNTY'].try(:titleize), type: :county).first
           attributes[:sponsor] = Sponsor.where(name: record[sponsor_key]).first_or_create
