@@ -6,9 +6,9 @@
   .form-group
     = label_tag 'From - To', 'From - To'
     .form-inline style='text-align: center;'
-      = select_tag :hour, options_for_select(@hours, @current_hour),  class: 'form-control', include_blank: true
+      = select_tag :hour, options_for_select(@hours, @current_hour),  class: 'form-control', include_blank: false
       ' -
-      = select_tag :upper_hour, options_for_select(@hours, @upper_hour || @current_hour), class: 'form-control', include_blank: true
+      = select_tag :upper_hour, options_for_select(@hours, @upper_hour || @current_hour), class: 'form-control', include_blank: false
   .form-group
     = label_tag 'Mode'
     = select_tag :transit_mode, options_for_select(@transit_modes, @current_mode), required: true, class: 'form-control'
