@@ -9,6 +9,7 @@ class Comment < ActiveRecord::Base
   validates :view, presence: true, unless: -> { app.nil? }
 
   # enum app: [ :table, :map, :chart, :metadata ]
+  enum app: [ :chart, :metadata ]
 
   scope :first_n, ->(n) { order("created_at desc").limit(n)}
   scope :query_by, ->(source, view, app) { 
