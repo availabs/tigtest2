@@ -479,3 +479,99 @@ Did you mean?  each_pair:
 ```
 
 Additionally, the `ajax-datatables-rails` gem is [no help](https://github.com/Shipstr/ajax-datatables-rails-alt-api/search?q=simple_search).
+
+### undefined method `apps' for Comment
+
+Stepping through the pre-upgrade code, we reach the following method in Rails' ActiveRecord Enum module.
+
+```Ruby
+klass.singleton_class.send(:define_method, name.to_s.pluralize) { enum_values }
+```
+
+See [rails/rails/blob/v4.1.6/activerecord/lib/active_record/enum.rb](https://github.com/rails/rails/blob/24027162dbe226acfbf3a91872237a9557764d72/activerecord/lib/active_record/enum.rb#L89)
+
+In Rails v5.2.6, a very similar define_method line exists:
+
+```Ruby
+singleton_class.send(:define_method, name.pluralize) { enum_values }
+```
+
+Note: name is pluralized. The Enum name would be "app".
+
+See [rails/rails/blob/v5.2.6/activerecord/lib/active_record/enum.rb](https://github.com/rails/rails/blob/48661542a2607d55f436438fe21001d262e61fec/activerecord/lib/active_record/enum.rb#L162)
+
+Question: How is that Enum::enum method getting called?
+By internal TIG code or an external Gem?
+
+Answer: Internal TIG code.
+
+Root of the problem: as a temporary fix to the "You tried to define an enum..." bug,
+we commented out the `enum app` line from the Comment and Snapshot models.
+
+```sh
+git --no-pager show 2029849ac56c04dd14754f3ecbd57e1353a42946 app/models/comment.rb
+```
+
+```diff
+commit 2029849ac56c04dd14754f3ecbd57e1353a42946
+Author: Paul Tomchik <pauljtomchik@gmail.com>
+Date:   Thu Oct 14 09:50:56 2021 -0400
+
+    You tried to define an enum... but this will generate a...
+
+diff --git a/app/models/comment.rb b/app/models/comment.rb
+index 3a4745f..fb98bd7 100644
+--- a/app/models/comment.rb
++++ b/app/models/comment.rb
+@@ -8,7 +8,7 @@ class Comment < ActiveRecord::Base
+   validates :source, presence: true
+   validates :view, presence: true, unless: -> { app.nil? }
+
+-  enum app: [ :table, :map, :chart, :metadata ]
++  # enum app: [ :table, :map, :chart, :metadata ]
+
+   scope :first_n, ->(n) { order("created_at desc").limit(n)}
+   scope :query_by, ->(source, view, app) {
+```
+
+Which means we are back to the following bug:
+
+> You tried to define an enum named "app" on the model "Comment", but this will
+> generate a class method "table", which is already defined by ActiveRecord::Relation.
+
+Fix:
+
+```diff
+diff --git a/app/models/comment.rb b/app/models/comment.rb
+index fb98bd7..762fb2f 100644
+--- a/app/models/comment.rb
++++ b/app/models/comment.rb
+@@ -9,6 +9,7 @@ class Comment < ActiveRecord::Base
+   validates :view, presence: true, unless: -> { app.nil? }
+
+   # enum app: [ :table, :map, :chart, :metadata ]
++  enum app: [ :chart, :metadata ]
+
+   scope :first_n, ->(n) { order("created_at desc").limit(n)}
+   scope :query_by, ->(source, view, app) {
+```
+
+## undefined method `<<' for #<StudyArea::ActiveRecord_Relation
+
+Fix: See [Rails 5.0.1 issue-- undefined method `push'](https://github.com/rails/rails/issues/27998#issuecomment-279723414)
+
+```diff
+diff --git a/app/models/study_area.rb b/app/models/study_area.rb
+index 58f4801..75a3473 100644
+--- a/app/models/study_area.rb
++++ b/app/models/study_area.rb
+@@ -15,7 +15,7 @@ class StudyArea < Area
+     if user
+       shared_study_areas = joins(:viewers).where(viewers_study_areas: {user_id: user.id})
+       published_or_owned = where("areas.user_id = ? OR published = ?", user.id, true)
+-      (published_or_owned << shared_study_areas).flatten.uniq
++      (published_or_owned.to_a << shared_study_areas).flatten.uniq
+     else
+       where(published: true)
+     end
+```
