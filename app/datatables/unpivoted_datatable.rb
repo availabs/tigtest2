@@ -261,7 +261,6 @@ class UnpivotedDatatable < AjaxDatatablesRails::Base
   end
 
   def sort_column(item)
-    binding.pry
     new_sort_column(item)
   rescue
     deprecated_sort_column(item)
