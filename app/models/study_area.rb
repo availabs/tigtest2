@@ -15,7 +15,7 @@ class StudyArea < Area
     if user
       shared_study_areas = joins(:viewers).where(viewers_study_areas: {user_id: user.id})
       published_or_owned = where("areas.user_id = ? OR published = ?", user.id, true)
-      (published_or_owned << shared_study_areas).flatten.uniq
+      (published_or_owned.to_a << shared_study_areas).flatten.uniq
     else
       where(published: true)
     end
