@@ -18,51 +18,51 @@ NymtcGateway::Application.configure do
                        ]
 end
 
-# Patch for /gems/partitioned-1.3.4/lib/monkey_patch_activerecord.rb
-# IdentityMap removed from AR 4, remove references
-# connection moved to self.class
-ActiveRecord::Persistence.module_eval do
-  def destroy
-    destroy_associations
-    
-    if persisted?
-      pk         = self.class.primary_key
-      column     = self.class.columns_hash[pk]
-      substitute = self.class.connection.substitute_at(column, 0)
-      
-      if self.class.respond_to?(:dynamic_arel_table)
-        using_arel_table = dynamic_arel_table()
-        relation = ActiveRecord::Relation.new(self.class, using_arel_table).
-                   where(using_arel_table[pk].eq(substitute))
-      else
-        using_arel_table = self.class.arel_table
-        relation = self.class.unscoped.where(using_arel_table[pk].eq(substitute))
-      end
-      
-      relation.bind_values = [[column, id]]
-      relation.delete_all
-    end
-    
-    @destroyed = true
-    freeze
-  end
-
-  #
-  # patch the create method to prefetch the primary key if needed
-  #
-  def create
-    if self.id.nil? && self.class.respond_to?(:prefetch_primary_key?) && self.class.prefetch_primary_key?
-      self.id = connection.next_sequence_value(self.class.sequence_name)
-    end
-
-    attributes_values = arel_attributes_values(!id.nil?)
-
-    new_id = self.class.unscoped.insert attributes_values
-
-    self.id ||= new_id
-
-    @new_record = false
-    id
-  end
-
-end
+# # Patch for /gems/partitioned-1.3.4/lib/monkey_patch_activerecord.rb
+# # IdentityMap removed from AR 4, remove references
+# # connection moved to self.class
+# ActiveRecord::Persistence.module_eval do
+#   def destroy
+#     destroy_associations
+#     
+#     if persisted?
+#       pk         = self.class.primary_key
+#       column     = self.class.columns_hash[pk]
+#       substitute = self.class.connection.substitute_at(column, 0)
+#       
+#       if self.class.respond_to?(:dynamic_arel_table)
+#         using_arel_table = dynamic_arel_table()
+#         relation = ActiveRecord::Relation.new(self.class, using_arel_table).
+#                    where(using_arel_table[pk].eq(substitute))
+#       else
+#         using_arel_table = self.class.arel_table
+#         relation = self.class.unscoped.where(using_arel_table[pk].eq(substitute))
+#       end
+#       
+#       relation.bind_values = [[column, id]]
+#       relation.delete_all
+#     end
+#     
+#     @destroyed = true
+#     freeze
+#   end
+# 
+#   #
+#   # patch the create method to prefetch the primary key if needed
+#   #
+#   def create
+#     if self.id.nil? && self.class.respond_to?(:prefetch_primary_key?) && self.class.prefetch_primary_key?
+#       self.id = connection.next_sequence_value(self.class.sequence_name)
+#     end
+# 
+#     attributes_values = arel_attributes_values(!id.nil?)
+# 
+#     new_id = self.class.unscoped.insert attributes_values
+# 
+#     self.id ||= new_id
+# 
+#     @new_record = false
+#     id
+#   end
+# 
+# end
