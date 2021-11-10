@@ -432,7 +432,3 @@ $ ag taz db/schema.rb
 
 However, there is not other reference to these tables in the db/ or app/ directories.
 It is unclear how they were created and loaded, or their potential use.
-
-```
-
-```
