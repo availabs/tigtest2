@@ -17,17 +17,17 @@ namespace :gateway do
   desc "Clean up duplicated road records and speed_fact road references"
   task clean_up_roads: :environment do
     require File.join(Rails.root, 'db', 'tasks/clean_up_roads.rb')
-  end 
+  end
 
   desc "Load Hub Bound Data"
   task load_hub_data: :environment do
     require File.join(Rails.root, 'db', 'tasks/load_hub_bound_data.rb')
-  end 
-    
+  end
+
   desc "Load ACS Data"
   task load_acs_data: :environment do
     require File.join(Rails.root, 'db', 'acs_data_seeds.rb')
-  end 
+  end
 
   desc "Split 'Metadata' action into 'Edit Metadata' and 'View Metadata'"
   task split_metadata_action: :environment do
@@ -91,7 +91,13 @@ namespace :gateway do
     require File.join(Rails.root, 'db', 'tasks/load_2040_sed_county_forecast.rb')
     puts '2040 SED County level forecast data loaded.'
   end
-  
+
+  desc "Load 2055 SED TAZ level forecast data"
+  task load_bpm_2055_taz_forecast: :environment do
+    require File.join(Rails.root, 'db', 'bpm_2020_taz_forecast_seeds.rb')
+    puts '2055 SED TAZ level forecast data loaded'
+  end
+
   desc "Create Speed Fact partitions and move data"
   task partition_speed_facts: :environment do
     require File.join(Rails.root, 'db', 'tasks/create_speed_fact_partitions.rb')
@@ -153,7 +159,7 @@ namespace :gateway do
     puts
     SpeedFact.create_new_partition_tables(partitions)
   end
-  
+
   desc "Import NPMRDS data: 'load_rds year=2014 months=all' or 'months=\"1,2,3\"'"
   task load_rds: :environment do
     require File.join(Rails.root, 'db', 'tasks/load_rds.rb')
@@ -191,7 +197,7 @@ namespace :gateway do
     require File.join(Rails.root, 'db', 'tasks/load_rtp_project_data.rb')
     puts "Loaded RTP project data"
   end
-  
+
   desc "Load TIP Project data"
   task load_tip_project_data: :environment do
     if defined?(Rails) && (Rails.env == 'development')
@@ -237,9 +243,9 @@ namespace :gateway do
 
   desc "Create initial LinkSpeedFact source and view"
   task add_link_speed_view: :environment do
-    require File.join(Rails.root, 'db', 'tasks/add_link_speed_facts.rb')    
+    require File.join(Rails.root, 'db', 'tasks/add_link_speed_facts.rb')
   end
-  
+
   desc "Add initial linkSpeedFact data: year, month, extension = '.zip'"
   task add_link_speed_facts: :environment do
     year = ENV['year']
@@ -249,7 +255,7 @@ namespace :gateway do
       puts "Please specify both year and month"
     else
       require 'zip'
-      
+
       puts "Loading TRANSCOM data @ #{Time.now.strftime('%I:%M:%S')}"
       filename = File.join(Rails.root,"db/transcom/NYMTC_#{year}_#{month}_6#{extension}")
       if File.exist? filename
@@ -314,7 +320,7 @@ namespace :gateway do
 
   desc "Clears 'data starts/ends at' columns that are equal in value for all Views"
   task clear_invalid_data_endpoints: :environment do
-    View.where("data_starts_at = data_ends_at").each { |view| 
+    View.where("data_starts_at = data_ends_at").each { |view|
       view.update_attributes(data_starts_at: nil, data_ends_at: nil)
       puts "'#{view.name}' has been reset"
     }
@@ -417,7 +423,7 @@ namespace :gateway do
       SpeedFactTmcVersionMapping.create(data_year: 2015, tmc_year: 2015)
     end
     puts '2015 TMC version added'
-  end 
+  end
 
   desc "Tweak hub bound columns"
   task move_year_as_first_column_for_hub_bound: :environment do
@@ -428,7 +434,7 @@ namespace :gateway do
 
       v.save
     end
-  end 
+  end
 
   desc "Add BPM Highway Network layer configuration to database"
   task add_bpm_highway_layer: :environment do
@@ -459,7 +465,7 @@ namespace :gateway do
     end
 
     puts 'Its ptype is now ITS'
-  end 
+  end
 
   desc "Add 2017 TMC configurations"
   task add_2017_npmrds_configs: :environment do
@@ -483,13 +489,13 @@ namespace :gateway do
 
 
     puts 'Chart enabled for ACS'
-  end 
+  end
 
   desc "Update Hub Bound data column labels "
   task update_hub_bound_data_column_labels: :environment do
     View.where(data_model: YAML::dump(CountFact)).update_all(column_labels: ["Year", "Count Variable", "Count", "Route", "Mode", "In Station", "Out Station", "Direction", "Location", "Sector", "From - To", "Transit Agency"])
     puts 'Updated'
-  end   
+  end
 
   desc "Remove columns from RTP "
   task remove_infra_category_from_rtp_views: :environment do
