@@ -382,6 +382,12 @@ namespace :gateway do
     puts '2012 TAZ Boundary enabled'
   end
 
+  desc "Enable 2020 TAZ boundary"
+  task enable_2020_taz_boundary: :environment do
+    require File.join(Rails.root, 'db', 'tasks/enable_2020_taz_boundary.rb')
+    puts '2020 TAZ Boundary enabled'
+  end
+
 
   desc "Seed existing supported geometry versions"
   task seed_geometry_versions: :environment do
