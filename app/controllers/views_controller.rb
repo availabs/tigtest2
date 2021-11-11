@@ -456,7 +456,7 @@ class ViewsController < ApplicationController
   # PUT /views/1
   # PUT /views/1.json`
   def update
-    updated_view = params[:view]
+    updated_view = params[:view].to_unsafe_h
     updated_view[:contributor_ids] = updated_view[:contributor_ids].reject(&:blank?) if updated_view[:contributor_ids]
     updated_view[:librarian_ids] = updated_view[:librarian_ids].reject(&:blank?) if updated_view[:librarian_ids]
     updated_view[:columns] = updated_view[:columns].map(&:last) if updated_view[:columns]

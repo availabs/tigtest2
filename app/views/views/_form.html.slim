@@ -37,7 +37,7 @@
               = f.association :roles, collection: Action.all_actions_filtered, as: :check_boxes, label: "Actions", label_method: lambda {|r| r.name.titleize }, value_method: :id, item_wrapper_class: "col-md-4", checked: (@view.role_ids.empty? ? [Action.find_by(name: "view_metadata").id, Action.find_by(name: "edit_metadata").id] : @view.role_ids)
               = f.hidden_field('role_ids][', value: Action.where(name: 'edit_metadata').pluck(:id).first)
               = f.hidden_field('role_ids][', value: Action.where(name: 'view_metadata').pluck(:id).first)
-              = f.hidden_field :data_levels, value: @view.data_levels
+              = f.hidden_field :data_levels, value: @view.data_levels.to_s
               = f.hidden_field :data_hierarchy, value: @view.data_hierarchy
               = f.hidden_field :spatial_level, value: @view.spatial_level
             - selected_model = @view.data_model.present? ? @view.data_model : source.default_data_model
