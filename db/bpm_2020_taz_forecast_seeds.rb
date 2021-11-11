@@ -30,7 +30,7 @@
 SED_TAZ_DATA_FILE_NAME = '2055SED_TAZ_TIG.csv'
 SED_TAZ_DATA_FILE_PATH = File.join(Rails.root, 'db', SED_TAZ_DATA_FILE_NAME)
 
-SOURCE = Source.find_by(name: '2055 SED TAZ Level Forecast Data');
+SOURCE = Source.find_by(name: '2055 SED TAZ LEVEL FORECAST');
 
 FORECAST_FROM_YEAR = 2010
 FORECAST_TO_YEAR = 2055
