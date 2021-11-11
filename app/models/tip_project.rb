@@ -23,14 +23,24 @@ class TipProject < ActiveRecord::Base
           k = k.downcase.strip
           k == 'cost' || k == 'projcost'
         end
-        
+
         sponsor_key = file[0].keys.detect do |k|
           k = k.downcase.strip
           k == 'agency' || k == 'respagency' || k == 'respagncy'
         end
 
         desc_key = file[0].keys.detect {|k| k.downcase.strip == 'lgdesc'}
-        
+
+        mponame_key = file[0].keys.detect do |k|
+          k = k.downcase.strip
+          k == 'mponame'
+        end
+
+        county_key = file[0].keys.detect do |k|
+          k = k.downcase.strip
+          k == 'county'
+        end
+
         file.each do |record|
           Delayed::Worker.logger.info("record for each file" )
           attributes = Hash.new
@@ -59,13 +69,13 @@ class TipProject < ActiveRecord::Base
               attributes[:cost] = record[cost_key]
             end
           end
-          attributes[:mpo] = Mpo.where(name: record['MPONAME']).first_or_create
-          attributes[:county] = Area.where(name: record['COUNTY'].try(:titleize), type: :county).first
+          attributes[:mpo] = Mpo.where(name: record[mponame_key]).first_or_create
+          attributes[:county] = Area.where(name: record[county_key].try(:titleize), type: :county).first
           attributes[:sponsor] = Sponsor.where(name: record[sponsor_key]).first_or_create
           attributes[:description] = record[desc_key]
 
 
-          TipProject.new(attributes).save ? good_count+=1 : bad_count+=1     
+          TipProject.new(attributes).save ? good_count+=1 : bad_count+=1
         end
       end
     rescue Exception => e
@@ -140,13 +150,13 @@ class TipProject < ActiveRecord::Base
           base = base.joins(county: :areas_enclosing).where(area_enclosures: {enclosing_area_id: area})
         end
       else
-        
+
       end
     # allow partial matches on tip_id
     if !tip_id.blank?
       base = base.where(arel_table[:tip_id].matches("%#{tip_id}%"))
     end
-    
+
     base
   end
 
@@ -204,7 +214,7 @@ class TipProject < ActiveRecord::Base
     # Clear existing facts
     yield('deleting') if block_given?
     where(view: view).delete_all
-    
+
     processZip(io, view, &block)
   end
 
