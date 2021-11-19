@@ -38,22 +38,22 @@ FORECAST_TO_YEAR = 2055
 GEOMETRY_BASE_YEAR = 2020
 
 SOURCE_UPLOAD_TAZ_VIEW_SETS ||= {
-  # :school_enrollment => {prefix: 'EnrolK12_', desc: ''},
+  :school_enrollment => {prefix: 'EnrolK12_', desc: ''},
   :total_population => {prefix: 'PopTot', desc: 'Household population plus group quarter population'},
-  # :total_employment => {prefix: 'EmpTot', desc: 'CTPP based'},
-  # :household_income => {prefix: 'HHInc', desc: 'Average household income'},
-  # :household_population => {prefix: 'PopHH', desc: 'Population just in households'},
-  # :group_quarters_population => {prefix: 'PopGQ', desc: 'Institutional GQ + Homeless GQ + Other GQ population'},
-  # :group_quarters_institutional_population => {prefix: 'PopGQInst', desc: ''},
-  # :group_quarters_homeless_population => {prefix: 'PopGQHmls', desc: ''},
-  # :group_quarters_other_population => {prefix: 'PopGQOth', desc: 'Colleges, universities, military, etc.'},
-  # :households => {prefix: 'Households', desc: 'Number of households'},
-  # :household_size => {prefix: 'HHSize', desc: 'Average household size', precision: 2},
-  # :employed_labor_force => {prefix: 'EmpLF', desc: 'Employed Civilian Labor Force'},
-  # :retail_employment => {prefix: 'EmpRet', desc: 'CTPP based, NAICS: 44-45'},
-  # :office_employment => {prefix: 'EmpOff', desc: 'CTPP based, NAICS: 51-56'},
-  # :earnings => {prefix: 'Earn', desc: 'Earnings per worker'},
-  # :university_enrollment => {prefix: 'EnrolUniv', desc: ''},
+  :total_employment => {prefix: 'EmpTot', desc: 'CTPP based'},
+  :household_income => {prefix: 'HHInc', desc: 'Average household income'},
+  :household_population => {prefix: 'PopHH', desc: 'Population just in households'},
+  :group_quarters_population => {prefix: 'PopGQ', desc: 'Institutional GQ + Homeless GQ + Other GQ population'},
+  :group_quarters_institutional_population => {prefix: 'PopGQInst', desc: ''},
+  :group_quarters_homeless_population => {prefix: 'PopGQHmls', desc: ''},
+  :group_quarters_other_population => {prefix: 'PopGQOth', desc: 'Colleges, universities, military, etc.'},
+  :households => {prefix: 'Households', desc: 'Number of households'},
+  :household_size => {prefix: 'HHSize', desc: 'Average household size', precision: 2},
+  :employed_labor_force => {prefix: 'EmpLF', desc: 'Employed Civilian Labor Force'},
+  :retail_employment => {prefix: 'EmpRet', desc: 'CTPP based, NAICS: 44-45'},
+  :office_employment => {prefix: 'EmpOff', desc: 'CTPP based, NAICS: 51-56'},
+  :earnings => {prefix: 'Earn', desc: 'Earnings per worker'},
+  :university_enrollment => {prefix: 'EnrolUniv', desc: ''},
 }
 
 puts SOURCE_UPLOAD_TAZ_VIEW_SETS.to_s
