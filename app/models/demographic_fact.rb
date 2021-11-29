@@ -62,7 +62,7 @@ class DemographicFact < ActiveRecord::Base
   end
 
   def self.select_facts(view, area, area_type, filters={}, for_count=false)
-    base = includes(:area, :statistic).where(view_id: view)
+    base = includes(:area, :statistic).where(view_id: view, areas: { year: view.geometry_base_year})
     if area.nil? && area_type.nil?
       base
     elsif area.nil?
