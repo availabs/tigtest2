@@ -59,12 +59,12 @@ javascript:
       show: false
     });
 
-    $('#treeview').on('click', '.source-name', function() {
+    $('.treeview').on('click', '.source-name', function() {
       $('#actionsMenu').html("");
     });
 
     $('#showTable, #showList').on('click', function(){
-      $('#treeview, #treeviewActions, #showTable, #showList, #expandAll, #collapseAll').toggle();
+      $('.treeview, #treeviewActions, #showTable, #showList, #expandAll, #collapseAll').toggle();
       catalogView = $(this).attr('id') == "showTable" ? "table" : "list";
       $.ajax({
         type: "PATCH",
@@ -74,7 +74,7 @@ javascript:
     });
 
     $('#showTable').bind('click', function (e) {
-      $('#treeview').empty();
+      $('.treeview').empty();
 
       var target = document.getElementById('spinnerBounds');
       var spinner = new Spinner().spin(target);
@@ -105,7 +105,7 @@ javascript:
     });
 
     // Stop sending ajax request twice when click at a view under tree_view mode in the catalog
-    $('#treeview').on('ajax:before', 'a[data-remote=true], button[data-remote=true]', function () {
+    $('.treeview').on('ajax:before', 'a[data-remote=true], button[data-remote=true]', function () {
      if ($(this).attr('ajax-loading')) {
       $(this).removeAttr('ajax-loading');
       return false;
@@ -118,20 +118,22 @@ javascript:
 
     // Display source disclaimer if available (only popup once per session)
     var session_id = "#{request.session_options[:id]}";
+
     var show_disclaimer = function(sourceId, sourceDisclaimer) {
       if(sourceId) {
         var key = "disclaimer_" + sourceId;
+
         if(localStorage.getItem(key) != session_id) {
+          localStorage.setItem(key, session_id);
+
           $.ajax({
             url: 'sources/' + sourceId + '/get_disclaimer'
-          }).done(function(data) {
-            localStorage.setItem(key, session_id);
           });
         }
       }
     };
 
-    $('#treeview').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
+    $('.treeview').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
       var source_el = $(this).parents('.source-wrapper').find('.source-name');
       var sourceId = source_el.attr('id');
       var sourceDisclaimer = source_el.attr('data-disclaimer');
