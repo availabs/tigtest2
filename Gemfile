@@ -70,7 +70,10 @@ group :development do
   gem 'pry-byebug'
   gem 'pry-rails'
   # gem 'pry-stack_explorer'
-  # gem 'pry-nav'
+
+  # brunofacca/active-record-query-trace
+  # gem 'active_record_query_trace'
+
   gem 'guard'
   gem 'guard-bundler'
   gem 'guard-cucumber'

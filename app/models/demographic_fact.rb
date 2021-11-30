@@ -421,6 +421,8 @@ class DemographicFact < ActiveRecord::Base
     area_lookup = []
     area_row_data.each do |area_value|
       
+      # Getting the respective Area instance using the geometry_base_year.
+      #   Will then use the area.id below.
       area = Area.where(type: data_level, name: area_value.to_s, year: geometry_base_year).first
 
       Delayed::Worker.logger.debug("Area: #{area} #{area_value.to_s}")

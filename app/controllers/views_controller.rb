@@ -1443,19 +1443,18 @@ class ViewsController < ApplicationController
       @cost_upper = session["cost_upper#{@view.id}"]
     end
     update_sessions({
-                        "ptype#{@view.id}" => @current_ptype.blank? ? "" : Ptype.where(id: @current_ptype).pluck(:name).first,
-                        "mpo#{@view.id}" => @current_mpo.blank? ? "" : Mpo.where(id: @current_mpo).pluck(:name).first,
-                        "county#{@view.id}" => @current_county,
-                        "sponsor#{@view.id}" => @current_sponsor.blank? ? "" : Sponsor.where(id: @current_sponsor).pluck(:name).first,
-                        "cost_lower#{@view.id}" => @cost_lower,
-                        "cost_upper#{@view.id}" => @cost_upper,
-                        "tip_id#{@view.id}" => @tip_id
-                    })
+      "ptype#{@view.id}" => @current_ptype.blank? ? "" : Ptype.where(id: @current_ptype).pluck(:name).first,
+      "mpo#{@view.id}" => @current_mpo.blank? ? "" : Mpo.where(id: @current_mpo).pluck(:name).first,
+      "county#{@view.id}" => @current_county,
+      "sponsor#{@view.id}" => @current_sponsor.blank? ? "" : Sponsor.where(id: @current_sponsor).pluck(:name).first,
+      "cost_lower#{@view.id}" => @cost_lower,
+      "cost_upper#{@view.id}" => @cost_upper,
+      "tip_id#{@view.id}" => @tip_id
+    })
   end
 
 
   def prepare_rtp_project_filters
-
     @rtp_ids = RtpProject.order(rtp_id: :asc).pluck(:rtp_id)
     @ptypes = Ptype.where(id: RtpProject.select(:ptype_id).uniq).where.not(name: '').order(:name).pluck(:name, :id)
     @sponsors = Sponsor.where(id: RtpProject.where(view: @view).select(:sponsor_id).uniq.pluck(:sponsor_id)).where.not(name: '').order(:name).pluck(:name, :id)

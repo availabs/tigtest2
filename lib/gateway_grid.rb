@@ -1,3 +1,5 @@
+# PivotTable Gem: https://github.com/edjames/pivot_table
+
 class GatewayGrid < PivotTable::Grid
   # Overrides some of the methods in PivotTable::Grid to "deal with the awful performance
   # once you start dealing with real data", as Scott said.
