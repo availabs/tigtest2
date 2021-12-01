@@ -16,7 +16,15 @@
       #spinnerBounds.col-md-12
         #viewToggle
           
-        #treeview.col-md-6.treeview style="#{@list_items_css}"
+        #notIt.col-md-6.treeview style="#{@list_items_css}"
+          = format_as_text @description 
+          -if @contributor
+            = render('sources/contributor_bonsai_tree')
+          -elsif @librarian
+            = render('sources/librarian_bonsai_tree')
+          -else
+            = render('sources/bonsai_tree')
+
 
         #treeviewActions.col-md-3.col-md-offset-2 style="#{@list_items_css}"
           strong
@@ -110,14 +118,11 @@ javascript:
 
     // Display source disclaimer if available (only popup once per session)
     var session_id = "#{request.session_options[:id]}";
-
     var show_disclaimer = function(sourceId, sourceDisclaimer) {
       if(sourceId) {
         var key = "disclaimer_" + sourceId;
-
         if(localStorage.getItem(key) != session_id) {
           localStorage.setItem(key, session_id);
-
           $.ajax({
             url: 'sources/' + sourceId + '/get_disclaimer'
           });
@@ -125,7 +130,7 @@ javascript:
       }
     };
 
-    $('#treeview').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
+    $('#notIt').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
       var source_el = $(this).parents('.source-wrapper').find('.source-name');
       var sourceId = source_el.attr('id');
       var sourceDisclaimer = source_el.attr('data-disclaimer');
