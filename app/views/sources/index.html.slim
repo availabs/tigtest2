@@ -16,15 +16,7 @@
       #spinnerBounds.col-md-12
         #viewToggle
           
-        #notIt.col-md-6.treeview style="#{@list_items_css}"
-          = format_as_text @description 
-          -if @contributor
-            = render('sources/contributor_bonsai_tree')
-          -elsif @librarian
-            = render('sources/librarian_bonsai_tree')
-          -else
-            = render('sources/bonsai_tree')
-
+        #treeview.col-md-6.treeview style="#{@list_items_css}"
 
         #treeviewActions.col-md-3.col-md-offset-2 style="#{@list_items_css}"
           strong
@@ -59,12 +51,12 @@ javascript:
       show: false
     });
 
-    $('.treeview').on('click', '.source-name', function() {
+    $('#treeview').on('click', '.source-name', function() {
       $('#actionsMenu').html("");
     });
 
     $('#showTable, #showList').on('click', function(){
-      $('.treeview, #treeviewActions, #showTable, #showList, #expandAll, #collapseAll').toggle();
+      $('#treeview, #treeviewActions, #showTable, #showList, #expandAll, #collapseAll').toggle();
       catalogView = $(this).attr('id') == "showTable" ? "table" : "list";
       $.ajax({
         type: "PATCH",
@@ -74,7 +66,7 @@ javascript:
     });
 
     $('#showTable').bind('click', function (e) {
-      $('.treeview').empty();
+      $('#treeview').empty();
 
       var target = document.getElementById('spinnerBounds');
       var spinner = new Spinner().spin(target);
@@ -105,7 +97,7 @@ javascript:
     });
 
     // Stop sending ajax request twice when click at a view under tree_view mode in the catalog
-    $('.treeview').on('ajax:before', 'a[data-remote=true], button[data-remote=true]', function () {
+    $('#treeview').on('ajax:before', 'a[data-remote=true], button[data-remote=true]', function () {
      if ($(this).attr('ajax-loading')) {
       $(this).removeAttr('ajax-loading');
       return false;
@@ -133,7 +125,7 @@ javascript:
       }
     };
 
-    $('.treeview').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
+    $('#treeview').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
       var source_el = $(this).parents('.source-wrapper').find('.source-name');
       var sourceId = source_el.attr('id');
       var sourceDisclaimer = source_el.attr('data-disclaimer');
