@@ -787,8 +787,22 @@ ActionView::Template::Error (undefined method `reorder' for #<Array:0x00007f7174
     17:         tr
 ```
 
-NOTE: This problem only occurs on tigdev server.
-Running locally, the object type is ActiveRecord_Relation and the `reorder` method exists.
-Seems likely that the root cause is in a Gem.
-Rather than trying to find it, moving onto the major versions upgrade (Ruby 3, Rails 6)
-in hopes that that will resolve this bug.
+The trigger was Alex's roles in the DB.
+
+The fix:
+
+```diff
+diff --git a/app/controllers/uploads_controller.rb b/app/controllers/uploads_controller.rb
+index bb00438..e5d358c 100644
+--- a/app/controllers/uploads_controller.rb
++++ b/app/controllers/uploads_controller.rb
+@@ -29,7 +29,7 @@ class UploadsController < ApplicationController
+         elsif current_user.has_role?(:agency_admin)
+           @uploads = Upload.where(user: [ids])
+         elsif current_user.has_role?(:librarian)
+-          @uploads = Upload.where("view_id in (?) or source_id in (?)", current_user.views.pluck(:id), current_user.sources.pluck(:id)).uniq
++          @uploads = Upload.where("view_id in (?) or source_id in (?)", current_user.views.pluck(:id), current_user.sources.pluck(:id)).distinct
+         end
+       end
+     end
+```

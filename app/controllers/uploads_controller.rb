@@ -29,7 +29,7 @@ class UploadsController < ApplicationController
         elsif current_user.has_role?(:agency_admin) 
           @uploads = Upload.where(user: [ids])
         elsif current_user.has_role?(:librarian)
-          @uploads = Upload.where("view_id in (?) or source_id in (?)", current_user.views.pluck(:id), current_user.sources.pluck(:id)).uniq
+          @uploads = Upload.where("view_id in (?) or source_id in (?)", current_user.views.pluck(:id), current_user.sources.pluck(:id)).distinct
         end
       end
     end
