@@ -575,3 +575,196 @@ index 58f4801..75a3473 100644
        where(published: true)
      end
 ```
+
+## NoMethodError - undefined method 'map' for #<ActionController
+
+When trying to edit the TIP Project Data metadata, encountered the following error:
+
+```sh
+NoMethodError - undefined method `map' for #<ActionController::Parameters:0x00007fdfd09acbf0>
+Did you mean?  tap:
+  app/controllers/views_controller.rb:462:in `update'
+```
+
+The line of code:
+
+```Ruby
+updated_view[:columns] = updated_view[:columns].map(&:last) if updated_view[:columns]
+```
+
+Fix:
+
+```diff
+diff --git a/app/controllers/views_controller.rb b/app/controllers/views_controller.rb
+index 0880187..3908985 100644
+--- a/app/controllers/views_controller.rb
++++ b/app/controllers/views_controller.rb
+@@ -1,3 +1,5 @@
+ class ViewsController < ApplicationController
+
+   before_action :get_view, only: [:show, :edit, :update, :destroy, :chart, :table, :map, :data_overlay, :export_shp, :demo_statistics, :feature_geometry, :layer_ui, :symbology, :update_year, :tmc_roadname, :link_roadname, :watch, :unwatch]
+@@ -456,7 +458,8 @@ class ViewsController < ApplicationController
+   # PUT /views/1
+   # PUT /views/1.json`
+   def update
+-    updated_view = params[:view]
++    updated_view = params[:view].to_unsafe_h
+```
+
+## JSON::ParserError in ViewsController#update
+
+Encountered the following error while trying to edit TIP Project data metadata name:
+
+```log
+From: /home/paul/AVAIL/tig-docker/mount_dirs/gateway/app/controllers/views_controller.rb:472 ViewsController#update:
+
+    467:     updated_view[:column_types] = updated_view[:column_types].map(&:last) if updated_view[:column_types]
+    468:     if updated_view[:value_columns]
+    469:       updated_view[:value_columns] = updated_view[:value_columns].each_with_index.map{ |val_col, idx| updat
+ed_view[:columns][idx] if val_col[1] == "true" }.compact
+    470:     end
+    471:     updated_view[:data_model] = updated_view[:data_model].constantize unless updated_view[:data_model].blan
+k?
+ => 472:     updated_view[:data_levels] = JSON.parse(updated_view[:data_levels]) if updated_view[:data_levels]
+    473:     updated_view[:data_hierarchy] = JSON.parse(updated_view[:data_hierarchy]) if (updated_view[:data_hierar
+chy] && !updated_view[:data_hierarchy].empty?)
+    474:
+    475:     respond_to do |format|
+    476:       if @view.update_attributes(updated_view)
+    477:         if @view.columns.reject(&:empty?).empty? && @view.data_model.present?
+
+[1] pry(#<ViewsController>)> updated_view[:data_levels]
+=> " "
+[2] pry(#<ViewsController>)> JSON.parse(updated_view[:data_levels])
+JSON::ParserError: 783: unexpected token at ''
+from /home/paul/.rvm/rubies/ruby-2.7.4/lib/ruby/2.7.0/json/common.rb:156:in `parse'
+[3] pry(#<ViewsController>)> updated_view
+=> {"current_version"=>"1",
+ "rows_updated_by_id"=>"194",
+ "user_id"=>"194",
+ "source_id"=>"47",
+ "name"=>"2020-2024 TIP Mappable Projects (edited)",
+ "description"=>"",
+ "data_starts_at"=>"",
+ "data_ends_at"=>"",
+ "origin_url"=>"",
+ "topic_area"=>"",
+ "role_ids"=>["", "1", "2", "11", "12", "6", "9"],
+ "data_levels"=>" ",
+ "data_hierarchy"=>"",
+ "spatial_level"=>"",
+ "data_model"=>
+  TipProject(id: integer, geography: text, view_id: integer, tip_id: string, ptype_id: integer, cost: float, mpo_id:
+ integer, county_id: integer, sponsor_id: integer, description: text, created_at: datetime, updated_at: datetime),
+ "columns"=>["tip_id", "ptype", "cost", "mpo", "county", "sponsor", "description"],
+ "column_labels"=>["TIP ID", "Project Type", "Cost", "", "", "", ""],
+ "column_types"=>["", "", "Millions", "", "", "", ""],
+ "value_columns"=>[],
+ "value_name"=>"value",
+ "row_name"=>"",
+ "column_name"=>"",
+ "download_instructions"=>"",
+ "contributor_ids"=>["194"],
+ "librarian_ids"=>["194"]}
+```
+
+Note: Everything worked fine prior to dependency upgrades.
+
+```log
+From: /home/paul/AVAIL/tig-docker/mount_dirs/tigtest2/app/controllers/views_controller.rb @ line 471 ViewsController#update:
+
+    466:     updated_view[:column_types] = updated_view[:column_types].map(&:last) if updated_view[:column_types]
+    467:     if updated_view[:value_columns]
+    468:       updated_view[:value_columns] = updated_view[:value_columns].each_with_index.map{ |val_col, idx| updated_view[:columns][idx] if val_col[1] == "true" }.compact
+    469:     end
+    470:     updated_view[:data_model] = updated_view[:data_model].constantize unless updated_view[:data_model].blank?
+ => 471:     updated_view[:data_levels] = JSON.parse(updated_view[:data_levels]) if updated_view[:data_levels]
+    472:     updated_view[:data_hierarchy] = JSON.parse(updated_view[:data_hierarchy]) if (updated_view[:data_hierarchy] && !updated_view[:data_hierarchy].empty?)
+    473:
+    474:     respond_to do |format|
+    475:       if @view.update_attributes(updated_view)
+    476:         if @view.columns.reject(&:empty?).empty? && @view.data_model.present?
+
+[1] pry(#<ViewsController>)> updated_view[:data_levels]
+=> "[\"\", \"\"]"
+[2] pry(#<ViewsController>)> JSON.parse(updated_view[:data_levels])
+=> ["", ""]
+[3] pry(#<ViewsController>)> updated_view
+=> {"current_version"=>"1",
+ "rows_updated_by_id"=>"194",
+ "user_id"=>"194",
+ "source_id"=>"47",
+ "name"=>"2020-2024 TIP Mappable Projects",
+ "description"=>"",
+ "data_starts_at"=>"",
+ "data_ends_at"=>"",
+ "origin_url"=>"",
+ "topic_area"=>"",
+ "role_ids"=>["1", "2", "11", "12", "", "6", "9"],
+ "data_levels"=>"[\"\", \"\"]",
+ "data_hierarchy"=>"",
+ "spatial_level"=>"",
+ "data_model"=>
+  TipProject(id: integer, geography: text, view_id: integer, tip_id: string, ptype_id: integer, cost: float, mpo_id: integer, county_id: integer, sponsor_id: integer, description: text, created_at: datetime, updated_at: datetime),
+ "columns"=>["tip_id", "ptype", "cost", "mpo", "county", "sponsor", "description"],
+ "column_labels"=>["TIP ID", "Project Type", "Cost", "", "", "", ""],
+ "column_types"=>["", "", "Millions", "", "", "", ""],
+ "value_columns"=>[],
+ "value_name"=>"value",
+ "row_name"=>"",
+ "column_name"=>"",
+ "download_instructions"=>"",
+ "contributor_ids"=>["194"],
+ "librarian_ids"=>["194"]}
+```
+
+Diff of the updated_views ("<" is master branch, ">" is rrupgrade branch).
+
+```diff
+11,12c11,12
+<  "role_ids"=>["1", "2", "11", "12", "", "6", "9"],
+<  "data_levels"=>"[\"\", \"\"]",
+---
+>  "role_ids"=>["", "1", "2", "11", "12", "6", "9"],
+>  "data_levels"=>" ",
+16,17c16
+<   TipProject(id: integer, geography: text, view_id: integer, tip_id: string, ptype_id: integer, cost: float, mpo_id: integer, county_id: integer, sponsor_id: integer, description: text,
+< created_at: datetime, updated_at: datetime),
+---
+>   TipProject(id: integer, geography: text, view_id: integer, tip_id: string, ptype_id: integer, cost: float, mpo_id: integer, county_id: integer, sponsor_id: integer, description: text, created_at: datetime, updated_at: datetime),
+28d26
+<
+```
+
+Why are the role_ids & data_levels different?
+
+Fix for data_levels JSON Parse problem:
+
+```diff
+diff --git a/app/controllers/views_controller.rb b/app/controllers/views_controller.rb
+index 0880187..f70dba2 100644
+--- a/app/controllers/views_controller.rb
++++ b/app/controllers/views_controller.rb
+@@ -456,7 +456,7 @@ class ViewsController < ApplicationController
+   # PUT /views/1
+   # PUT /views/1.json`
+   def update
+-    updated_view = params[:view]
++    updated_view = params[:view].to_unsafe_h
+     updated_view[:contributor_ids] = updated_view[:contributor_ids].reject(&:blank?) if updated_view[:contributor_ids]
+     updated_view[:librarian_ids] = updated_view[:librarian_ids].reject(&:blank?) if updated_view[:librarian_ids]
+     updated_view[:columns] = updated_view[:columns].map(&:last) if updated_view[:columns]
+diff --git a/app/views/views/_form.html.slim b/app/views/views/_form.html.slim
+index a601818..ad9a362 100644
+--- a/app/views/views/_form.html.slim
++++ b/app/views/views/_form.html.slim
+@@ -37,7 +37,7 @@
+               = f.association :roles, collection: Action.all_actions_filtered, as: :check_boxes, label: "Actions", label_method: lambda {|r| r.name.titleize }, value_method: :id, item_wrapper_class: "col-md-4", checked: (@view.role_ids.empty? ? [Action.find_by(name: "view_metadata").id, Action.find_by(name: "edit_metadata").id] : @view.role_ids)
+               = f.hidden_field('role_ids][', value: Action.where(name: 'edit_metadata').pluck(:id).first)
+               = f.hidden_field('role_ids][', value: Action.where(name: 'view_metadata').pluck(:id).first)
+-              = f.hidden_field :data_levels, value: @view.data_levels
++              = f.hidden_field :data_levels, value: @view.data_levels.to_s
+               = f.hidden_field :data_hierarchy, value: @view.data_hierarchy
+               = f.hidden_field :spatial_level, value: @view.spatial_level
+             - selected_model = @view.data_model.present? ? @view.data_model : source.default_data_model
+```

@@ -138,13 +138,13 @@
                           $('.shared-with').tooltip({title: "#{snapshot.viewers.map{|u| u.display_name.nil? ? u.email : u.display_name}.join(", ")}"});
                     - elsif snapshot.viewers.include?(current_user)
                       = "Shared by "
-                      - if current_user.has_role?(:public)
+                      - if current_user.has_role?(:public) || snapshot.user.id.nil?
                         = user_name_or_email(snapshot.user)
-                      - else
+                      - elseif
                         = link_to user_name_or_email(snapshot.user), user_path(snapshot.user)
                     - else
                       = "Published by "
-                      - if current_user.has_role?(:public)
+                      - if current_user.has_role?(:public) || snapshot.user.id.nil?
                         = user_name_or_email(snapshot.user)
                       - else
                         = link_to user_name_or_email(snapshot.user), user_path(snapshot.user)
