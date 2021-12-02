@@ -2,6 +2,11 @@
 
 # Dependency Upgrade Issues and Solutions
 
+These issues were encountered while upgrading from
+
+- Ruby 2.2.0 to 2.7.4
+- Rails 4.1.6 to 5.2.6
+
 ## cannot load such file -- arel/visitors/bind_visitor
 
 Solution: [rubygems activerecord5-redshift-adapter](https://rubygems.org/gems/activerecord5-redshift-adapter)
@@ -768,3 +773,22 @@ index a601818..ad9a362 100644
                = f.hidden_field :spatial_level, value: @view.spatial_level
              - selected_model = @view.data_model.present? ? @view.data_model : source.default_data_model
 ```
+
+## ActionView::Template::Error (undefined method `reorder' for #<Array
+
+```log
+ActionView::Template::Error (undefined method `reorder' for #<Array:0x00007f7174e05618>):
+    11:       th Uploaded by
+    12:       th Updated at
+    13:   tbody
+    14:     - uploads.reorder(updated_at: :desc).each do |upload|
+    15:       - upload_status = upload.status
+    16:       - if current_user.has_role?(:admin) || (upload.view && AccessControl.viewable_views(current_user, upload.view.source).include?(upload.view)) || (upload.source && AccessControl.viewable_sources(current_user).include?(upload.source))
+    17:         tr
+```
+
+NOTE: This problem only occurs on tigdev server.
+Running locally, the object type is ActiveRecord_Relation and the `reorder` method exists.
+Seems likely that the root cause is in a Gem.
+Rather than trying to find it, moving onto the major versions upgrade (Ruby 3, Rails 6)
+in hopes that that will resolve this bug.
