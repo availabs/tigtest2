@@ -40,6 +40,7 @@ config/database.yml
 /public/cache
 /public/stylesheets/compiled
 /public/system/*
+/public/assets/*
 /public/samples
 /public/uploads
 /spec/tmp/*
