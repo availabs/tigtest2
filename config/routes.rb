@@ -113,6 +113,7 @@ NymtcGateway::Application.routes.draw do
   get '/v2/map', :to => static('v2/index.html')
   get '/v2/map', :to => static('v2/css/font-awesome/css/all.css')
   get '/v2/views/:viewId/map', :to => static('v2/index.html')
+  get '/v2/views/:viewId/table', :to => static('v2/index.html')
   get '/v2/views/:viewId/css/font-awesome/css/all.css', :to => static('v2/css/font-awesome/css/all.css')
   get '/v2/views/:viewId/css/font-awesome/webfonts/fa-solid-900.woff2', :to => static('v2/css/font-awesome/webfonts/fa-solid-900.woff2')
 end

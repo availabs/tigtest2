@@ -14,6 +14,10 @@ class ViewsController < ApplicationController
       increment_view_count
       return redirect_to "/v2/views/#{@view[:id]}/map"
     end
+    if @view[:id] == 22
+      increment_view_count
+      return redirect_to "/v2/views/#{@view[:id]}/map"
+    end
 
     add_view_switch_breadcrumb @view, :map
     add_action_switch_breadcrumb :map
@@ -165,6 +169,10 @@ class ViewsController < ApplicationController
 
   # GET /views/1/table
   def table
+    if ['NPMRDS'].include? @view[:name]
+      increment_view_count
+      return redirect_to "/v2/views/#{@view[:id]}/table"
+    end
     append_search_params if params[:format] == 'csv' && params[:filtered]
     add_view_switch_breadcrumb @view, :table
     add_action_switch_breadcrumb :table
