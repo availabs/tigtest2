@@ -1,4 +1,7 @@
-root = "/home/deploy/gateway"
+root = File.expand_path('../../', __FILE__)
+puts "****************"
+puts root
+puts "****************"
 
 bind  "unix://#{root}/tmp/sockets/puma.sock"
 pidfile "#{root}/tmp/pids/puma.pid"
