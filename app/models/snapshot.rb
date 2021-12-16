@@ -14,7 +14,8 @@ class Snapshot < ActiveRecord::Base
   serialize :table_settings, JSON
   serialize :map_settings, JSON
 
-  enum app: [ :table, :map, :chart, :metadata ]
+  # enum app: [ :table, :map, :chart, :metadata ]
+  enum app: [ :chart, :metadata ]
 
   default_scope { where(view_id: View.pluck("id")) }
 

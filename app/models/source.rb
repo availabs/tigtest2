@@ -3,7 +3,7 @@ class Source < ActiveRecord::Base
   belongs_to :agency
   has_many :views
   has_many :uploads
-  belongs_to :rows_updated_by, class_name: User
+  belongs_to :rows_updated_by, class_name: "User"
   has_and_belongs_to_many :contributors,
                           class_name: "User",
                           join_table: :contributors_sources

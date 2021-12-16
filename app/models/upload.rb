@@ -3,7 +3,7 @@ class Upload < ActiveRecord::Base
   belongs_to :view
   belongs_to :source
   belongs_to :user
-  belongs_to :delayed_job, class_name: Delayed::Job
+  belongs_to :delayed_job, class_name: Delayed::Job.class.name
   
   attr_accessible(:filename, :s3_location, :year, :to_year, :month, :data_level, :geometry_version, :notes, :view_id, :source_id, :size_in_bytes, :user_id)
 

@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  before_filter :configure_permitted_parameters, if: :devise_controller?
-  before_filter :set_action_and_controller
+  before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_action_and_controller
 
   rescue_from CanCan::AccessDenied do |exception|
     redirect_to root_path, :alert => exception.message.gsub('this', 'that')
@@ -139,7 +139,9 @@ class ApplicationController < ActionController::Base
   protected
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.for(:sign_up) << :display_name
+    # https://stackoverflow.com/a/37342259/3970755
+    # devise_parameter_sanitizer.for(:sign_up) << :display_name
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:display_name])
   end
 
 end

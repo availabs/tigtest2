@@ -81,7 +81,7 @@ describe ViewsController, type: :controller do
     
   describe "GET table" do
     it "finds the view and assigns data as @rows for simple fact" do
-      controller.class.skip_before_filter :enforce_access_controls_show
+      controller.class.skip_before_action :enforce_access_controls_show
       view = View.create! valid_attributes
       view.data_model = SimplePopulationFact
       view.columns = [:area]
@@ -94,7 +94,7 @@ describe ViewsController, type: :controller do
     end
 
     it "finds the view and assigns control variables" do
-      controller.class.skip_before_filter :enforce_access_controls_show
+      controller.class.skip_before_action :enforce_access_controls_show
       view = View.create! valid_attributes
       view.data_model = DemographicFact
       view.columns = [:area]

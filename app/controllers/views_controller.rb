@@ -3,9 +3,9 @@ class ViewsController < ApplicationController
   before_action :get_view, only: [:show, :edit, :update, :destroy, :chart, :table, :map, :data_overlay, :export_shp, :demo_statistics, :feature_geometry, :layer_ui, :symbology, :update_year, :tmc_roadname, :link_roadname, :watch, :unwatch]
   before_action :check_valid_view, only: [:chart, :map, :table]
   before_action :set_snapshots, only: [:chart, :map, :table]
-  before_filter :enforce_access_controls_show, only: [:chart, :map, :table, :show, :export_shp]
-  before_filter :enforce_access_controls_update, only: [:edit]
-  before_filter :enforce_ownership, only: [:chart, :map, :table]
+  before_action :enforce_access_controls_show, only: [:chart, :map, :table, :show, :export_shp]
+  before_action :enforce_access_controls_update, only: [:edit]
+  before_action :enforce_ownership, only: [:chart, :map, :table]
   before_action :get_admins, only: [:new, :edit, :create, :update]
 
   # GET /views/1/map
@@ -206,6 +206,7 @@ class ViewsController < ApplicationController
     # datatables settings
     @lengthMenu = "[[10, 25, 50, 100], [10, 25, 50, 100]]"
     @filterCols = "[]"
+    # ??? TODO: Is this trying to predict response time ??? The view uses it in a timeout.
     @searchDelay = ([SpeedFact, LinkSpeedFact].include? @view.data_model) ? 1200 : 400
     @default_order = '[[ 0, "asc"]]'
     if (@view.data_model == ComparativeFact) || (@view.data_model == CountFact)
@@ -246,7 +247,7 @@ class ViewsController < ApplicationController
       filename = @view.name.blank? ? "Table" : @view.name.gsub(/[^0-9A-z.\-]/, '_')
       if @view.data_model.pivot? && unswitched?
         # puts "--------------------------------------------------------------------------- AJAX LOAD"
-        format.json { render json: PivotedDatatable.new(view_context,
+        format.json { render json: PivotedDatatable.new(params,
                                                         {
                                                             view: @view,
                                                             model: @view.data_model,
@@ -258,7 +259,7 @@ class ViewsController < ApplicationController
         }
         format.csv {
           response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
-          pivoted_table = PivotedDatatable.new(view_context,
+          pivoted_table = PivotedDatatable.new(params,
                                                {
                                                    view: @view,
                                                    model: @view.data_model,
@@ -282,7 +283,7 @@ class ViewsController < ApplicationController
         }
       else
         # puts "--------------------------------------------------------------------------- AJAX LOAD"
-        unpivoted_table = UnpivotedDatatable.new(view_context,
+        unpivoted_table = UnpivotedDatatable.new(params,
                                                  {
                                                     view: @view,
                                                     model: @view.data_model,
@@ -455,7 +456,7 @@ class ViewsController < ApplicationController
   # PUT /views/1
   # PUT /views/1.json`
   def update
-    updated_view = params[:view]
+    updated_view = params[:view].to_unsafe_h
     updated_view[:contributor_ids] = updated_view[:contributor_ids].reject(&:blank?) if updated_view[:contributor_ids]
     updated_view[:librarian_ids] = updated_view[:librarian_ids].reject(&:blank?) if updated_view[:librarian_ids]
     updated_view[:columns] = updated_view[:columns].map(&:last) if updated_view[:columns]

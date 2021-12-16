@@ -1,5 +1,5 @@
 class SourcesController < ApplicationController
-  before_filter :enforce_access_controls, only: [:show, :edit]
+  before_action :enforce_access_controls, only: [:show, :edit]
   before_action :get_admins, only: [:new, :edit, :create]
   
   # GET /sources

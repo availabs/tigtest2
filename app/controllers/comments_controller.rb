@@ -1,6 +1,6 @@
 class CommentsController < ApplicationController
-  before_filter :enforce_ownership, only: [:show, :edit]
-  before_filter :set_comment, only: [:show, :edit, :update, :block, :unblock, :destroy]
+  before_action :enforce_ownership, only: [:show, :edit]
+  before_action :set_comment, only: [:show, :edit, :update, :block, :unblock, :destroy]
 
   def new
     @comment = Comment.new

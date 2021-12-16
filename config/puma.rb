@@ -1,10 +1,13 @@
-root = "/home/deploy/gateway"
+root = File.expand_path('../../', __FILE__)
+puts "****************"
+puts root
+puts "****************"
 
 bind  "unix://#{root}/tmp/sockets/puma.sock"
 pidfile "#{root}/tmp/pids/puma.pid"
 state_path "#{root}/tmp/sockets/puma.state"
 directory "#{root}"
-daemonize true
+# daemonize true
 
 activate_control_app "unix://#{root}/tmp/sockets/pumactl.sock"
 

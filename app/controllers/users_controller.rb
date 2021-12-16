@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_filter :authenticate_user!
+  before_action :authenticate_user!
   add_breadcrumb 'All Users', :users_path
   respond_to :html, :json
 

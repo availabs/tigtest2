@@ -22,7 +22,7 @@ class View < ActiveRecord::Base
   rolify :role_cname => 'Action'
   belongs_to :source
   belongs_to :user
-  belongs_to :rows_updated_by, class_name: User
+  belongs_to :rows_updated_by, class_name: "User"
   belongs_to :statistic
   has_and_belongs_to_many :contributors,
                           class_name: "User",
