@@ -2,6 +2,7 @@
 touch tmp/restart.txt
 echo "restarting puma app"
 bundle exec pumactl -P /home/deploy/gateway/tmp/pids/puma.pid restart
+bundle exec puma -C config/puma.rb -e production
 echo "running puma:"
 ps aux | grep puma
 echo "worker"
