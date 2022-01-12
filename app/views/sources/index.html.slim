@@ -116,31 +116,32 @@ javascript:
       $(this).removeAttr('ajax-loading');
     });
 
-    // Display source disclaimer if available (only popup once per session)
-    var session_id = "#{request.session_options[:id]}";
-    var show_disclaimer = function(sourceId, sourceDisclaimer) {
+    // Reset disclaimer text whenever modal closes
+    $('#disclaimerModal').on('hidden.bs.modal', function() {
+      $('#disclaimerText').html('');
+    });
+
+    //  If there is a disclaimer for this source, show it once.
+    //    NOTE: Disclaimers are in the database source.disclaimer column.
+    setTimeout(function() {
+      var session_id = "#{request.session_options[:id]}";
+
+      var source_el = $('.source-wrapper').find('.source-name');
+      var sourceId = source_el.attr('id');
+
       if(sourceId) {
-        var key = "disclaimer_" + sourceId;
-        if(localStorage.getItem(key) != session_id) {
+        var key = 'shown_disclaimer_' + sourceId + '_for_session';
+
+        if(localStorage.getItem(key) !== session_id) {
           localStorage.setItem(key, session_id);
+
           $.ajax({
             url: 'sources/' + sourceId + '/get_disclaimer'
           });
         }
       }
-    };
+    })
 
-    $('#notIt').on('click', 'a[data-remote=true], button[data-remote=true]', function () {
-      var source_el = $(this).parents('.source-wrapper').find('.source-name');
-      var sourceId = source_el.attr('id');
-      var sourceDisclaimer = source_el.attr('data-disclaimer');
-      show_disclaimer(sourceId);
-    });
-
-    // Reset disclaimer text whenever modal closes
-    $('#disclaimerModal').on('hidden.bs.modal', function() {
-      $('#disclaimerText').html('');
-    });
   });
 
 - if @table
