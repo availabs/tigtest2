@@ -10,7 +10,7 @@ class ViewsController < ApplicationController
 
   # GET /views/1/map
   def map
-    return redirect_to "/v2/views/#{@view[:id]}/map"
+    #return redirect_to "/v2/views/#{@view[:id]}/map"
     # if ['NPMRDS'].include? @view[:name]
     #   increment_view_count
     #   return redirect_to "/v2/views/#{@view[:id]}/map"
@@ -20,38 +20,38 @@ class ViewsController < ApplicationController
     #   return redirect_to "/v2/views/#{@view[:id]}/map"
     # end
 
-    # add_view_switch_breadcrumb @view, :map
-    # add_action_switch_breadcrumb :map
+    add_view_switch_breadcrumb @view, :map
+    add_action_switch_breadcrumb :map
 
-    # set_area_variables
-    # @map_base_config = get_map_base_config
-    # @map_snapshot_configs = JSON.parse(Snapshot.find(params[:snapshot]).map_settings) if params[:snapshot]
+    set_area_variables
+    @map_base_config = get_map_base_config
+    @map_snapshot_configs = JSON.parse(Snapshot.find(params[:snapshot]).map_settings) if params[:snapshot]
 
-    # set_map_filter_variables
+    set_map_filter_variables
 
-    # #@slider_value = slider_year.to_i if !slider_year.blank?
+    #@slider_value = slider_year.to_i if !slider_year.blank?
 
-    # @has_area_dropdown = ![CountFact, UpwpProject, UpwpRelatedContract].include?(@view.data_model)
+    @has_area_dropdown = ![CountFact, UpwpProject, UpwpRelatedContract].include?(@view.data_model)
 
-    # @view_config = {
-    #     id: @view.id,
-    #     area_id: session[:area_id],
-    #     year_slider_value: @slider_value,
-    #     base_overlay_path: base_overlay_view_path(@view),
-    #     data_overlay_path: data_overlay_view_path(@view),
-    #     feature_geometry_path: feature_geometry_view_path(@view),
-    #     demo_statistics_path: demo_statistics_view_path(@view),
-    #     tmc_roadname_path: tmc_roadname_view_path(@view),
-    #     link_roadname_path: link_roadname_view_path(@view),
-    #     home_map_view_options: get_home_map_view_options
-    # }
+    @view_config = {
+        id: @view.id,
+        area_id: session[:area_id],
+        year_slider_value: @slider_value,
+        base_overlay_path: base_overlay_view_path(@view),
+        data_overlay_path: data_overlay_view_path(@view),
+        feature_geometry_path: feature_geometry_view_path(@view),
+        demo_statistics_path: demo_statistics_view_path(@view),
+        tmc_roadname_path: tmc_roadname_view_path(@view),
+        link_roadname_path: link_roadname_view_path(@view),
+        home_map_view_options: get_home_map_view_options
+    }
 
-    # respond_to do |format|
-    #   format.html do # map.html.slim
-    #     increment_view_count
-    #     Watch.update_last_seen_at(@view, current_user) if user_signed_in?
-    #   end
-    # end
+    respond_to do |format|
+      format.html do # map.html.slim
+        increment_view_count
+        Watch.update_last_seen_at(@view, current_user) if user_signed_in?
+      end
+    end
   end
 
   def base_overlay
@@ -170,10 +170,10 @@ class ViewsController < ApplicationController
 
   # GET /views/1/table
   def table
-    if ['NPMRDS'].include? @view[:name]
-      increment_view_count
-      return redirect_to "/v2/views/#{@view[:id]}/table"
-    end
+    # if ['NPMRDS'].include? @view[:name]
+    #   increment_view_count
+    #   return redirect_to "/v2/views/#{@view[:id]}/table"
+    # end
     append_search_params if params[:format] == 'csv' && params[:filtered]
     add_view_switch_breadcrumb @view, :table
     add_action_switch_breadcrumb :table
