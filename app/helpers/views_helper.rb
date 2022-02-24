@@ -4,7 +4,9 @@ module ViewsHelper
     action = name if action.nil?
     url = '#'
     if view
-      if action == 'add_comment'
+      if action == 'new_map'
+        url = "/v2/views/#{view.id}/map"
+      elsif action == 'add_comment'
         url = new_comment_path + "?view_id=#{view.id}"
       elsif action == 'edit_metadata'
         url = add_role_to_params(role, edit_view_path(view))

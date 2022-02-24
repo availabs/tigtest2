@@ -29,7 +29,7 @@ class ViewsController < ApplicationController
 
     set_map_filter_variables
 
-    #@slider_value = slider_year.to_i if !slider_year.blank?
+    @slider_value = slider_year.to_i if !slider_year.blank?
 
     @has_area_dropdown = ![CountFact, UpwpProject, UpwpRelatedContract].include?(@view.data_model)
 

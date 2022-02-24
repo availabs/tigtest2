@@ -34,6 +34,10 @@ p
         - elsif current_user.has_role?(:admin) && !(@librarian || @contributor)
           = action_item @action_icons[name.to_sym], name, @view, 'copy', 'admin', @action_titles[:copy]
 
+    - elsif name == "map"
+      li class="#{@class}" style="margin-bottom:10px;"
+          = action_item @action_icons[name.to_sym], 'Map', @view, 'new_map', nil, @action_titles[:map]
+
     - else 
       li class="#{@class}" style="margin-bottom:10px;"
           = action_item @action_icons[name.to_sym], name, @view, nil, @action_titles[name.to_sym]
