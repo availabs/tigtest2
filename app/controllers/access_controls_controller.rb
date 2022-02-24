@@ -25,7 +25,10 @@ class AccessControlsController < ApplicationController
   end
 
   def update
-    parsed = params[:access_control].map{|k,v| v}
+    puts '**********************************'
+    puts "params_update #{params[:access_control]}"
+    puts '**********************************'
+    parsed = params[:access_control].to_unsafe_h.map{|k,v| v}
     parsed.each do |ac|
       ac[:role] = ac[:role].blank? ? nil : ac[:role]
       ac[:user_id] = ac[:user_id].blank? ? nil : ac[:user_id]
