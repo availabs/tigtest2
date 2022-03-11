@@ -510,7 +510,7 @@ class ViewsController < ApplicationController
     @view.update_attribute('deleted_at', Time.now)
 
     respond_to do |format|
-      format.html { redirect_to (request.env["HTTP_REFERER"] || root_path), notice: 'View was successfully deleted.' }
+      format.html { redirect_to (root_path), notice: 'View was successfully deleted.' }
       format.json { head :no_content }
     end
   end
@@ -524,7 +524,7 @@ class ViewsController < ApplicationController
     @view.update_attribute('deleted_at', nil)
 
     respond_to do |format|
-      format.html { redirect_to (request.env["HTTP_REFERER"] || data_recovery_views_path), notice: 'View was successfully restored.' }
+      format.html { redirect_to (data_recovery_views_path), notice: 'View was successfully restored.' }
       format.json { head :no_content }
     end
   end
@@ -574,12 +574,12 @@ class ViewsController < ApplicationController
 
   def watch
     new_watch = Watch.new({user_id: current_user.id, view_id: @view.id, last_seen_at: Time.now})
-    redirect_to (request.env["HTTP_REFERER"] || sources_path), notice: "You are now watching #{@view.name}." if new_watch.save
+    redirect_to (sources_path), notice: "You are now watching #{@view.name}." if new_watch.save
   end
 
   def unwatch
     current_user.watches.find_by(view_id: @view.id).delete
-    redirect_to (request.env["HTTP_REFERER"] || sources_path), notice: "You are no longer watching #{@view.name}."
+    redirect_to (sources_path), notice: "You are no longer watching #{@view.name}."
   end
 
   private
@@ -1561,7 +1561,7 @@ class ViewsController < ApplicationController
         redirect_to ( view_path(@view)),
                     alert: "View: #{@view.name} does not support the #{params[:action].titleize} Action. Please correct the view's metadata."
       elsif @view.data_model.blank? || @view.columns.blank? || @view.columns.length < 1
-        redirect_to (request.env["HTTP_REFERER"] || view_path(@view)),
+        redirect_to (view_path(@view)),
                     alert: "View: #{@view.name}, is not valid for #{params[:action].titleize} Action. Please correct the view's metadata."
       end
     else
@@ -1605,15 +1605,15 @@ class ViewsController < ApplicationController
     @view = View.find(params[:id])
     if user_signed_in?
       if AccessControl.viewable_sources(current_user).include?(@view.source)
-        redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to view this app." if !AccessControl.viewable_views(current_user, @view.source).include?(@view)
+        redirect_to (sources_path), alert: "You are not permitted to view this app." if !AccessControl.viewable_views(current_user, @view.source).include?(@view)
       else
-        redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to view this apps from this data source."
+        redirect_to (sources_path), alert: "You are not permitted to view this apps from this data source."
       end
     else
       if AccessControl.viewable_sources(nil).include?(@view.source)
-        redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to view this app." if !AccessControl.viewable_views(nil, @view.source).include?(@view)
+        redirect_to (sources_path), alert: "You are not permitted to view this app." if !AccessControl.viewable_views(nil, @view.source).include?(@view)
       else
-        redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to view this apps from this data source."
+        redirect_to (sources_path), alert: "You are not permitted to view this apps from this data source."
       end
     end
   end
@@ -1622,12 +1622,12 @@ class ViewsController < ApplicationController
     @view = View.find(params[:id])
     if user_signed_in?
       if AccessControl.viewable_sources(current_user).include?(@view.source)
-        redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to edit this metadata." if !(current_user.has_role?(:admin) || @view.contributors.include?(current_user) || @view.librarians.include?(current_user) || (current_user.has_role?(:agency_admin) && (@view.source.agency == current_user.agency)))
+        redirect_to (sources_path), alert: "You are not permitted to edit this metadata." if !(current_user.has_role?(:admin) || @view.contributors.include?(current_user) || @view.librarians.include?(current_user) || (current_user.has_role?(:agency_admin) && (@view.source.agency == current_user.agency)))
       else
-        redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to edit this metadata."
+        redirect_to (sources_path), alert: "You are not permitted to edit this metadata."
       end
     else
-      redirect_to (request.env["HTTP_REFERER"] || sources_path), alert: "You are not permitted to edit metadata."
+      redirect_to (sources_path), alert: "You are not permitted to edit metadata."
     end
   end
 
@@ -1635,11 +1635,11 @@ class ViewsController < ApplicationController
     @snapshot = Snapshot.find(params[:snapshot]) if params[:snapshot]
     if user_signed_in?
       if params[:snapshot]
-        redirect_to (request.env["HTTP_REFERER"] || '/?expand=snap'), alert: "You are not permitted to view this snapshot." if !(@snapshot.viewers.include?(current_user) || @snapshot.published == true || @snapshot.user == current_user)
+        redirect_to ('/?expand=snap'), alert: "You are not permitted to view this snapshot." if !(@snapshot.viewers.include?(current_user) || @snapshot.published == true || @snapshot.user == current_user)
       end
     else
       if params[:snapshot]
-        redirect_to (request.env["HTTP_REFERER"] || root_path), alert: "You are not permitted to view this snapshot." if !@snapshot.published == true
+        redirect_to (root_path), alert: "You are not permitted to view this snapshot." if !@snapshot.published == true
       end
     end
   end
