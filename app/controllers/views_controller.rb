@@ -1558,7 +1558,7 @@ class ViewsController < ApplicationController
     print @view.data_model.try(:name)
     if @view
       if not @view.has_action? params[:action]
-        redirect_to (request.env["HTTP_REFERER"] || view_path(@view)),
+        redirect_to ( view_path(@view)),
                     alert: "View: #{@view.name} does not support the #{params[:action].titleize} Action. Please correct the view's metadata."
       elsif @view.data_model.blank? || @view.columns.blank? || @view.columns.length < 1
         redirect_to (request.env["HTTP_REFERER"] || view_path(@view)),
