@@ -37,6 +37,9 @@ p
     - elsif name == "map"
       li class="#{@class}" style="margin-bottom:10px;"
           = action_item @action_icons[name.to_sym], 'Map', @view, 'new_map', nil, @action_titles[:map]
+    - elsif name == "table"
+      li class="#{@class}" style="margin-bottom:10px;"
+          = action_item @action_icons[name.to_sym], 'Table', @view, 'new_table', nil, @action_titles[:table]
 
     - else 
       li class="#{@class}" style="margin-bottom:10px;"

@@ -6,6 +6,8 @@ module ViewsHelper
     if view
       if action == 'new_map'
         url = "/v2/views/#{view.id}/map"
+      if action == 'new_table'
+        url = "/v2/views/#{view.id}/table"
       elsif action == 'add_comment'
         url = new_comment_path + "?view_id=#{view.id}"
       elsif action == 'edit_metadata'
