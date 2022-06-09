@@ -32,7 +32,7 @@ class UploadJob < ProgressJob::Base
       
       delegate(file, ext) do |stage, count|
         Delayed::Worker.logger.debug("Stellar: stage = #{stage}")
-        return unless Delayed::Job.exists?(@job)
+        return unless Delayed::Job.exists?(@job.id)
         
         case stage
         when 'count'

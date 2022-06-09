@@ -53,7 +53,7 @@ class CountFact < ActiveRecord::Base
     # lookup table parsing
     # In general, preserve id values
     yield('parsing lookup tables') if block_given?
-    puts 'load CountVariables'
+    Delayed::Worker.logger.debug('load CountVariables')
     variables_hash = {}
     all_vehicle_var_id = nil
     db[:Variables].each do |row|
@@ -74,7 +74,7 @@ class CountFact < ActiveRecord::Base
       variables_hash[row[:VariableID]] = variable.id if row[:VariableID]
     end
 
-    puts 'load TransitModes'
+    Delayed::Worker.logger.debug('load TransitModes')
     modes_hash = {}
     db[:Mode].each do |row|
       mode_name = row[:ModeName]
@@ -85,7 +85,7 @@ class CountFact < ActiveRecord::Base
       modes_hash[row[:ModeID]] = mode.id if row[:ModeID]
     end
 
-    puts 'load ModeVariable -> TransitMode#count_variables & CountVariable#transit_modes'
+    Delayed::Worker.logger.debug('load ModeVariable -> TransitMode#count_variables & CountVariable#transit_modes')
     db[:ModeVariable].each do |row|
       next if all_vehicle_var_id && row[:VariableID] == all_vehicle_var_id
 
@@ -95,7 +95,7 @@ class CountFact < ActiveRecord::Base
       mode.count_variables << variable if mode && variable && !mode.count_variables.include?(variable)
     end
 
-    puts 'load Sectors'
+    Delayed::Worker.logger.debug('load Sectors')
     sectors_hash = {}
     db[:Sector].each do |row|
       sector = Sector.find_or_create_by(name: row[:SectorName])
@@ -105,7 +105,7 @@ class CountFact < ActiveRecord::Base
       sectors_hash[row[:SectorID]] = sector.id if row[:SectorID]
     end
 
-    puts 'load Agencies'
+    Delayed::Worker.logger.debug('load Agencies')
     agencies_hash = {}
     db[:Agencies].each do |row|
       agency = TransitAgency.find_or_create_by(name: row[:AgencyName])
@@ -113,7 +113,7 @@ class CountFact < ActiveRecord::Base
       agencies_hash[row[:AgencyID]] = agency.id if row[:AgencyID]
     end
 
-    puts 'load TransitLines -> TransitRoute'
+    Delayed::Worker.logger.debug('load TransitLines -> TransitRoute')
     routes_hash = {}
     db[:TransitLines].each do |row|
       route = TransitRoute.find_or_create_by(name: row[:TransitRoute])
@@ -125,7 +125,7 @@ class CountFact < ActiveRecord::Base
       } if row[:TransitID]
     end
 
-    puts 'load Locations'
+    Delayed::Worker.logger.debug('load Locations')
     locations_hash = {}
     db[:Location].each do |row|
       loc = Location.find_or_create_by(name: row[:LocationName])
@@ -141,7 +141,7 @@ class CountFact < ActiveRecord::Base
       } if row[:LocationID]
     end
 
-    puts 'load TransitLocation -> TransitStation'
+    Delayed::Worker.logger.debug('load TransitLocation -> TransitStation')
     db[:TransitLocation].each do |row|
       station = row[:Inbound_Station]
       TransitStation.find_or_create_by(name: station) unless station.blank?
@@ -149,7 +149,7 @@ class CountFact < ActiveRecord::Base
       TransitStation.find_or_create_by(name: station) unless station.blank?
     end
     
-    puts 'load MasterCounts -> CountFact'
+    Delayed::Worker.logger.debug('load MasterCounts -> CountFact')
     # Collect CountFact columns to sanity check new facts.
     # No columns should be nil except possibly for in_station and out_station
     columns = CountFact.columns.collect {|c| c.name}
@@ -189,7 +189,7 @@ class CountFact < ActiveRecord::Base
         out_station = TransitStation.find_by(name: transit_location[:Outbound_Station])
         loc_mode_id = transit_location[:ModeID]
       else
-        puts "unrecognized transit location: #{row[:TransitLocnID]}"
+        Delayed::Worker.logger.debug("unrecognized transit location: #{row[:TransitLocnID]}")
       end
       
       fact = CountFact.find_or_create_by(
@@ -205,11 +205,11 @@ class CountFact < ActiveRecord::Base
       fact.update_attributes(count: count)
       
       unless columns.all? {|c| fact.send(c) != nil}
-        puts "Incomplete CountFact: #{fact.id} (Detail ID: #{row[:DetailID]})"
+        Delayed::Worker.logger.debug("Incomplete CountFact: #{fact.id} (Detail ID: #{row[:DetailID]})")
         incomplete_count += 1
       end
     end
-    puts "there were #{incomplete_count} incomplete entries"
+    Delayed::Worker.logger.debug("there were #{incomplete_count} incomplete entries")
 
     cars = CountVariable.where(CountVariable.arel_table[:name].matches('%Cars%')).first
     vehicles = CountVariable.where(name: 'Vehicles', description: 'Number of Vehicles').first_or_create
@@ -218,7 +218,7 @@ class CountFact < ActiveRecord::Base
     CountFact.where(count_variable: cars, transit_mode: veh_mode)
       .update_all(count_variable_id: vehicles.id)
 
-    puts "remove 'All Vehicles' facts"
+    Delayed::Worker.logger.debug("remove 'All Vehicles' facts")
     var = CountVariable.find_by(name: "All Vehicles")
     if var
       CountFact.delete_all(count_variable: var)
