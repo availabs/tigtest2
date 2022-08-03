@@ -404,19 +404,25 @@ class ViewsController < ApplicationController
   # POST /views
   # POST /views.json
   def create
-    @view = View.new(params[:view])
-    corrected_view = params[:view]
-    @view.contributor_ids = corrected_view[:contributor_ids].reject(&:blank?) if corrected_view[:contributor_ids]
-    @view.librarian_ids = corrected_view[:librarian_ids].reject(&:blank?) if corrected_view[:librarian_ids]
-    @view.columns = corrected_view[:columns].map(&:last) if corrected_view[:columns]
-    @view.column_labels = corrected_view[:column_labels].map(&:last) if corrected_view[:column_labels]
-    @view.column_types = corrected_view[:column_types].map(&:last) if corrected_view[:column_types]
+    print 'params ***********'
+    print params[:view].to_yaml
+
+    print 'params ***********'
+    corrected_view = params[:view].to_unsafe_h
+    corrected_view[:contributor_ids] = corrected_view[:contributor_ids].reject(&:blank?) if corrected_view[:contributor_ids]
+    corrected_view[:librarian_ids] = corrected_view[:librarian_ids].reject(&:blank?) if corrected_view[:librarian_ids]
+    corrected_view[:columns] = corrected_view[:columns].map(&:last) if corrected_view[:columns]
+    corrected_view[:column_labels] = corrected_view[:column_labels].map(&:last) if corrected_view[:column_labels]
+    corrected_view[:column_types] = corrected_view[:column_types].map(&:last) if corrected_view[:column_types]
     if corrected_view[:value_columns]
-      @view.value_columns = corrected_view[:value_columns].each_with_index.map{ |val_col, idx| @view.columns[idx] if val_col[1] == "true" }.compact
+      corrected_view[:value_columns] = corrected_view[:value_columns].each_with_index.map{ |val_col, idx| corrected_view[:columns][idx] if val_col[1] == "true" }.compact
     end
-    @view.data_model = corrected_view[:data_model].constantize unless corrected_view[:data_model].blank?
-    @view.data_levels = JSON.parse(corrected_view[:data_levels]) if corrected_view[:data_levels]
-    @view.data_hierarchy = JSON.parse(corrected_view[:data_hierarchy]) if (corrected_view[:data_hierarchy] && !corrected_view[:data_hierarchy].empty?)
+    corrected_view[:data_model] = corrected_view[:data_model].constantize unless corrected_view[:data_model].blank?
+    corrected_view[:data_levels] = JSON.parse(corrected_view[:data_levels]) if corrected_view[:data_levels]
+    corrected_view[:data_hierarchy] = JSON.parse(corrected_view[:data_hierarchy]) if (corrected_view[:data_hierarchy] && !corrected_view[:data_hierarchy].empty?)
+
+    @view = View.new(corrected_view)
+    
 
     respond_to do |format|
       if @view.save
