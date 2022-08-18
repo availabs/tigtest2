@@ -12,13 +12,20 @@ class TipProject < ActiveRecord::Base
     def self.loadShp(filename, view)
     good_count = 0
     bad_count = 0
+    Delayed::Worker.logger.info("Got to here #{filename}" )
     begin
       factory = RGeo::Geographic.spherical_factory(:srid => 4326)
       RGeo::Shapefile::Reader.open(filename, :factory => factory) do |file|
         # Figure out what version of each key to use
+        Delayed::Worker.logger.info("Got to here 1" )
+        Delayed::Worker.logger.info("Got to here 2 #{file.to_s}" )
+        Delayed::Worker.logger.info("#{file[0].keys.to_s}" )
+        
         mpopin_key = file[0].keys.detect {|k| k.downcase.strip == 'mpopin'}
-        yield("mpopin_key #{mpopin_key} keys #{file[0].keys.to_s}") if block_given?
+        
         Delayed::Worker.logger.info("mpopin_key #{mpopin_key} keys #{file[0].keys.to_s}" )
+        
+        yield("mpopin_key #{mpopin_key} keys #{file[0].keys.to_s}") if block_given?
         cost_key = file[0].keys.detect do |k|
           k = k.downcase.strip
           k == 'cost' || k == 'projcost'
@@ -79,6 +86,7 @@ class TipProject < ActiveRecord::Base
         end
       end
     rescue Exception => e
+       Delayed::Worker.logger.info("Exception #{e.message}")
       puts e.message
     end
 
