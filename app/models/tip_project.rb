@@ -53,6 +53,7 @@ class TipProject < ActiveRecord::Base
           attributes = Hash.new
           attributes[:view] = view
           attributes[:geography] = record.geometry.try(:as_text)
+          Delayed::Worker.logger.info("geography #{record.geometry.try(:as_text)}")
 
           attributes[:tip_id] = record[mpopin_key]
           Delayed::Worker.logger.info("record #{record[mpopin_key]} #{mpopin_key}" )
