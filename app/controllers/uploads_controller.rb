@@ -180,6 +180,14 @@ class UploadsController < ApplicationController
 
   end
 
+  def destroy
+    @upload = Upload.find(params[:id])
+    @upload.destroy
+
+    redirect_to(uploads_path)
+  end
+
+
   def reset
     @upload = Upload.find(params[:id])
     job = @upload.delayed_job

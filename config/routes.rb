@@ -82,7 +82,7 @@ NymtcGateway::Application.routes.draw do
     end
   end
 
-  resources :uploads, only: [:index, :new, :create, :show] do
+  resources :uploads, only: [:index, :new, :create, :show, :destroy] do
     collection do
       get 'new_help'
     end
