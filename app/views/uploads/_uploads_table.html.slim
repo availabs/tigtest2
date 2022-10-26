@@ -50,7 +50,7 @@ table.table.table-condensed.table-hover.table-bordered.table-striped.uploads-tab
             = upload.updated_at.strftime("%b %e, %Y %l:%M%P")
           - if current_user.has_role?(:admin)
             td
-              = link_to 'Delete', upload.destroy,  :confirm => 'Are you sure?', class: 'btn btn-primary',  data: {confirm: "Are you sure?"}
+              = link_to 'delete', upload, method: :delete, class: 'btn btn-primary',  data: {confirm: "Are you sure?"}
 
 javascript:
   $(document).ready(function(){

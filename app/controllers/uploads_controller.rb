@@ -181,8 +181,10 @@ class UploadsController < ApplicationController
   end
 
   def destroy
-    @upload = Upload.find(params[:id])
-    @upload.destroy
+    @upload = Upload.find(params[:id]).destroy
+    # puts 'DESTROY'
+    # puts @upload.to_s
+    # @upload.destroy(params[:id])
 
     redirect_to(uploads_path)
   end
