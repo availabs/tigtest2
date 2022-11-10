@@ -234,15 +234,13 @@ class PerformanceMeasuresFact < ActiveRecord::Base
   def self.processXlsx(xlsx, view, &block)
     county = nil
     # loop over rows
-    (3..xlsx.last_row).each do |i|
+    (1..xlsx.last_row).each do |i|
       facts = {}
       county = process_row(xlsx, view, county, 'VMT', i, facts)
-      county = process_row(xlsx, view, county, 'VHT', i, facts)
-      county = process_row(xlsx, view, county, 'Speed', i, facts)
-
-      yield('create_many', i - 2) if block_given?
+      Delayed::Worker.logger.debug("row #{i} of #{xlsx.last_row}")
     end
-    yield('processed', xlsx.last_row) if block_given?
+    Delayed::Worker.logger.debug("FINISHED")
+    #yield('processed', xlsx.last_row) if block_given?
   end
   
   protected
@@ -254,17 +252,28 @@ class PerformanceMeasuresFact < ActiveRecord::Base
     'NT' => :night,
     'DAY' => :all_day
   }
-  COLUMNS = [:county, :period, :highway, :arterial, :local, :ramps, :other, :total]
-  ATTRIBUTE_MAP = {
-    'VMT' => :vehicle_miles_traveled,
-    'VHT' => :vehicle_hours_traveled,
-    'Speed' => :avg_speed
+
+  COLUMNS = [:county,:period, :functional_class, :vehicle_miles_traveled, :vehicle_hours_traveled, :avg_speed ]
+
+  FUNCTIONAL_CLASS_MAP = {
+    'Interstate / Freeway / Tollway' => :highway,
+    'Local Street' => :local,
+    'Major Collector' => :arterial,
+    'Minor Arterial' => :arterial,
+    'Other' => :other,
+    'Principal Arterial' => :arterial,
+    'Ramp' => :ramps,
+    'total' => :total
   }
 
   def self.process_row(xlsx, view, current_county, sheet, index, facts_by_class)
     row = xlsx.sheet(sheet).row(index)
     # combine COLUMNS and row into a more useful Hash
+    puts 'row'
     data = Hash[*COLUMNS.zip(row).flatten]
+    fc = FUNCTIONAL_CLASS_MAP[data[:functional_class]]
+    #Delayed::Worker.logger.debug("row: #{data}")
+    
 
     county = data[:county]
     current_county = county if !county.blank? && (county != current_county)
@@ -274,23 +283,17 @@ class PerformanceMeasuresFact < ActiveRecord::Base
     puts "Could not find #{current_county}" unless area
     
     if facts_by_class.empty?
-      # loop over the functional class groups
-      COLUMNS[2..-1].each do |fc|
-        facts_by_class[fc] = PerformanceMeasuresFact.create(view: view,
-                                                            area: area,
-                                                            period: PERIOD_MAP[data[:period]],
-                                                            functional_class: fc)
-      end
-    end
-    # Now loop over the functional class groups
-    COLUMNS[2..-1].each do |fc|
-      attribute = ATTRIBUTE_MAP[sheet]
-
-      value = (attribute == :avg_speed) ? data[fc] : data[fc].to_f.round
-      
-      facts_by_class[fc].update_attribute(attribute, value)
-    end
+      facts_by_class[fc] = PerformanceMeasuresFact.create(view: view,
+                                                          area: area,
+                                                          period: PERIOD_MAP[data[:period]],
+                                                          functional_class: fc,
+                                                          vehicle_miles_traveled: data[:vehicle_miles_traveled],
+                                                          vehicle_hours_traveled: data[:vehicle_hours_traveled],
+                                                          avg_speed: data[:avg_speed].to_f.round
+                                                        )
     
+    end
+
     current_county
   end
   
