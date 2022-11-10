@@ -404,10 +404,10 @@ class ViewsController < ApplicationController
   # POST /views
   # POST /views.json
   def create
-    print 'params ***********'
-    print params[:view].to_yaml
-
-    print 'params ***********'
+    print 'views.json params ***********'
+    print params[:view].to_json
+    print params[:view][:data_hierarchy].to_json
+    print 'views.json params ***********'
     corrected_view = params[:view].to_unsafe_h
     corrected_view[:contributor_ids] = corrected_view[:contributor_ids].reject(&:blank?) if corrected_view[:contributor_ids]
     corrected_view[:librarian_ids] = corrected_view[:librarian_ids].reject(&:blank?) if corrected_view[:librarian_ids]
@@ -419,7 +419,7 @@ class ViewsController < ApplicationController
     end
     corrected_view[:data_model] = corrected_view[:data_model].constantize unless corrected_view[:data_model].blank?
     corrected_view[:data_levels] = JSON.parse(corrected_view[:data_levels]) if corrected_view[:data_levels]
-    corrected_view[:data_hierarchy] = JSON.parse(corrected_view[:data_hierarchy]) if (corrected_view[:data_hierarchy] && !corrected_view[:data_hierarchy].empty?)
+    corrected_view[:data_hierarchy] = corrected_view[:data_hierarchy].to_json if (corrected_view[:data_hierarchy] && !corrected_view[:data_hierarchy].empty?)
 
     @view = View.new(corrected_view)
     
