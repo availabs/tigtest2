@@ -246,11 +246,11 @@ class PerformanceMeasuresFact < ActiveRecord::Base
   protected
 
   PERIOD_MAP = {
-    'AM' => :am_peak,
-    'MD' => :midday,
-    'PM' => :pm_peak,
-    'NT' => :night,
-    'DAY' => :all_day
+    'am_peak' => :am_peak,
+    'midday' => :midday,
+    'pm_peak' => :pm_peak,
+    'night' => :night,
+    'all_day' => :all_day
   }
 
   COLUMNS = [:county,:period, :functional_class, :vehicle_miles_traveled, :vehicle_hours_traveled, :avg_speed ]

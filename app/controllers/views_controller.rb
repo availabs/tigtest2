@@ -706,7 +706,11 @@ class ViewsController < ApplicationController
     # Remove the lowest levels (taz, census_tract) + subregion/region if not all
     reject_list = ['taz', 'census_tract']
     reject_list += ['subregion', 'region'] unless @area.nil?
-    @aggregates = @view.data_hierarchy
+    data_hierarchy = @view.data_hierarchy
+    if data_hierarchy.is_a? String
+      data_hierarchy = data_hierarchy.split
+    end 
+    @aggregates = data_hierarchy
             .flatten.reject { |d| reject_list.include? d }
             .collect do |d|
           [Area::AREA_LEVEL_DISPLAY[d.to_sym], Area::AREA_LEVELS[d.to_sym]]
