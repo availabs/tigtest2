@@ -272,7 +272,7 @@ class PerformanceMeasuresFact < ActiveRecord::Base
     puts 'row'
     data = Hash[*COLUMNS.zip(row).flatten]
     fc = FUNCTIONAL_CLASS_MAP[data[:functional_class]]
-    #Delayed::Worker.logger.debug("row: #{data}")
+    Delayed::Worker.logger.debug("row: #{data}")
     
 
     county = data[:county]
